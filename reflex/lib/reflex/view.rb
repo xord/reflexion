@@ -70,6 +70,7 @@ module Reflex
     def gravity= (*args)
       case arg = args[0]
       when Point then set_gravity arg.x, arg.y
+      when Array then set_gravity arg[0], arg[1]
       else            set_gravity *args
       end
     end

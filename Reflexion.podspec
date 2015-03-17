@@ -22,27 +22,28 @@ Pod::Spec.new do |s|
     #{root}/reflex/src/physics
   ]
 
-  s.preserve_paths = mods
-  s.requires_arc   = false
-  s.source_files   = mods.map {|m| "#{m}/src/*.cpp"}.concat %w[
+  s.preserve_paths   = mods
+  s.requires_arc     = false
+  s.source_files     = mods.map {|m| "#{m}/src/*.cpp"}.concat %w[
     rays/ext/**/*.cpp
     reflex/src/physics/**/*.cpp
     reflex/ext/**/*.cpp
     *.m
   ]
-  s.xcconfig = {
+  s.library          = %w[c++]
+  s.resource_bundles = mods.inject({}) {|h, m| h[m.capitalize] = "#{m}/lib"; h}
+  s.xcconfig         = {
     "HEADER_SEARCH_PATHS" => inc_dirs.join(' '),
     "OTHER_CFLAGS"        => "-I/usr/local/include"
   }
 
   s.osx.source_files  = mods.map {|m| "#{m}/src/osx/*.{cpp,mm}"}
   s.ios.source_files  = mods.map {|m| "#{m}/src/ios/*.{cpp,mm}"}
-  s.ios.library        = %w[stdc++]
   s.ios.frameworks     = %w[GLKit ImageIO MobileCoreServices]
   s.osx.compiler_flags = "-DOSX"
   s.ios.compiler_flags = "-DIOS"
-  s.osx.xcconfig = {"HEADER_SEARCH_PATHS" => "${PODS_ROOT}/CRuby/CRuby_osx.framework/Headers"}
-  s.ios.xcconfig = {"HEADER_SEARCH_PATHS" => "${PODS_ROOT}/CRuby/CRuby_ios.framework/Headers"}
+  s.osx.xcconfig = {"HEADER_SEARCH_PATHS" => "${PODS_ROOT}/CRuby/build/CRuby_osx.framework/Headers"}
+  s.ios.xcconfig = {"HEADER_SEARCH_PATHS" => "${PODS_ROOT}/CRuby/build/CRuby_ios.framework/Headers"}
 
   #s.dependency = 'CRuby', git: 'https://github.com/xord/cruby'
 

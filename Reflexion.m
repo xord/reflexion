@@ -13,12 +13,22 @@ void Init_reflex_native ();
 	[CRuby addExtension:@"rays/native"   init:^{Init_rays_native();}];
 	[CRuby addExtension:@"reflex/native" init:^{Init_reflex_native();}];
 
-	[CRuby addLibrary:@"Reflexion" bundle:[NSBundle bundleForClass:Reflexion.class]];
+	for (NSString *mod in @[@"Xot", @"Rucy", @"Rays", @"Reflex"])
+		[CRuby addLibrary:mod bundle:[NSBundle bundleForClass:Reflexion.class]];
 }
 
-+ (void)start
++ (BOOL)start
 {
-	[CRuby load:@"main.rb"];
+	return [self start:@"main.rb"];
+}
+
++ (BOOL)start:(NSString *)filename
+{
+	if (![CRuby load:filename])
+		return NO;
+	
+	[CRuby evaluate:@"Reflexion.start"];
+	return YES;
 }
 
 @end

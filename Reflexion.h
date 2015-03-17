@@ -4,6 +4,7 @@
 
 @interface Reflexion : NSObject
 
-+ (void)start;
++ (BOOL)start;
++ (BOOL)start:(NSString *)filename;
 
 @end
