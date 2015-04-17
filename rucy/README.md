@@ -1,5 +1,5 @@
 
-# Rucy - A Ruby C++ Extension Helper Library
+# Rucy - A Ruby C++ Extension Helper Library.
 
  by snori@xord.org
 

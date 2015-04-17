@@ -5,7 +5,7 @@
 #include <boost/scoped_array.hpp>
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Common/b2Draw.h>
-#include "xot/util.h"
+#include <xot/util.h>
 #include "reflex/body.h"
 #include "reflex/view.h"
 #include "reflex/event.h"

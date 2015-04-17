@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
 
-%w[xot rays reflex]
+%w[xot beeps rays reflex]
   .map  {|s| File.expand_path "../../../../#{s}/lib", __FILE__}
   .each {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 
 require 'reflexion/include'
 
 
-$garbages = []
+$hit, $bang = [880, 440].map {|n| Sound.new SineWave.new(freq: n), 0.1}
+$garbages   = []
 
 def add_shape (klass: RectShape, frame: [0, 0, 100, 100], color: :white, type: :static)
   window.add klass.new {
@@ -21,12 +22,12 @@ setup do
   5.times do |y|
     10.times do |x|
       shape = add_shape frame: [(x + 1) * 50, (y + 1) * 20, 30, 10], color: [:white, :red, :green, :blue, :yellow][y]
-      shape.on(:contact) {$garbages << shape}
+      shape.on(:contact) {$hit.play; $garbages << shape}
     end
   end
   $bar   = add_shape frame: [0, 350, 100, 20], color: :blue
   bottom = add_shape frame: [0, window.h - 1, window.w, 1]
-  bottom.on(:contact) {|e| $garbages << e.view}
+  bottom.on(:contact) {|e| $bang.play; $garbages << e.view}
 end
 
 pointer do |e|

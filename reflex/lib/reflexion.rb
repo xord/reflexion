@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+require 'beeps'
 require 'rays'
 require 'reflex'
 
@@ -8,7 +9,7 @@ require 'reflex'
 module Reflexion
 
 
-  include Rays, Reflex
+  include Beeps, Rays, Reflex
 
 
   DEFAULTS = {

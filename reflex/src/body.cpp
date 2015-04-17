@@ -11,7 +11,7 @@
 #include <Box2D/Collision/Shapes/b2EdgeShape.h>
 #include <Box2D/Collision/Shapes/b2ChainShape.h>
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
-#include "xot/util.h"
+#include <xot/util.h>
 #include "reflex/exception.h"
 #include "reflex/painter.h"
 #include "world.h"

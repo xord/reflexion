@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <algorithm>
 #include <boost/scoped_ptr.hpp>
-#include "xot/util.h"
+#include <xot/util.h>
 #include "reflex/window.h"
 #include "reflex/body.h"
 #include "reflex/exception.h"
