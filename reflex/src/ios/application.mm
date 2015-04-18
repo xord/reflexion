@@ -3,10 +3,15 @@
 
 
 #include <assert.h>
-#include <crt_externs.h>
 #include "reflex/exception.h"
 #include "application_data.h"
 #import "app_delegate.h"
+
+
+extern "C" {
+	char*** _NSGetArgv ();
+	int*    _NSGetArgc ();
+}
 
 
 namespace Reflex
@@ -46,7 +51,7 @@ namespace Reflex
 	Application::start ()
 	{
 		UIApplicationMain(
-			*_NSGetArgc(), *_NSGetArgv(), nil, NSStringFromClass([AppDelegate class]));
+			*_NSGetArgc(), *_NSGetArgv(), nil, NSStringFromClass(AppDelegate.class));
 	}
 
 	void

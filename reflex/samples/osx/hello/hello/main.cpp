@@ -39,7 +39,7 @@ class App : public Application
 			win->set_frame(100, 100, 500, 500);
 			win->show();
 
-			win->root()->set_gravity(0, 9.8);
+			win->root()->set_gravity(0, 9.8 * win->root()->meter2pixel());
 			win->root()->set_debug(true);
 
 			Image image(32, 32);

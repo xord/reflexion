@@ -190,6 +190,8 @@ namespace Reflex
 	{
 		if (!*this)
 			invalid_state_error(__FILE__, __LINE__);
+
+		[self->native frameChanged];
 	}
 
 	void

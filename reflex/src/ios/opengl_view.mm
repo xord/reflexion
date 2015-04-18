@@ -26,7 +26,7 @@
 		view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
 		view.drawableMultisample = GLKViewDrawableMultisample4X;
 
-		//self.preferredFramesPerSecond = 60;
+		self.preferredFramesPerSecond = 60;
 
 		[self setupOpenGL];
 	}

@@ -16,15 +16,18 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = "7.0"
 
   root     = "${PODS_ROOT}/#{s.name}"
-  mods     = %w[xot rucy rays reflex]
+  mods     = %w[xot rucy beeps rays reflex]
   inc_dirs = mods.map {|m| "#{root}/#{m}/include"}.concat %W[
     #{root}
+    #{root}/beeps/src/stk/include
     #{root}/reflex/src/physics
   ]
 
   s.preserve_paths   = mods
   s.requires_arc     = false
   s.source_files     = mods.map {|m| "#{m}/src/*.cpp"}.concat %w[
+    beeps/src/stk/**/*.cpp
+    beeps/ext/**/*.cpp
     rays/ext/**/*.cpp
     reflex/src/physics/**/*.cpp
     reflex/ext/**/*.cpp
@@ -39,7 +42,7 @@ Pod::Spec.new do |s|
 
   s.osx.source_files  = mods.map {|m| "#{m}/src/osx/*.{cpp,mm}"}
   s.ios.source_files  = mods.map {|m| "#{m}/src/ios/*.{cpp,mm}"}
-  s.ios.frameworks     = %w[GLKit ImageIO MobileCoreServices]
+  s.ios.frameworks     = %w[OpenAL GLKit ImageIO MobileCoreServices]
   s.osx.compiler_flags = "-DOSX"
   s.ios.compiler_flags = "-DIOS"
   s.osx.xcconfig = {"HEADER_SEARCH_PATHS" => "${PODS_ROOT}/CRuby/build/CRuby_osx.framework/Headers"}

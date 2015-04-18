@@ -22,6 +22,8 @@
 
 	- (void) draw;
 
+	- (void) frameChanged;
+
 	- (void) keyDown: (UIEvent*) event;
 
 	- (void) keyUp: (UIEvent*) event;

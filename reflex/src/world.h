@@ -1,7 +1,7 @@
 // -*- c++ -*-
 #pragma once
-#ifndef __REFLEX_WORLD_H__
-#define __REFLEX_WORLD_H__
+#ifndef __REFLEX_SRC_WORLD_H__
+#define __REFLEX_SRC_WORLD_H__
 
 
 #include <boost/noncopyable.hpp>

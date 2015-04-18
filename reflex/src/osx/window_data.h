@@ -1,7 +1,7 @@
 // -*- c++ -*-
 #pragma once
-#ifndef __REFLEX_OSX_WINDOW_DATA_H__
-#define __REFLEX_OSX_WINDOW_DATA_H__
+#ifndef __REFLEX_SRC_OSX_WINDOW_DATA_H__
+#define __REFLEX_SRC_OSX_WINDOW_DATA_H__
 
 
 #include <map>

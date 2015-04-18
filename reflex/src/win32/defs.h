@@ -1,7 +1,7 @@
 // -*- c++ -*-
 #pragma once
-#ifndef __REFLEX_WIN32_DEFS_H__
-#define __REFLEX_WIN32_DEFS_H__
+#ifndef __REFLEX_SRC_WIN32_DEFS_H__
+#define __REFLEX_SRC_WIN32_DEFS_H__
 
 
 #include <windows.h>

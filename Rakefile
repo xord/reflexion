@@ -53,3 +53,21 @@ MODULES.each do |mod|
     TARGETS << mod
   end
 end
+
+namespace :subtree do
+
+  github = 'git@github.com:xord'
+
+  task :push do
+    TARGETS.each do |target|
+      sh %( git subtree push --prefix=#{target} #{github}/#{target} master --squash )
+    end
+  end
+
+  task :pull do
+    TARGETS.each do |target|
+      sh %( git subtree pull --prefix=#{target} #{github}/#{target} master --squash )
+    end
+  end
+
+end# subtree

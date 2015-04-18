@@ -1,7 +1,7 @@
 // -*- c++ -*-
 #pragma once
-#ifndef __REFLEX_OSX_EVENT_H__
-#define __REFLEX_OSX_EVENT_H__
+#ifndef __REFLEX_SRC_OSX_EVENT_H__
+#define __REFLEX_SRC_OSX_EVENT_H__
 
 
 #import <AppKit/NSEvent.h>

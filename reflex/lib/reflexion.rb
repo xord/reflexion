@@ -20,36 +20,33 @@ module Reflexion
 
   class MainWindow < Window
 
-    attr_accessor :update, :draw, :key, :pointer
-
-    attr_reader :setup
-
     attr_reader :event
 
-    def setup= (block)
-      @setup = block
-      call_event nil, self, &@setup
+    def initialize (*args, &block)
+      super
+      $window = self
+      call_event nil, self, &$setup
     end
 
     def on_update (e)
       super
       redraw
-      call_event e, e, &@update
+      call_event e, e, &$update
     end
 
     def on_draw (e)
       super
-      call_event e, e.painter, &@draw
+      call_event e, e.painter, &$draw
     end
 
     def on_key (e)
       super
-      call_event e, e, &@key
+      call_event e, e, &$key
     end
 
     def on_pointer (e)
       super
-      call_event e, e, &@pointer
+      call_event e, e, &$pointer
     end
 
     def call_event (event, *args, &block)
@@ -62,10 +59,8 @@ module Reflexion
 
   module_function
 
-  @@window = MainWindow.new DEFAULTS
-
   def window ()
-    @@window
+    $window ||= MainWindow.new DEFAULTS
   end
 
   def event ()
@@ -73,28 +68,27 @@ module Reflexion
   end
 
   def setup (&block)
-    window.setup = block
+    $setup = block
   end
 
   def update (&block)
-    window.update = block
+    $update = block
   end
 
   def draw (&block)
-    window.draw = block
+    $draw = block
   end
 
   def key (&block)
-    window.key = block
+    $key = block
   end
 
   def pointer (&block)
-    window.pointer = block
+    $pointer = block
   end
 
   def start ()
-    window.show
-    Reflex.start
+    Reflex.start {window.show}
   end
 
   def quit ()

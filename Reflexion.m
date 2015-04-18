@@ -2,6 +2,7 @@
 #import "Reflexion.h"
 
 
+void Init_beeps_native ();
 void Init_rays_native ();
 void Init_reflex_native ();
 
@@ -10,10 +11,15 @@ void Init_reflex_native ();
 
 + (void)initialize
 {
+	static BOOL done = NO;
+	if (done) return;
+	done = YES;
+
+	[CRuby addExtension:@"beeps/native"  init:^{Init_beeps_native();}];
 	[CRuby addExtension:@"rays/native"   init:^{Init_rays_native();}];
 	[CRuby addExtension:@"reflex/native" init:^{Init_reflex_native();}];
 
-	for (NSString *mod in @[@"Xot", @"Rucy", @"Rays", @"Reflex"])
+	for (NSString *mod in @[@"Xot", @"Rucy", @"Beeps", @"Rays", @"Reflex"])
 		[CRuby addLibrary:mod bundle:[NSBundle bundleForClass:Reflexion.class]];
 }
 
@@ -24,11 +30,7 @@ void Init_reflex_native ();
 
 + (BOOL)start:(NSString *)filename
 {
-	if (![CRuby load:filename])
-		return NO;
-	
-	[CRuby evaluate:@"Reflexion.start"];
-	return YES;
+	return [CRuby start:filename];
 }
 
 @end

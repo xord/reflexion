@@ -20,7 +20,7 @@ namespace Reflex
 
 
 	NativePointerEvent::NativePointerEvent (NSSet* touches, UIEvent* e, UIView* view, Type type)
-	:	PointerEvent(type, POINTER_TOUCH, (coord) 0, (coord) 0)
+	:	PointerEvent(type, POINTER_TOUCH, (coord) 0, (coord) 0, 0, 1, type == MOVE)
 	{
 		CGPoint p = correct_point(view, [touches anyObject]);
 		x = p.x;
