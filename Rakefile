@@ -24,8 +24,14 @@ def cd_sh (dir, cmd)
   end
 end
 
-def sh_each_targets (cmd)
+def each_target (&block)
   TARGETS.each do |target|
+    block.call target
+  end
+end
+
+def sh_each_targets (cmd)
+  each_target do |target|
     cd_sh File.expand_path("../#{target}", __FILE__), cmd
   end
 end
@@ -54,18 +60,30 @@ MODULES.each do |mod|
   end
 end
 
+
+namespace :version do
+
+  task :update do
+    each_target do |target|
+      sh %( cp VERSION #{target}/ )
+    end
+  end
+
+end# version
+
+
 namespace :subtree do
 
   github = 'git@github.com:xord'
 
   task :push do
-    TARGETS.each do |target|
+    each_target do |target|
       sh %( git subtree push --prefix=#{target} #{github}/#{target} master )
     end
   end
 
   task :pull do
-    TARGETS.each do |target|
+    each_target do |target|
       sh %( git subtree pull --prefix=#{target} --squash #{github}/#{target} master )
     end
   end
