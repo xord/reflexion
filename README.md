@@ -11,4 +11,4 @@ $ cd reflexion
 $ rake all clean test run sample=reflexion/breakout
 ```
 
-[![Build Status](https://travis-ci.org/xord/reflexion.svg?branch=test)](https://travis-ci.org/xord/reflexion)
+[![Build Status](https://travis-ci.org/xord/reflexion.svg?branch=master)](https://travis-ci.org/xord/reflexion)
