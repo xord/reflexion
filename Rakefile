@@ -60,13 +60,13 @@ namespace :subtree do
 
   task :push do
     TARGETS.each do |target|
-      sh %( git subtree push --prefix=#{target} #{github}/#{target} master --squash )
+      sh %( git subtree push --prefix=#{target} #{github}/#{target} master )
     end
   end
 
   task :pull do
     TARGETS.each do |target|
-      sh %( git subtree pull --prefix=#{target} #{github}/#{target} master --squash )
+      sh %( git subtree pull --prefix=#{target} --squash #{github}/#{target} master )
     end
   end
 
