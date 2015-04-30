@@ -24,7 +24,7 @@
 		GLKView* view = (GLKView*) self.view;
 		view.context             = context;
 		view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
-		view.drawableMultisample = GLKViewDrawableMultisample4X;
+		//view.drawableMultisample = GLKViewDrawableMultisample4X;
 
 		self.preferredFramesPerSecond = 60;
 
