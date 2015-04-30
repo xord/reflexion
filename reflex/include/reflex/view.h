@@ -154,6 +154,10 @@ namespace Reflex
 
 			virtual const Bounds& frame () const;
 
+			virtual void set_zoom (float zoom);
+
+			virtual float    zoom () const;
+
 			virtual float angle () const;
 
 			virtual void         scroll_to (coord x, coord y, coord z = 0);

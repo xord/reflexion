@@ -41,7 +41,7 @@ task :default
 
 task :run do
   raise unless name = env(:sample)
-  sh %( ruby reflex/samples/#{name}.rb ) 
+  sh %( ruby reflex/samples/#{name}.rb )
 end
 
 TASKS.each do |name|

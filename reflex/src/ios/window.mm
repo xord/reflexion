@@ -8,6 +8,12 @@
 #import "native_window.h"
 
 
+namespace Rays
+{
+	void set_painter_scale_factor(Painter*, float);
+};
+
+
 namespace Reflex
 {
 
@@ -94,6 +100,7 @@ namespace Reflex
 
 		set_window(self->root.get(), this);
 
+		Rays::set_painter_scale_factor(&self->painter, UIScreen.mainScreen.scale);
 		self->painter.canvas(0, 0, 1, 1);
 	}
 

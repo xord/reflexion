@@ -13,9 +13,7 @@ namespace Reflex
 	correct_point (UIView* view, UITouch* touch)
 	{
 		assert(view && touch);
-		CGPoint p = [touch locationInView: view];
-		p.y = [view bounds].size.height - p.y;
-		return p;
+		return [touch locationInView: view];
 	}
 
 

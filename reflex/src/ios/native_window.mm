@@ -24,26 +24,11 @@ namespace Reflex
 }// Reflex
 
 
-static CGRect device_frame ()
-{
-	UIScreen* screen = [UIScreen mainScreen];
-	CGRect rect      = screen.applicationFrame;
-	CGFloat scale    = screen.scale;
-
-	rect.origin.x     = 0;
-	rect.origin.y     = 0;
-	rect.size.width  *= scale;
-	rect.size.height *= scale;
-
-	return rect;
-}
-
-
 @implementation NativeWindow
 
 	- (id) init
 	{
-		self = [super initWithFrame: device_frame()];
+		self = [super initWithFrame: UIScreen.mainScreen.bounds];
 		if (!self) return nil;
 
 		pref            = new Reflex::Window::Ref;
@@ -106,8 +91,7 @@ static CGRect device_frame ()
 		REF->self->prev_time_update = now;
 
 		REF->on_update(&e);
-		if (!e.is_blocked())
-			Reflex::update_view_tree(REF->root(), e);
+		Reflex::update_view_tree(REF->root(), e);
 	}
 
 	- (void) draw
@@ -139,8 +123,7 @@ static CGRect device_frame ()
 		e.painter->clear();
 
 		REF->on_draw(&e);
-		if (!e.is_blocked())
-			draw_view_tree(REF->root(), e, 0, REF->frame().dup().move_to(0));
+		draw_view_tree(REF->root(), e, 0, REF->frame().dup().move_to(0));
 
 		e.painter->end();
 	}

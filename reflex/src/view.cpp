@@ -31,7 +31,7 @@ namespace Reflex
 
 		Bounds frame;
 
-		float angle, scale;
+		float zoom, angle;
 
 		boost::scoped_ptr<Selector>  pselector;
 
@@ -54,7 +54,7 @@ namespace Reflex
 		uint flags;
 
 		Data ()
-		:	window(NULL), parent(NULL), angle(0), scale(1),
+		:	window(NULL), parent(NULL), zoom(1), angle(0),
 			capture(CAPTURE_NONE), hide_count(0), flags(0)
 		{
 		}
@@ -251,6 +251,9 @@ namespace Reflex
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
+		if (event.is_blocked())
+			return;
+
 		UpdateEvent e = event;
 		update_world(view, e.dt);
 		view->on_update(&e);
@@ -274,7 +277,8 @@ namespace Reflex
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		if (view->hidden()) return;
+		if (event.is_blocked() || view->hidden())
+			return;
 
 		DrawEvent e = event;
 		Painter*  p = e.painter;
@@ -290,8 +294,8 @@ namespace Reflex
 		float angle = view->self->angle;
 		if (angle != 0) p->rotate(angle);
 
-		float scale = view->self->scale;
-		if (scale != 1) p->scale(scale);
+		float zoom = view->self->zoom;
+		if (zoom != 1 && zoom > 0) p->scale(zoom, zoom);
 
 		pos += offset;
 		Bounds clip2 = clip & frame.move_to(pos);
@@ -1294,6 +1298,25 @@ namespace Reflex
 		return self->frame;
 	}
 
+	void
+	View::set_zoom (float zoom)
+	{
+		if (!*this)
+			invalid_state_error(__FILE__, __LINE__);
+
+		self->zoom = zoom;
+		redraw();
+	}
+
+	float
+	View::zoom () const
+	{
+		if (!*this)
+			invalid_state_error(__FILE__, __LINE__);
+
+		return self->zoom;
+	}
+
 #if 0
 	void
 	View::set_angle (float degree)
@@ -1323,6 +1346,7 @@ namespace Reflex
 		self->scroll().reset(x, y, z);
 		ScrollEvent e(x, y, z, x - old.x, y - old.y, z - old.z);
 		on_scroll(&e);
+
 		redraw();
 	}
 

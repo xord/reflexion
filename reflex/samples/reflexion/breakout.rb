@@ -33,7 +33,7 @@ end
 pointer do |e|
   $bar.x = e.x - $bar.w / 2
   if e.down?
-    ball = add_shape klass: [EllipseShape, RectShape].sample, frame: [e.x, $bar.y - 20, 20, 20], type: :dynamic 
+    ball = add_shape klass: [EllipseShape, RectShape].sample, frame: [e.x, $bar.y - 20, 20, 20], type: :dynamic
     ball.velocity = Point.new(rand(-1.0..1.0), -1).normal * 500
   end
 end

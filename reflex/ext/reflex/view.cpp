@@ -321,6 +321,22 @@ RUCY_DEF0(get_frame)
 RUCY_END
 
 static
+RUCY_DEF1(set_zoom, zoom)
+{
+	CHECK;
+	THIS->set_zoom(to<float>(zoom));
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_zoom)
+{
+	CHECK;
+	return value(THIS->zoom());
+}
+RUCY_END
+
+static
 RUCY_DEF0(get_angle)
 {
 	CHECK;
@@ -709,6 +725,8 @@ Init_view ()
 	cView.define_method("selector",  get_selector);
 	cView.define_private_method("set_frame", set_frame);
 	cView.define_private_method("get_frame", get_frame);
+	cView.define_method("zoom=", set_zoom);
+	cView.define_method("zoom",  get_zoom);
 	cView.define_method("angle",  get_angle);
 	cView.define_method("scroll_to", scroll_to);
 	cView.define_method("scroll_by", scroll_by);
