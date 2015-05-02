@@ -1,12 +1,12 @@
 # -*- mode: ruby; coding: utf-8 -*-
 
 
-%w[xot rucy rays reflex beeps]
+%w[xot rucy beeps rays reflex]
   .map  {|s| File.expand_path "../#{s}/lib", __FILE__}
   .each {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 
 
-MODULES = %w[xot rucy rays reflex beeps].map &:intern
+MODULES = %w[xot rucy beeps rays reflex].map &:intern
 TASKS   = %w[erb lib ext test clean gem install uninstall upload].map &:intern
 
 TARGETS = []
