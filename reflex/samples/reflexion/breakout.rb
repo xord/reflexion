@@ -9,7 +9,6 @@ require 'reflexion/include'
 
 
 $hit, $bang = [880, 440].map {|n| Sound.new SineWave.new(freq: n), 0.1}
-$garbages   = []
 
 def add_shape (klass: RectShape, frame: [0, 0, 100, 100], color: :white, type: :static)
   window.add klass.new {
@@ -18,16 +17,17 @@ def add_shape (klass: RectShape, frame: [0, 0, 100, 100], color: :white, type: :
 end
 
 setup do
+  style.flow = :none
   set size: [600, 400], friction: 0
   5.times do |y|
     10.times do |x|
       shape = add_shape frame: [(x + 1) * 50, (y + 1) * 20, 30, 10], color: [:white, :red, :green, :blue, :yellow][y]
-      shape.on(:contact) {$hit.play; $garbages << shape}
+      shape.on(:contact) {$hit.play; shape.parent.remove shape}
     end
   end
   $bar   = add_shape frame: [0, 350, 100, 20], color: :blue
   bottom = add_shape frame: [0, window.h - 1, window.w, 1]
-  bottom.on(:contact) {|e| $bang.play; $garbages << e.view}
+  bottom.on(:contact) {|e| $bang.play; e.view.parent.remove e.view}
 end
 
 pointer do |e|
@@ -36,9 +36,4 @@ pointer do |e|
     ball = add_shape klass: [EllipseShape, RectShape].sample, frame: [e.x, $bar.y - 20, 20, 20], type: :dynamic
     ball.velocity = Point.new(rand(-1.0..1.0), -1).normal * 500
   end
-end
-
-update do
-  $garbages.uniq.each {|o| o.parent.remove o}
-  $garbages.clear
 end

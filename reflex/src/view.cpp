@@ -26,11 +26,17 @@ namespace Reflex
 		enum Flags
 		{
 
-			UPDATE_STYLE  = 0x1 << 0,
+			ACTIVE         = 0x1 << 0,
 
-			UPDATE_LAYOUT = 0x1 << 1,
+			UPDATE_STYLE   = 0x1 << 1,
 
-			DEFAULT_FLAGS = UPDATE_STYLE | UPDATE_LAYOUT
+			UPDATE_LAYOUT  = 0x1 << 2,
+
+			UPDATING_WORLD = 0x1 << 3,
+
+			REMOVE_SELF    = 0x1 << 4,
+
+			DEFAULT_FLAGS  = UPDATE_STYLE | UPDATE_LAYOUT
 
 		};// Flags
 
@@ -234,6 +240,27 @@ namespace Reflex
 		set_window(view, parent ? parent->window() : NULL);
 	}
 
+	bool
+	is_view_active (View* view)
+	{
+		assert(view);
+
+		return view->self->has_flag(View::Data::ACTIVE);
+	}
+
+	static bool
+	remove_self (View* view)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		if (!self->has_flag(View::Data::REMOVE_SELF) || !self->parent)
+			return false;
+
+		self->parent->remove_child(view);
+		return true;
+	}
+
 	static void
 	update_layout (View* view, bool update_parent = false)
 	{
@@ -288,7 +315,12 @@ namespace Reflex
 		View::Data* self = view->self.get();
 
 		World* world = self->pworld.get();
-		if (world) world->step(dt);
+		if (world)
+		{
+			self->add_flag(View::Data::UPDATING_WORLD);
+			world->step(dt);
+			self->remove_flag(View::Data::UPDATING_WORLD);
+		}
 
 		Body* body = self->pbody.get();
 		if (body)
@@ -426,7 +458,7 @@ namespace Reflex
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		if (event.is_blocked())
+		if (event.is_blocked() || remove_self(view))
 			return;
 
 		UpdateEvent e = event;
@@ -1041,6 +1073,8 @@ namespace Reflex
 		else if (found != belong)
 			invalid_state_error(__FILE__, __LINE__);
 
+		child->self->add_flag(View::Data::ACTIVE);
+
 		self->children().push_back(child);
 		set_parent(child, this);
 
@@ -1057,6 +1091,14 @@ namespace Reflex
 
 		child_iterator it = std::find(child_begin(), child_end(), child);
 		if (it == child_end()) return;
+
+		child->self->remove_flag(View::Data::ACTIVE);
+
+		if (self->has_flag(Data::UPDATING_WORLD))
+		{
+			child->self->add_flag(View::Data::REMOVE_SELF);
+			return;
+		}
 
 		if (child->parent() != this)
 			invalid_state_error(__FILE__, __LINE__);
@@ -1316,7 +1358,7 @@ namespace Reflex
 	View::name () const
 	{
 		const Selector* sel = self->pselector.get();
-		return sel ? sel->name() : NULL;
+		return sel ? sel->name() : "";
 	}
 
 	void

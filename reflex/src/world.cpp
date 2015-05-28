@@ -250,6 +250,8 @@ namespace Reflex
 		return debug_draw;
 	}
 
+	bool is_view_active (View* view);
+
 	void
 	World::BeginContact (b2Contact* contact)
 	{
@@ -258,6 +260,9 @@ namespace Reflex
 
 		View* v2 = (View*) contact->GetFixtureB()->GetBody()->GetUserData();
 		if (!v2) return;
+
+		if (!is_view_active(v1) || !is_view_active(v2))
+			return;
 
 		ContactEvent e1(ContactEvent::BEGIN, v2);
 		v1->on_contact(&e1);
@@ -274,6 +279,9 @@ namespace Reflex
 
 		View* v2 = (View*) contact->GetFixtureB()->GetBody()->GetUserData();
 		if (!v2) return;
+
+		if (!is_view_active(v1) || !is_view_active(v2))
+			return;
 
 		ContactEvent e1(ContactEvent::END, v2);
 		v1->on_contact(&e1);

@@ -122,7 +122,7 @@ namespace Reflex
 
 			virtual Point content_size () const;
 
-			virtual void make_body ();
+			virtual void  make_body ();
 
 			virtual void clear_body ();
 
