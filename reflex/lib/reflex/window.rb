@@ -20,8 +20,8 @@ module Reflex
     extend Forwardable
 
     def_delegators :root,
-      :add_child, :remove_child, :find_children, :style, :meter2pixel, :meter,
-      :gravity=, :gravity, :wall, :debug=, :debug?
+      :add_child, :remove_child, :find_children, :style, :styles,
+      :meter2pixel, :meter, :gravity=, :gravity, :wall, :debug=, :debug?
 
     def_delegators :wall,
       :friction=, :friction, :restitution=, :restitution

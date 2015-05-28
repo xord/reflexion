@@ -89,15 +89,15 @@ namespace Reflex
 
 			virtual const_child_iterator child_end () const;
 
-			virtual       Style&         style ();
+			virtual       Style*         style (bool create = false);
 
-			virtual const Style&         style () const;
+			virtual const Style*         style () const;
 
 			virtual void             add_style (const Style& style);
 
 			virtual void          remove_style (const Style& style);
 
-			virtual       Style*     get_style (const Selector& selector);
+			virtual       Style*     get_style (const Selector& selector, bool create = false);
 
 			virtual const Style*     get_style (const Selector& selector) const;
 

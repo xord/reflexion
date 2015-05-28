@@ -1,4 +1,4 @@
-#include "reflex/ruby/style_length.h"
+#include "reflex/ruby/style.h"
 
 
 #include <rucy.h>

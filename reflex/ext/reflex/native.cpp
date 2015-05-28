@@ -10,8 +10,6 @@ void Init_reflex ();
 void Init_selector ();
 void Init_style ();
 void Init_style_length ();
-void Init_style_length2 ();
-void Init_style_length4 ();
 
 void Init_event ();
 void Init_update_event ();
@@ -56,8 +54,6 @@ extern "C" void
 	Init_selector();
 	Init_style();
 	Init_style_length();
-	Init_style_length2();
-	Init_style_length4();
 
 	Init_event();
 	Init_update_event();

@@ -15,9 +15,9 @@ namespace Reflex
 
 		TagSet tags;
 
-		bool operator == (const Data& rhs)
+		friend bool operator == (const Data& lhs, const Data& rhs)
 		{
-			return name == rhs.name && tags == rhs.tags;
+			return lhs.name == rhs.name && lhs.tags == rhs.tags;
 		}
 
 	};// Selector::Data
@@ -26,6 +26,31 @@ namespace Reflex
 	Selector::Selector (const char* name)
 	{
 		if (name) set_name(name);
+	}
+
+	Selector
+	Selector::copy () const
+	{
+		Selector t;
+		*t.self = *self;
+		return t;
+	}
+
+	bool
+	Selector::contains (const This& selector) const
+	{
+		if (self->name.empty() && self->tags.empty())
+			return false;
+
+		const TagSet& tags      = self->tags;
+		const_iterator tags_end = tags.end();
+
+		iterator end = selector.end();
+		for (iterator tag = selector.begin(); tag != end; ++tag)
+			if (tags.find(*tag) == tags_end)
+				return false;
+
+		return selector.self->name.empty() || selector.self->name == self->name;
 	}
 
 	void
@@ -37,7 +62,7 @@ namespace Reflex
 	const char*
 	Selector::name () const
 	{
-		return self->name.empty() ? NULL : self->name.c_str();
+		return self->name.c_str();
 	}
 
 	void
@@ -89,20 +114,9 @@ namespace Reflex
 	}
 
 	bool
-	Selector::match (const This& obj) const
+	Selector::is_empty () const
 	{
-		if (self->name.empty() && self->tags.empty())
-			return false;
-
-		const TagSet& obj_tags = obj.self->tags;
-		const_iterator obj_end = obj_tags.end();
-
-		iterator end = this->end();
-		for (iterator it = begin(); it != end; ++it)
-			if (obj_tags.find(*it) == obj_end)
-				return false;
-
-		return self->name.empty() || self->name == obj.self->name;
+		return self->name.empty() && self->tags.empty();
 	}
 
 	bool
@@ -115,6 +129,14 @@ namespace Reflex
 	operator != (const Selector& lhs, const Selector& rhs)
 	{
 		return !operator==(lhs, rhs);
+	}
+
+	bool
+	operator < (const Selector& lhs, const Selector& rhs)
+	{
+		Selector::Data* l = lhs.self.get();
+		Selector::Data* r = rhs.self.get();
+		return l->name < r->name || l->tags < r->tags;
 	}
 
 

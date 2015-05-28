@@ -15,15 +15,24 @@ namespace Reflex
 {
 
 
-	void set_focus (Window* window, View* view);
-
-	void register_capture (View* view);
-
-	void unregister_capture (View* view);
+	bool set_style_owner (Style* style, View* owner);
 
 
 	struct View::Data
 	{
+
+		typedef std::set<Selector> SelectorSet;
+
+		enum Flags
+		{
+
+			UPDATE_STYLE  = 0x1 << 0,
+
+			UPDATE_LAYOUT = 0x1 << 1,
+
+			DEFAULT_FLAGS = UPDATE_STYLE | UPDATE_LAYOUT
+
+		};// Flags
 
 		Window* window;
 
@@ -33,29 +42,31 @@ namespace Reflex
 
 		float zoom, angle;
 
-		boost::scoped_ptr<Selector>  pselector;
-
-		boost::scoped_ptr<Point>     pscroll;
-
-		boost::scoped_ptr<ChildList> pchildren;
-
-		boost::scoped_ptr<StyleList> pstyles;
-
-		boost::scoped_ptr<World>     pworld;
-
-		boost::scoped_ptr<Body>      pbody;
-
-		Style style;
-
 		ushort capture;
 
 		short hide_count;
 
 		uint flags;
 
+		boost::scoped_ptr<Selector>    pselector;
+
+		boost::scoped_ptr<SelectorSet> pselectors_for_update;
+
+		boost::scoped_ptr<Point>       pscroll;
+
+		boost::scoped_ptr<ChildList>   pchildren;
+
+		boost::scoped_ptr<Style>       pstyle;
+
+		boost::scoped_ptr<StyleList>   pstyles;
+
+		boost::scoped_ptr<World>       pworld;
+
+		boost::scoped_ptr<Body>        pbody;
+
 		Data ()
 		:	window(NULL), parent(NULL), zoom(1), angle(0),
-			capture(CAPTURE_NONE), hide_count(0), flags(0)
+			capture(CAPTURE_NONE), hide_count(0), flags(DEFAULT_FLAGS)
 		{
 		}
 
@@ -69,6 +80,12 @@ namespace Reflex
 			return *pselector;
 		}
 
+		SelectorSet& selectors_for_update ()
+		{
+			if (!pselectors_for_update) pselectors_for_update.reset(new SelectorSet);
+			return *pselectors_for_update;
+		}
+
 		Point& scroll ()
 		{
 			if (!pscroll) pscroll.reset(new Point);
@@ -79,6 +96,16 @@ namespace Reflex
 		{
 			if (!pchildren) pchildren.reset(new ChildList);
 			return *pchildren;
+		}
+
+		Style& style (View* this_)
+		{
+			if (!pstyle)
+			{
+				pstyle.reset(new Style);
+				set_style_owner(pstyle.get(), this_);
+			}
+			return *pstyle;
 		}
 
 		StyleList& styles ()
@@ -139,73 +166,97 @@ namespace Reflex
 			this_->redraw();
 		}
 
+		void add_flag (uint flag)
+		{
+			flags |= flag;
+		}
+
+		void remove_flag (uint flag)
+		{
+			flags &= ~flag;
+		}
+
+		bool has_flag (uint flag) const
+		{
+			return flags & flag;
+		}
+
 	};// View::Data
 
 
 	void
-	set_window (View* this_, Window* window_)
+	set_window (View* view, Window* window_)
 	{
-		if (!this_)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
-		Window* current = this_->self->window;
+		Window* current = view->self->window;
 		if (current == window_) return;
 
 		if (current)
 		{
-			this_->set_capture(View::CAPTURE_NONE);
+			view->set_capture(View::CAPTURE_NONE);
 
 			Event e;
-			this_->on_detach(&e);
+			view->on_detach(&e);
 		}
 
-		this_->self->window = window_;
+		view->self->window = window_;
 
-		View::child_iterator end = this_->child_end();
-		for (View::child_iterator it = this_->child_begin(); it != end; ++it)
+		View::child_iterator end = view->child_end();
+		for (View::child_iterator it = view->child_begin(); it != end; ++it)
 			set_window(it->get(), window_);
 
-		if (this_->self->window)
+		if (view->self->window)
 		{
 			Event e;
-			this_->on_attach(&e);
-			this_->resize_to_fit();
+			view->on_attach(&e);
+			view->resize_to_fit();
 		}
 	}
 
 	static void
-	set_parent (View* this_, View* parent_)
+	set_parent (View* view, View* parent)
 	{
-		if (!this_)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
+		View::Data* self = view->self.get();
 
-		View* current = this_->self->parent;
-		if (current == parent_) return;
+		View* current = self->parent;
+		if (current == parent) return;
 
-		if (current && parent_)
+		if (current && parent)
 		{
 			reflex_error(__FILE__, __LINE__,
 				"view '%s' already belongs to another parent '%s'.",
-				this_->name(), this_->self->parent->name());
+				view->name(), self->parent->name());
 		}
 
-		this_->self->parent = parent_;
-		set_window(this_, parent_ ? parent_->window() : NULL);
+		self->parent = parent;
+		set_window(view, parent ? parent->window() : NULL);
 	}
 
-	static void reflow_children (View* parent, const FrameEvent* event = NULL);
+	static void
+	update_layout (View* view, bool update_parent = false)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		if (self->has_flag(View::Data::UPDATE_LAYOUT))
+			return;
+
+		self->add_flag(View::Data::UPDATE_LAYOUT);
+
+		if (update_parent && self->parent)
+			update_layout(self->parent, true);
+	}
 
 	static void
 	update_view_frame (View* view, const Bounds& frame, float angle, bool update_body)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
-
-		if (!*view)
-			invalid_state_error(__FILE__, __LINE__);
-
+		assert(view);
 		View::Data* self = view->self.get();
-		if (frame == self->frame && angle == self->angle) return;
+
+		if (frame == self->frame && angle == self->angle)
+			return;
 
 		FrameEvent event(frame, self->frame, angle, self->angle);
 		self->frame = frame;
@@ -224,25 +275,149 @@ namespace Reflex
 			self->resize_world(view);
 			view->on_resize(&event);
 
-			reflow_children(view, &event);
+			update_layout(view, true);
 		}
 
 		view->redraw();
 	}
 
 	static void
-	update_world (View* view, float dt)
+	update_view_world (View* view, float dt)
 	{
-		World* world = view->self->pworld.get();
+		assert(view);
+		View::Data* self = view->self.get();
+
+		World* world = self->pworld.get();
 		if (world) world->step(dt);
 
-		Body* body = view->self->pbody.get();
+		Body* body = self->pbody.get();
 		if (body)
 		{
 			Bounds b = view->frame();
 			b.move_to(body->position());
 			update_view_frame(view, b, body->angle(), false);
 		}
+	}
+
+	void
+	update_styles_for_selector (View* view, const Selector& selector)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		if (selector.is_empty())
+			self->add_flag(View::Data::UPDATE_STYLE);
+		else
+			self->selectors_for_update().insert(selector);
+	}
+
+	static void
+	update_views_for_selectors (View* view)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		View::Data::SelectorSet* sels = self->pselectors_for_update.get();
+		if (!sels)
+			return;
+
+		Selector* view_sel = self->pselector.get();
+		View::ChildList children;
+
+		View::Data::SelectorSet::iterator end = sels->end();
+		for (View::Data::SelectorSet::iterator it = sels->begin(); it != end; ++it)
+		{
+			if (view_sel && view_sel->contains(*it))
+				self->add_flag(View::Data::UPDATE_STYLE);
+
+			view->find_children(&children, *it, true);
+			for (View::ChildList::iterator jt = children.begin(); jt != children.end(); ++jt)
+				(*jt)->self->add_flag(View::Data::UPDATE_STYLE);
+		}
+
+		sels->clear();
+	}
+
+	static void
+	find_all_styles (
+		View::StyleList* result, const View* view, const Selector& selector, bool recursive)
+	{
+		View::const_style_iterator end = view->style_end();
+		for (View::const_style_iterator it = view->style_begin(); it != end; ++it)
+		{
+			if (selector.contains(it->selector()))
+				result->push_back(*it);
+		}
+
+		if (recursive)
+		{
+			View::const_child_iterator end = view->child_end();
+			for (View::const_child_iterator it = view->child_begin(); it != end; ++it)
+				find_all_styles(result, it->get(), selector, true);
+		}
+	}
+
+	static void
+	get_styles_for_selector (
+		View::StyleList* styles, View* view, const Selector& selector)
+	{
+		assert(styles);
+
+		View* parent = view->parent();
+		if (parent)
+			get_styles_for_selector(styles, parent, selector);
+
+		find_all_styles(styles, view, selector, false);
+	}
+
+	static void
+	get_styles_for_view (View::StyleList* styles, View* view)
+	{
+		Selector* sel = view->self->pselector.get();
+		if (!sel || sel->is_empty())
+			return;
+
+		get_styles_for_selector(styles, view, *sel);
+	}
+
+	static void
+	update_view_style (View* view)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		if (!self->has_flag(View::Data::UPDATE_STYLE))
+			return;
+
+		View::StyleList styles;
+		get_styles_for_view(&styles, view);
+
+		Style style;
+		for (View::StyleList::iterator it = styles.begin(); it != styles.end(); ++it)
+		{
+			void override_style (Style*, const Style&);
+			override_style(&style, *it);
+		}
+
+		void apply_style (View*, const Style&);
+		apply_style(view, style);
+
+		self->remove_flag(View::Data::UPDATE_STYLE);
+	}
+
+	static void reflow_children (View* parent, const FrameEvent* event = NULL);
+
+	static void
+	update_view_layout (View* view)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		if (!self->has_flag(View::Data::UPDATE_LAYOUT))
+			return;
+
+		reflow_children(view);
+		self->remove_flag(View::Data::UPDATE_LAYOUT);
 	}
 
 	void
@@ -255,17 +430,24 @@ namespace Reflex
 			return;
 
 		UpdateEvent e = event;
-		update_world(view, e.dt);
+		update_view_world(view, e.dt);
 		view->on_update(&e);
+
+		update_views_for_selectors(view);
+		update_view_style(view);
 
 		View::child_iterator end = view->child_end();
 		for (View::child_iterator it = view->child_begin(); it != end; ++it)
 			update_view_tree(it->get(), e);
+
+		update_view_layout(view);
 	}
 
 	static void
 	draw_world (View* view, Painter* painter)
 	{
+		assert(view);
+
 		World* world = view->self->pworld.get();
 		if (world) world->draw(painter);
 	}
@@ -637,16 +819,35 @@ namespace Reflex
 		}
 	}
 #endif
+
+	static bool
+	get_style_flow (Style::Flow* main, Style::Flow* sub, const Style* style)
+	{
+		void get_default_flow (Style::Flow*, Style::Flow*);
+
+		assert(main && sub);
+
+		if (style)
+			style->get_flow(main, sub);
+		else
+			get_default_flow(main, sub);
+
+		return *main != Style::FLOW_NONE;
+	}
+
 	static void
 	reflow_children (View* parent, const FrameEvent* event)
 	{
-		if (!parent)
-			argument_error(__FILE__, __LINE__);
+		assert(parent);
 
-		if (!parent->self->pchildren) return;
+		View::ChildList* children = parent->self->pchildren.get();
+		if (!children || children->empty()) return;
 
-		View::ChildList& children = *parent->self->pchildren;
-		if (children.empty()) return;
+		const Style* style = parent->style();
+
+		Style::Flow flow_main, flow_sub;
+		if (!get_style_flow(&flow_main, &flow_sub, style))
+			return;
 
 #if 0
 		int main_h, main_v, sub_h, sub_v;
@@ -654,25 +855,20 @@ namespace Reflex
 		get_flow_factor(&sub_h,  &sub_v,  flow_sub);
 #endif
 
-		const Style& style = parent->style();
-
-		Style::Flow flow_main, flow_sub;
-		style.get_flow(&flow_main, &flow_sub);
-
 		const Bounds& parent_frame = parent->self->frame;
 		coord x = 0, y = 0, size_max = 0;
 		int child_count = 0;
 		bool multiline = flow_sub != Style::FLOW_NONE;
 
-		size_t nchildren = children.size();
+		size_t nchildren = children->size();
 		for (size_t i = 0; i < nchildren; ++i)
 		{
-			View* child = children[i].get();
+			View* child = (*children)[i].get();
 			Bounds child_frame = child->self->frame;
 
 			if (
 				(x + child_frame.width) > parent_frame.width &&
-				child_count > 0)// && multiline)
+				child_count > 0 && multiline)
 			{
 				x           = 0;
 				y          += size_max;
@@ -788,9 +984,6 @@ namespace Reflex
 	void
 	View::show ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		int new_count = self->hide_count - 1;
 		if (new_count == 0)
 		{
@@ -807,9 +1000,6 @@ namespace Reflex
 	void
 	View::hide ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		int new_count = self->hide_count + 1;
 		if (new_count == 1)
 		{
@@ -826,18 +1016,12 @@ namespace Reflex
 	bool
 	View::hidden () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->hide_count > 0;
 	}
 
 	void
 	View::redraw ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		Window* w = window();
 		if (!w) return;
 
@@ -850,9 +1034,6 @@ namespace Reflex
 		if (!child || child == this)
 			argument_error(__FILE__, __LINE__);
 
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		bool found  = std::find(child_begin(), child_end(), child) != child_end();
 		bool belong = child->parent() == this;
 		if (found && belong)
@@ -862,6 +1043,8 @@ namespace Reflex
 
 		self->children().push_back(child);
 		set_parent(child, this);
+
+		update_layout(this);
 	}
 
 	void
@@ -869,9 +1052,6 @@ namespace Reflex
 	{
 		if (!child || child == this)
 			argument_error(__FILE__, __LINE__);
-
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 
 		if (!self->pchildren) return;
 
@@ -885,6 +1065,8 @@ namespace Reflex
 
 		set_parent(child, NULL);
 		self->pchildren->erase(it);
+
+		update_layout(this);
 	}
 
 	static void
@@ -898,7 +1080,7 @@ namespace Reflex
 			if (!child)
 				invalid_state_error(__FILE__, __LINE__);
 
-			if (selector.match(child->selector()))
+			if (child->selector().contains(selector))
 				result->push_back(*it);
 
 			if (recursive) find_all_children(result, child, selector, true);
@@ -909,9 +1091,6 @@ namespace Reflex
 	View::find_children (
 		ChildList* result, const Selector& selector, bool recursive) const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		result->clear();
 		find_all_children(result, this, selector, recursive);
 	}
@@ -921,9 +1100,6 @@ namespace Reflex
 	View::child_iterator
 	View::child_begin ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (!self->pchildren) return empty_children.begin();
 		return self->pchildren->begin();
 	}
@@ -931,9 +1107,6 @@ namespace Reflex
 	View::const_child_iterator
 	View::child_begin () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (!self->pchildren) return empty_children.begin();
 		return self->pchildren->begin();
 	}
@@ -941,9 +1114,6 @@ namespace Reflex
 	View::child_iterator
 	View::child_end ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (!self->pchildren) return empty_children.end();
 		return self->pchildren->end();
 	}
@@ -951,43 +1121,44 @@ namespace Reflex
 	View::const_child_iterator
 	View::child_end () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (!self->pchildren) return empty_children.end();
 		return self->pchildren->end();
 	}
 
-	Style&
-	View::style ()
+	Style*
+	View::style (bool create)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		return self->style;
+		return create ? &self->style(this) : self->pstyle.get();
 	}
 
-	const Style&
+	const Style*
 	View::style () const
 	{
-		return const_cast<View*>(this)->style();
+		return const_cast<View*>(this)->style(false);
+	}
+
+	static Style*
+	add_view_style (View* view, Style style)
+	{
+		assert(view && *view);
+
+		if (!set_style_owner(&style, view))
+			return NULL;
+
+		View::StyleList* styles = &view->self->styles();
+		styles->push_back(style);
+		return &styles->back();
 	}
 
 	void
 	View::add_style (const Style& style)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		self->styles().push_back(style);
+		add_view_style(this, style);
 	}
 
 	void
 	View::remove_style (const Style& style)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (!self->pstyles) return;
 
 		style_iterator it = std::find(style_begin(), style_end(), style);
@@ -997,16 +1168,23 @@ namespace Reflex
 	}
 
 	Style*
-	View::get_style (const Selector& selector)
+	View::get_style (const Selector& selector, bool create)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
+		if (selector.is_empty())
+			return style(create);
 
 		style_iterator end = style_end();
 		for (style_iterator it = style_begin(); it != end; ++it)
 		{
 			if (selector == it->selector())
 				return &*it;
+		}
+
+		if (create)
+		{
+			Style s;
+			s.set_selector(selector);
+			return add_view_style(this, s);
 		}
 
 		return NULL;
@@ -1018,31 +1196,9 @@ namespace Reflex
 		return const_cast<View*>(this)->get_style(selector);
 	}
 
-	static void
-	find_all_styles (
-		View::StyleList* result, const View* view, const Selector& selector, bool recursive)
-	{
-		View::const_style_iterator end = view->style_end();
-		for (View::const_style_iterator it = view->style_begin(); it != end; ++it)
-		{
-			if (selector.match(it->selector()))
-				result->push_back(*it);
-		}
-
-		if (recursive)
-		{
-			View::const_child_iterator end = view->child_end();
-			for (View::const_child_iterator it = view->child_begin(); it != end; ++it)
-				find_all_styles(result, it->get(), selector, true);
-		}
-	}
-
 	void
 	View::find_styles (StyleList* result, const Selector& selector, bool recursive) const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		result->clear();
 		find_all_styles(result, this, selector, recursive);
 	}
@@ -1052,9 +1208,6 @@ namespace Reflex
 	View::style_iterator
 	View::style_begin ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (!self->pstyles) return empty_styles.begin();
 		return self->pstyles->begin();
 	}
@@ -1062,9 +1215,6 @@ namespace Reflex
 	View::const_style_iterator
 	View::style_begin () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (!self->pstyles) return empty_styles.begin();
 		return self->pstyles->begin();
 	}
@@ -1072,9 +1222,6 @@ namespace Reflex
 	View::style_iterator
 	View::style_end ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (!self->pstyles) return empty_styles.end();
 		return self->pstyles->end();
 	}
@@ -1082,9 +1229,6 @@ namespace Reflex
 	View::const_style_iterator
 	View::style_end () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (!self->pstyles) return empty_styles.end();
 		return self->pstyles->end();
 	}
@@ -1095,6 +1239,7 @@ namespace Reflex
 		Window* w = window();
 		if (!w) return;
 
+		void set_focus (Window*, View*);
 		if (state)
 			set_focus(w, this);
 		else if (w->focus() == this)
@@ -1117,25 +1262,21 @@ namespace Reflex
 	void
 	View::resize_to_fit ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		Point size = content_size();
 		if (size.x < 0 && size.y < 0 && size.z <= 0) return;
 
+		const Style* st = style();
+
 		Bounds b = frame();
-		if (size.x >= 0) b.width  = size.x;
-		if (size.y >= 0) b.height = size.y;
-		if (size.z >= 0) b.depth  = size.z;
+		if ((!st || !st->width())  && size.x >= 0) b.width  = size.x;
+		if ((!st || !st->height()) && size.y >= 0) b.height = size.y;
+		if (                          size.z >= 0) b.depth  = size.z;
 		set_frame(b);
 	}
 
 	Point
 	View::content_size () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return -1;
 	}
 
@@ -1168,18 +1309,12 @@ namespace Reflex
 	void
 	View::set_name (const char* name)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		self->selector().set_name(name);
 	}
 
 	const char*
 	View::name () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		const Selector* sel = self->pselector.get();
 		return sel ? sel->name() : NULL;
 	}
@@ -1187,18 +1322,12 @@ namespace Reflex
 	void
 	View::add_tag (const char* tag)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		self->selector().add_tag(tag);
 	}
 
 	void
 	View::remove_tag (const char* tag)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		Selector* sel = self->pselector.get();
 		if (!sel) return;
 
@@ -1210,9 +1339,6 @@ namespace Reflex
 	View::tag_iterator
 	View::tag_begin ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		Selector* sel = self->pselector.get();
 		return sel ? sel->begin() : empty_tags.begin();
 	}
@@ -1220,9 +1346,6 @@ namespace Reflex
 	View::const_tag_iterator
 	View::tag_begin () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		const Selector* sel = self->pselector.get();
 		return sel ? sel->begin() : empty_tags.begin();
 	}
@@ -1230,9 +1353,6 @@ namespace Reflex
 	View::tag_iterator
 	View::tag_end ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		Selector* sel = self->pselector.get();
 		return sel ? sel->end() : empty_tags.end();
 	}
@@ -1240,9 +1360,6 @@ namespace Reflex
 	View::const_tag_iterator
 	View::tag_end () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		const Selector* sel = self->pselector.get();
 		return sel ? sel->end() : empty_tags.end();
 	}
@@ -1250,18 +1367,12 @@ namespace Reflex
 	void
 	View::set_selector (const Selector& selector)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		self->selector() = selector;
 	}
 
 	Selector&
 	View::selector ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->selector();
 	}
 
@@ -1269,9 +1380,6 @@ namespace Reflex
 	View::selector () const
 	{
 		static const Selector EMPTY;
-
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 
 		const Selector* sel = self->pselector.get();
 		return sel ? *sel : EMPTY;
@@ -1292,18 +1400,12 @@ namespace Reflex
 	const Bounds&
 	View::frame () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->frame;
 	}
 
 	void
 	View::set_zoom (float zoom)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		self->zoom = zoom;
 		redraw();
 	}
@@ -1311,9 +1413,6 @@ namespace Reflex
 	float
 	View::zoom () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->zoom;
 	}
 
@@ -1328,9 +1427,6 @@ namespace Reflex
 	float
 	View::angle () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->angle;
 	}
 
@@ -1339,9 +1435,6 @@ namespace Reflex
 	void
 	View::scroll_to (coord x, coord y, coord z)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		Point old = self->scroll();
 		self->scroll().reset(x, y, z);
 		ScrollEvent e(x, y, z, x - old.x, y - old.y, z - old.z);
@@ -1372,9 +1465,6 @@ namespace Reflex
 	const Point&
 	View::scroll () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (self->pscroll)
 			return self->scroll();
 		else
@@ -1384,9 +1474,6 @@ namespace Reflex
 	void
 	View::set_capture (uint types)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		if (types == self->capture) return;
 
 		uint old      = self->capture;
@@ -1396,9 +1483,15 @@ namespace Reflex
 		bool capture    = types != CAPTURE_NONE;
 
 		if (capture && !registered)
+		{
+			void register_capture (View*);
 			register_capture(this);
+		}
 		else if (!capture && registered)
+		{
+			void unregister_capture (View*);
 			unregister_capture(this);
+		}
 
 		CaptureEvent e(~old & types, old & ~types);
 		on_capture(&e);
@@ -1407,18 +1500,12 @@ namespace Reflex
 	uint
 	View::capture () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->capture;
 	}
 
 	View*
 	View::parent ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->parent;
 	}
 
@@ -1431,9 +1518,6 @@ namespace Reflex
 	Window*
 	View::window ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->window;
 	}
 
@@ -1446,9 +1530,6 @@ namespace Reflex
 	Body*
 	View::body ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->body(this);
 	}
 
@@ -1461,9 +1542,6 @@ namespace Reflex
 	float
 	View::meter2pixel (float meter, bool create_world)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		Body* body = self->pbody.get();
 		if (body)
 			return body->meter2pixel(meter);
@@ -1506,9 +1584,6 @@ namespace Reflex
 	void
 	View::set_gravity (const Point& vector)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		World* w = self->world(this);
 		if (!w)
 			invalid_state_error(__FILE__, __LINE__);
@@ -1519,9 +1594,6 @@ namespace Reflex
 	Point
 	View::gravity () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		World* w = self->pworld.get();
 		return w ? w->gravity() : 0;
 	}
@@ -1529,9 +1601,6 @@ namespace Reflex
 	Body*
 	View::wall ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->world(this)->wall();
 	}
 
@@ -1544,9 +1613,6 @@ namespace Reflex
 	void
 	View::set_debug (bool state)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		World* w = self->world(this);
 		if (!w)
 			invalid_state_error(__FILE__, __LINE__);
@@ -1557,9 +1623,6 @@ namespace Reflex
 	bool
 	View::debugging () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		World* w = self->pworld.get();
 		return w ? w->debugging() : false;
 	}

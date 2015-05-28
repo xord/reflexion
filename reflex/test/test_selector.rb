@@ -21,7 +21,7 @@ class TestSelector < Test::Unit::TestCase
 
   def test_name ()
     s = sel
-    assert_equal nil, s.name
+    assert_equal '', s.name
     s.name = 'Test'
     assert_equal 'Test', s.name
   end
@@ -46,17 +46,19 @@ class TestSelector < Test::Unit::TestCase
     assert_equal [], s.tags.to_a
   end
 
-  def test_match ()
-    assert_not sel.match(sel name: :A, tag: :T)
-    assert     sel(name: :A).match(sel name: :A)
-    assert_not sel(name: :A).match(sel name: :B)
-    assert     sel(tag: :T1).match(sel tag: :T1)
-    assert_not sel(tag: :T1).match(sel tag: :T2)
-    assert     sel(tag: :T1).match(sel tag: [:T1, :T2])
-    assert_not sel(tag: [:T1, :T2]).match(sel tag: :T1)
-    assert     sel(name: :A, tag: :T1).match(sel name: :A, tag: :T1)
-    assert_not sel(name: :A, tag: :T1).match(sel name: :A)
-    assert_not sel(name: :A, tag: :T1).match(sel tag: :T1)
+  def test_contains ()
+    assert_not sel.contains(sel name: :A, tag: :T)
+    assert     sel(name: :A).contains(sel name: :A)
+    assert_not sel(name: :A).contains(sel name: :B)
+    assert     sel(tag: :T1).contains(sel tag: :T1)
+    assert_not sel(tag: :T1).contains(sel tag: :T2)
+    assert     sel(tag: [:T1, :T2]).contains(sel tag: :T1)
+    assert_not sel(tag: :T1).contains(sel tag: [:T1, :T2])
+    assert     sel(name: :A, tag: :T1).contains(sel name: :A, tag: :T1)
+    assert     sel(name: :A, tag: :T1).contains(sel name: :A)
+    assert     sel(name: :A, tag: :T1).contains(sel tag: :T1)
+    assert_not sel(name: :A).contains(sel name: :A, tag: :T1)
+    assert_not sel(tag: :T1).contains(sel name: :A, tag: :T1)
   end
 
   def test_compare ()

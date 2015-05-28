@@ -21,8 +21,6 @@ require 'reflex/helper'
 require 'reflex/selector'
 require 'reflex/style'
 require 'reflex/style_length'
-require 'reflex/style_length2'
-require 'reflex/style_length4'
 
 require 'reflex/update_event'
 require 'reflex/draw_event'

@@ -77,10 +77,10 @@ RUCY_DEF0(each_tag)
 RUCY_END
 
 static
-RUCY_DEF1(match, selector)
+RUCY_DEF1(contains, selector)
 {
 	CHECK;
-	return value(THIS->match(to<Reflex::Selector&>(selector)));
+	return value(THIS->contains(to<Reflex::Selector&>(selector)));
 }
 RUCY_END
 
@@ -108,7 +108,7 @@ Init_selector ()
 	cSelector.define_method("add_tag",    add_tag);
 	cSelector.define_method("remove_tag", remove_tag);
 	cSelector.define_method("each_tag", each_tag);
-	cSelector.define_method("match", match);
+	cSelector.define_method("contains", contains);
 	cSelector.define_method("==", equal);
 }
 

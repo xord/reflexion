@@ -141,15 +141,17 @@ RUCY_DEF1(remove_style, style)
 RUCY_END
 
 static
-RUCY_DEFN(get_style)
+RUCY_DEF1(get_style, selector)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "View#get_style", argc, 0, 1);
 
-	if (argc == 0)
-		return value(THIS->style());
+	Reflex::Style* s = NULL;
+	if (selector)
+		s = THIS->get_style(to<Reflex::Selector>(selector), true);
 	else
-		return value(THIS->get_style(to<Reflex::Selector>(argv[0])));
+		s = THIS->style(true);
+
+	return s ? value(*s) : nil();
 }
 RUCY_END
 

@@ -16,6 +16,7 @@ module Reflex
     def initialize (*args, &block)
       self.data = false
       super
+      self.text = self.name unless self.text
     end
 
     def content_size ()

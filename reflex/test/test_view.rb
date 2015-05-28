@@ -84,13 +84,14 @@ class TestView < Test::Unit::TestCase
   def test_style ()
     v = view
     s = v.style
-    assert_equal 0,   s.margin.left.value
-    assert_equal nil, s.margin.left.unit
-    assert ((s.margin.left.to_s rescue $!.message)) =~ /InvalidStateError/
-    s.margin.left = '100px'
-    assert_equal 100,     s.margin.left.value
-    assert_equal :px,     s.margin.left.unit
-    assert_equal '100px', s.margin.left.to_s
+    assert_equal 0,   s.margin_left.value
+    assert_equal nil, s.margin_left.unit
+    assert_equal '',  s.margin_left.to_s
+
+    s.margin_left = '100px'
+    assert_equal 100,     s.margin_left.value
+    assert_equal :px,     s.margin_left.unit
+    assert_equal '100px', s.margin_left.to_s
   end
 
   def test_add_remove_style ()

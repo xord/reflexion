@@ -85,22 +85,37 @@ namespace Reflex
 				Wrapper* p = pointer();
 				if (!p)
 				{
-					if (create)
-						p = reset(new Wrapper());
-					else
+					if (!create)
 						invalid_state_error(__FILE__, __LINE__);
+
+					p = reset(new Wrapper());
 				}
 				return p->get();
 			}
 
-			const Value& value (bool create = false) const
+			const Value& get (const Value& defval) const
 			{
-				return const_cast<This*>(this)->value(create);
+				Wrapper* p = pointer();
+				return p ? p->get() : defval;
 			}
 
-			void set_inherited (bool state = true)
+			bool set (const Value& val)
 			{
-				if (pointer()) pwrapper = Xot::set_pointer_flag(pwrapper, state);
+				Value& current = value(true);
+				if (current == val)
+					return false;
+
+				current = val;
+				return true;
+			}
+
+			void override (const This& value)
+			{
+				if (!value || (*this && !is_inherited()))
+					return;
+
+				reset(value.pointer());
+				set_inherited();
 			}
 
 			bool is_inherited () const
@@ -128,101 +143,295 @@ namespace Reflex
 				return p;
 			}
 
-			      Wrapper* pointer ()       {return Xot::set_pointer_flag(pwrapper, false);}
+			void set_inherited (bool state = true)
+			{
+				if (pwrapper)
+					pwrapper = Xot::set_pointer_flag(pwrapper, state);
+			}
 
-			const Wrapper* pointer () const {return const_cast<StyleValue*>(this)->pointer();}
+			Wrapper* pointer () const {return Xot::set_pointer_flag(pwrapper, false);}
 
 	};// StyleValue
 
 
-	struct Style::Data : public Xot::RefCountable<>
+	struct StyleLength::Data
 	{
 
-		typedef StyleValue<bool>         Bool;
+		Value value;
 
-		typedef StyleValue<int>          Int;
+		Unit unit;
 
-		typedef StyleValue<double>       Float;
+		Data () : value(0), unit(NONE) {}
 
-		typedef StyleValue<StyleLength>  Length;
+		friend bool operator == (const Data& lhs, const Data& rhs)
+		{
+			return lhs.value == rhs.value && lhs.unit == rhs.unit;
+		}
 
-		typedef StyleValue<StyleLength2> Length2;
+	};// StyleLength::Data
 
-		typedef StyleValue<StyleLength4> Length4;
 
-		typedef StyleValue<Color>        Color;
+	StyleLength::StyleLength ()
+	{
+	}
 
-		typedef StyleValue<Image>        Image;
+	StyleLength::StyleLength (Value value, Unit unit)
+	{
+		reset(value, unit);
+	}
+
+	StyleLength::StyleLength (const char* str)
+	{
+		reset(str);
+	}
+
+	StyleLength
+	StyleLength::copy () const
+	{
+		return StyleLength(value(), unit());
+	}
+
+	void
+	StyleLength::reset (Value value, Unit unit)
+	{
+		if (unit < NONE || UNIT_LAST <= unit)
+			argument_error(__FILE__, __LINE__);
+
+		self->value = value;
+		self->unit  = unit;
+	}
+
+	static StyleLength::Unit
+	str2unit (const char* s)
+	{
+		     if (strcasecmp(s, "px") == 0) return StyleLength::PIXEL;
+		else if (strcasecmp(s, "%")  == 0) return StyleLength::PERCENT;
+		else                               return StyleLength::NONE;
+	}
+
+	static const char*
+	unit2str (StyleLength::Unit unit)
+	{
+		switch (unit)
+		{
+			case StyleLength::PIXEL:   return "px";
+			case StyleLength::PERCENT: return "%";
+			default:                   return NULL;
+		}
+	}
+
+	void
+	StyleLength::reset (const char* str)
+	{
+		Value num;
+		char suffix[256];
+		int count = sscanf(str, "%f%s", &num, suffix);
+		if (count != 2)
+			argument_error(__FILE__, __LINE__);
+
+		reset(num, str2unit(suffix));
+	}
+
+	StyleLength::Value
+	StyleLength::value () const
+	{
+		return self->value;
+	}
+
+	StyleLength::Unit
+	StyleLength::unit () const
+	{
+		return self->unit;
+	}
+
+	String
+	StyleLength::to_s () const
+	{
+		if (!*this)
+			return "";
+
+		String num;
+		if (fmod(self->value, 1) == 0)
+			num = Xot::stringf("%d", (long) self->value);
+		else
+			num = Xot::stringf("%g", self->value);
+
+		const char* suffix = unit2str(self->unit);;
+		if (!suffix)
+			invalid_state_error(__FILE__, __LINE__);
+
+		return num + suffix;
+	}
+
+	StyleLength::operator bool () const
+	{
+		return NONE < self->unit && self->unit < UNIT_LAST;
+	}
+
+	bool
+	StyleLength::operator ! () const
+	{
+		return !operator bool();
+	}
+
+	bool
+	operator == (const StyleLength& lhs, const StyleLength& rhs)
+	{
+		return (!lhs && !rhs) || *lhs.self == *rhs.self;
+	}
+
+	bool
+	operator != (const StyleLength& lhs, const StyleLength& rhs)
+	{
+		return !operator ==(lhs, rhs);
+	}
+
+
+	void
+	get_default_flow (Style::Flow* main, Style::Flow* sub)
+	{
+		assert(main || sub);
+
+		if (main) *main = Style::FLOW_RIGHT;
+		if (sub)  *sub  = Style::FLOW_DOWN;
+	}
+
+
+	struct Style::Data
+	{
+
+		typedef StyleValue<bool>        Bool;
+
+		typedef StyleValue<int>         Int;
+
+		typedef StyleValue<double>      Float;
+
+		typedef StyleValue<Color>       Color;
+
+		typedef StyleValue<Image>       Image;
+
+		typedef StyleValue<StyleLength> Length;
 
 		View* owner;
 
 		Selector selector;
 
-		Int flow_main, flow_sub;
+		Int flow;
 
-		Length2 size;
+		Length width, height;
 
-		Length4 position, offset, margin, padding;
+		Length         left,         top,         right,         bottom;
 
-		Color background_color;
+		Length  offset_left,  offset_top,  offset_right,  offset_bottom;
 
-		Image background_image;
+		Length  margin_left,  margin_top,  margin_right,  margin_bottom;
 
-		Data () : owner(NULL) {}
+		Length padding_left, padding_top, padding_right, padding_bottom;
 
-	};// Style::Data
+		Color fill, stroke;
+
+		Image image;
+
+		Data ()
+		:	owner(NULL)
+		{
+		}
+
+		enum FlowOffset {FLOW_MASK = 0xffff, FLOW_SHIFT = 16};
+
+		bool set_flow (Flow main, Flow sub)
+		{
+			return flow.set((main & FLOW_MASK) | ((sub & FLOW_MASK) << FLOW_SHIFT));
+		}
+
+		Flow flow_main () const
+		{
+			Flow defval = FLOW_NONE;
+			get_default_flow(&defval, NULL);
+			return (Flow) (flow.get(defval) & FLOW_MASK);
+		}
+
+		Flow flow_sub () const
+		{
+			Flow defval = FLOW_NONE;
+			get_default_flow(NULL, &defval);
+			return (Flow) ((flow.get(defval << FLOW_SHIFT) >> FLOW_SHIFT) & FLOW_MASK);
+		}
+
+	};// Data
 
 
 	namespace Zero
 	{
 
-		static const StyleLength  length;
+		static const Color       color;
 
-		static const StyleLength2 length2;
+		static const Image       image;
 
-		static const StyleLength4 length4;
-
-		static const Color        color(0);
-
-		static const Image        image;
+		static const StyleLength length;
 
 	}// Zero
 
 
-	static Style::Data*
-	get_data (Style* this_, bool create = false)
+	bool
+	set_style_owner (Style* style, View* owner)
 	{
-		if (!this_)
-			argument_error(__FILE__, __LINE__);
+		assert(style);
 
-		if (create && !this_->ref)
-			this_->ref.reset(new Style::Data());
+		if (style->self->owner)
+			return false;
 
-		return this_->ref.get();
+		style->self->owner = owner;
+		return true;
 	}
 
-	static const Style::Data*
-	get_data (const Style* this_)
+	static void
+	update_owner (const Style& style)
 	{
-		return get_data(const_cast<Style*>(this_));
+		View* owner = style.self->owner;
+		if (!owner) return;
+
+		void update_styles_for_selector (View*, const Selector&);
+		update_styles_for_selector(owner, style.self->selector);
+	}
+
+	void
+	override_style (Style* overridden, const Style& overrides)
+	{
+		assert(overridden);
+
+		Style::Data* from  = overrides.self.get();
+		Style::Data* to    = overridden->self.get();
+		if (!from || !to) return;
+
+		to->flow          .override(from->flow);
+		to->width         .override(from->width);
+		to->height        .override(from->height);
+		to->left          .override(from->left);
+		to->top           .override(from->top);
+		to->right         .override(from->right);
+		to->bottom        .override(from->bottom);
+		to->offset_left   .override(from->offset_left);
+		to->offset_top    .override(from->offset_top);
+		to->offset_right  .override(from->offset_right);
+		to->offset_bottom .override(from->offset_bottom);
+		to->margin_left   .override(from->margin_left);
+		to->margin_top    .override(from->margin_top);
+		to->margin_right  .override(from->margin_right);
+		to->margin_bottom .override(from->margin_bottom);
+		to->padding_left  .override(from->padding_left);
+		to->padding_top   .override(from->padding_top);
+		to->padding_right .override(from->padding_right);
+		to->padding_bottom.override(from->padding_bottom);
+		to->fill          .override(from->fill);
+		to->stroke        .override(from->stroke);
+		to->image         .override(from->image);
 	}
 
 
 	Style::Style (const char* name)
 	{
 		if (name) set_name(name);
-	}
-
-	Style::Style (const This& obj)
-	:	ref(obj.ref)
-	{
-	}
-
-	Style&
-	Style::operator = (const This& obj)
-	{
-		if (&obj != this) ref = obj.ref;
-		return *this;
 	}
 
 	Style::~Style ()
@@ -232,80 +441,83 @@ namespace Reflex
 	void
 	Style::set_name (const char* name)
 	{
-		get_data(this, true)->selector.set_name(name);
+		update_owner(*this);
+
+		self->selector.set_name(name);
+
+		update_owner(*this);
 	}
 
 	const char*
 	Style::name () const
 	{
-		const Data* data = get_data(this);
-		return data ? data->selector.name() : NULL;
+		return self->selector.name();
 	}
 
 	void
 	Style::add_tag (const char* tag)
 	{
-		get_data(this, true)->selector.add_tag(tag);
+		update_owner(*this);
+
+		self->selector.add_tag(tag);
+
+		update_owner(*this);
 	}
 
 	void
 	Style::remove_tag (const char* tag)
 	{
-		Data* data = get_data(this);
-		if (!data) return;
+		update_owner(*this);
 
-		data->selector.remove_tag(tag);
+		self->selector.remove_tag(tag);
+
+		update_owner(*this);
 	}
-
-	static Selector::TagSet empty_tags;
 
 	Selector::iterator
 	Style::tag_begin ()
 	{
-		Data* data = get_data(this);
-		return data ? data->selector.begin() : empty_tags.begin();
+		return self->selector.begin();
 	}
 
 	Selector::const_iterator
 	Style::tag_begin () const
 	{
-		const Data* data = get_data(this);
-		return data ? data->selector.begin() : empty_tags.begin();
+		return self->selector.begin();
 	}
 
 	Selector::iterator
 	Style::tag_end ()
 	{
-		Data* data = get_data(this);
-		return data ? data->selector.end() : empty_tags.end();
+		return self->selector.end();
 	}
 
 	Selector::const_iterator
 	Style::tag_end () const
 	{
-		const Data* data = get_data(this);
-		return data ? data->selector.end() : empty_tags.end();
+		return self->selector.end();
 	}
 
 	void
 	Style::set_selector (const Selector& selector)
 	{
-		get_data(this, true)->selector = selector;
+		update_owner(*this);
+
+		self->selector = selector;
+
+		update_owner(*this);
 	}
 
 	Selector&
 	Style::selector ()
 	{
-		return get_data(this, true)->selector;
+		return self->selector;
 	}
 
 	const Selector&
 	Style::selector () const
 	{
-		static const Selector EMPTY;
-
-		const Data* data = get_data(this);
-		return data ? data->selector : EMPTY;
+		return self->selector;
 	}
 
 	enum FlowDir {FLOW_INVALID = 0, FLOW_H, FLOW_V};
@@ -319,8 +531,8 @@ namespace Reflex
 			case Style::FLOW_RIGHT: return FLOW_H;
 			case Style::FLOW_UP:
 			case Style::FLOW_DOWN:  return FLOW_V;
+			default:                return FLOW_INVALID;
 		}
-		return FLOW_INVALID;
 	}
 
 	void
@@ -335,9 +547,9 @@ namespace Reflex
 			argument_error(__FILE__, __LINE__);
 		}
 
-		Data* data = get_data(this, true);
-		data->flow_main = main;
-		data->flow_sub  = sub;
+		self->set_flow(main, sub);
+
+		update_owner(*this);
 	}
 
 	void
@@ -346,230 +558,372 @@ namespace Reflex
 		if (!main && !sub)
 			argument_error(__FILE__, __LINE__);
 
-		const Data* data = get_data(this);
-		if (!data || (!data->flow_main && !data->flow_sub))
-		{
-			if (main) *main = FLOW_DOWN;
-			if (sub)  *sub  = FLOW_NONE;
-		}
-		else if (data->flow_main && data->flow_sub)
-		{
-			if (main) *main = (Flow) data->flow_main.value();
-			if (sub)  *sub  = (Flow) data->flow_sub.value();
-		}
-		else
-			invalid_state_error(__FILE__, __LINE__);
-	}
-
-	void
-	Style::set_size (const StyleLength2& size)
-	{
-		get_data(this, true)->size = size;
+		if (main) *main = self->flow_main();
+		if (sub)  *sub  = self->flow_sub();
 	}
 
 	void
 	Style::set_width (const StyleLength& width)
 	{
-		get_data(this, true)->size.value(true).set_width(width);
+		if (self->width.set(width))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_height (const StyleLength& height)
 	{
-		get_data(this, true)->size.value(true).set_height(height);
+		if (self->height.set(height))
+			update_owner(*this);
 	}
 
-	const StyleLength2&
-	Style::size () const
+	const StyleLength&
+	Style::width () const
 	{
-		const Data* data = get_data(this);
-		return data && data->size ? data->size.value() : Zero::length2;
+		return self->width.get(Zero::length);
 	}
 
-	void
-	Style::set_position (const StyleLength4& position)
+	const StyleLength&
+	Style::height () const
 	{
-		get_data(this, true)->position = position;
+		return self->height.get(Zero::length);
 	}
 
 	void
 	Style::set_left (const StyleLength& left)
 	{
-		get_data(this, true)->position.value(true).set_left(left);
+		if (self->left.set(left))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_top (const StyleLength& top)
 	{
-		get_data(this, true)->position.value(true).set_top(top);
+		if (self->top.set(top))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_right (const StyleLength& right)
 	{
-		get_data(this, true)->position.value(true).set_right(right);
+		if (self->right.set(right))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_bottom (const StyleLength& bottom)
 	{
-		get_data(this, true)->position.value(true).set_bottom(bottom);
+		if (self->bottom.set(bottom))
+			update_owner(*this);
 	}
 
-	const StyleLength4&
-	Style::position () const
+	const StyleLength&
+	Style::left () const
 	{
-		const Data* data = get_data(this);
-		return data && data->position ? data->position.value() : Zero::length4;
+		return self->left.get(Zero::length);
 	}
 
-	void
-	Style::set_offset (const StyleLength4& offset)
+	const StyleLength&
+	Style::top () const
 	{
-		get_data(this, true)->offset = offset;
+		return self->top.get(Zero::length);
+	}
+
+	const StyleLength&
+	Style::right () const
+	{
+		return self->right.get(Zero::length);
+	}
+
+	const StyleLength&
+	Style::bottom () const
+	{
+		return self->bottom.get(Zero::length);
 	}
 
 	void
 	Style::set_offset_left (const StyleLength& left)
 	{
-		get_data(this, true)->offset.value(true).set_left(left);
+		if (self->offset_left.set(left))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_offset_top (const StyleLength& top)
 	{
-		get_data(this, true)->offset.value(true).set_top(top);
+		if (self->offset_top.set(top))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_offset_right (const StyleLength& right)
 	{
-		get_data(this, true)->offset.value(true).set_right(right);
+		if (self->offset_right.set(right))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_offset_bottom (const StyleLength& bottom)
 	{
-		get_data(this, true)->offset.value(true).set_bottom(bottom);
+		if (self->offset_bottom.set(bottom))
+			update_owner(*this);
 	}
 
-	const StyleLength4&
-	Style::offset () const
+	const StyleLength&
+	Style::offset_left () const
 	{
-		const Data* data = get_data(this);
-		return data && data->offset ? data->offset.value() : Zero::length4;
+		return self->offset_left.get(Zero::length);
 	}
 
-	void
-	Style::set_margin (const StyleLength4& margin)
+	const StyleLength&
+	Style::offset_top () const
 	{
-		get_data(this, true)->margin = margin;
+		return self->offset_top.get(Zero::length);
+	}
+
+	const StyleLength&
+	Style::offset_right () const
+	{
+		return self->offset_right.get(Zero::length);
+	}
+
+	const StyleLength&
+	Style::offset_bottom () const
+	{
+		return self->offset_bottom.get(Zero::length);
 	}
 
 	void
 	Style::set_margin_left (const StyleLength& left)
 	{
-		get_data(this, true)->margin.value(true).set_left(left);
+		if (self->margin_left.set(left))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_margin_top (const StyleLength& top)
 	{
-		get_data(this, true)->margin.value(true).set_top(top);
+		if (self->margin_top.set(top))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_margin_right (const StyleLength& right)
 	{
-		get_data(this, true)->margin.value(true).set_right(right);
+		if (self->margin_right.set(right))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_margin_bottom (const StyleLength& bottom)
 	{
-		get_data(this, true)->margin.value(true).set_bottom(bottom);
+		if (self->margin_bottom.set(bottom))
+			update_owner(*this);
 	}
 
-	const StyleLength4&
-	Style::margin () const
+	const StyleLength&
+	Style::margin_left () const
 	{
-		const Data* data = get_data(this);
-		return data && data->margin ? data->margin.value() : Zero::length4;
+		return self->margin_left.get(Zero::length);
 	}
 
-	void
-	Style::set_padding (const StyleLength4& padding)
+	const StyleLength&
+	Style::margin_top () const
 	{
-		get_data(this, true)->padding = padding;
+		return self->margin_top.get(Zero::length);
+	}
+
+	const StyleLength&
+	Style::margin_right () const
+	{
+		return self->margin_right.get(Zero::length);
+	}
+
+	const StyleLength&
+	Style::margin_bottom () const
+	{
+		return self->margin_bottom.get(Zero::length);
 	}
 
 	void
 	Style::set_padding_left (const StyleLength& left)
 	{
-		get_data(this, true)->padding.value(true).set_left(left);
+		if (self->padding_left.set(left))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_padding_top (const StyleLength& top)
 	{
-		get_data(this, true)->padding.value(true).set_top(top);
+		if (self->padding_top.set(top))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_padding_right (const StyleLength& right)
 	{
-		get_data(this, true)->padding.value(true).set_right(right);
+		if (self->padding_right.set(right))
+			update_owner(*this);
 	}
 
 	void
 	Style::set_padding_bottom (const StyleLength& bottom)
 	{
-		get_data(this, true)->padding.value(true).set_bottom(bottom);
+		if (self->padding_bottom.set(bottom))
+			update_owner(*this);
 	}
 
-	const StyleLength4&
-	Style::padding () const
+	const StyleLength&
+	Style::padding_left () const
 	{
-		const Data* data = get_data(this);
-		return data && data->padding ? data->padding.value() : Zero::length4;
+		return self->padding_left.get(Zero::length);
+	}
+
+	const StyleLength&
+	Style::padding_top () const
+	{
+		return self->padding_top.get(Zero::length);
+	}
+
+	const StyleLength&
+	Style::padding_right () const
+	{
+		return self->padding_right.get(Zero::length);
+	}
+
+	const StyleLength&
+	Style::padding_bottom () const
+	{
+		return self->padding_bottom.get(Zero::length);
 	}
 
 	void
-	Style::set_background_color (const Color& value)
+	Style::set_fill (const Color& fill)
 	{
-		get_data(this, true)->background_color = value;
+		if (self->fill.set(fill))
+			update_owner(*this);
 	}
 
 	const Color&
-	Style::background_color () const
+	Style::fill () const
 	{
-		const Data* data = get_data(this);
-		return data && data->background_color ? data->background_color.value() : Zero::color;
+		return self->fill.get(Zero::color);
 	}
 
 	void
-	Style::set_background_image (const Image& value)
+	Style::set_stroke (const Color& stroke)
 	{
-		get_data(this, true)->background_image = value;
+		if (self->stroke.set(stroke))
+			update_owner(*this);
+	}
+
+	const Color&
+	Style::stroke () const
+	{
+		return self->stroke.get(Zero::color);
+	}
+
+	void
+	Style::set_image (const Image& image)
+	{
+		if (self->image.set(image))
+			update_owner(*this);
 	}
 
 	const Image&
-	Style::background_image () const
+	Style::image () const
 	{
-		const Data* data = get_data(this);
-		return data && data->background_image ? data->background_image.value() : Zero::image;
+		return self->image.get(Zero::image);
 	}
 
 	bool
 	operator == (const Style& lhs, const Style& rhs)
 	{
-		return lhs.ref == rhs.ref;
+		return lhs.self.get() == rhs.self.get();
 	}
 
 	bool
 	operator != (const Style& lhs, const Style& rhs)
 	{
 		return !operator==(lhs, rhs);
+	}
+
+
+	static bool
+	get_pixel_length (
+		coord* pixel_length,
+		const StyleLength& style_length, const coord* parent_size)
+	{
+		if (!pixel_length)
+			argument_error(__FILE__, __LINE__);
+
+		if (!style_length)
+			return false;
+
+		coord length = 0;
+		StyleLength::Value value = style_length.value();
+		switch (style_length.unit())
+		{
+			case StyleLength::PIXEL:
+				length = value;
+				break;
+
+			case StyleLength::PERCENT:
+			{
+				if (!parent_size)
+					argument_error(__FILE__, __LINE__);
+
+				length = (value == 100) ?
+					*parent_size : floor(*parent_size * value / 100);
+				break;
+			}
+
+			default:
+				invalid_state_error(__FILE__, __LINE__);
+		}
+
+		if (length == *pixel_length)
+			return false;
+
+		*pixel_length = length;
+		return true;
+	}
+
+	static void
+	update_frame (View* view, const Style& style)
+	{
+		assert(view);
+		Style::Data* s = style.self.get();
+
+		Bounds frame         = view->frame();
+		View* parent_view    = view->parent();
+		const Bounds* parent = parent_view ? &parent_view->frame() : NULL;
+		bool update          = false;
+
+		if (s->width)
+		{
+			update |= get_pixel_length(
+				&frame.width, s->width.value(), parent ? &parent->width  : NULL);
+		}
+
+		if (s->height) {
+			update |= get_pixel_length(
+				&frame.height, s->height.value(), parent ? &parent->height : NULL);
+		}
+
+		if (update)
+			view->set_frame(frame);
+	}
+
+	void
+	apply_style (View* view, const Style& style)
+	{
+		if (!view)
+			argument_error(__FILE__, __LINE__);
+
+		//update_margin(view, values);
+		//update_padding(view, values);
+		update_frame(view, style);
+		//update_background(view, values);
 	}
 
 

@@ -29,6 +29,21 @@ module Reflex
       get_flow.map {|n| flow2sym n}
     end
 
+    def inspect ()
+      attrs = {
+        selector:         selector,
+        flow:             flow,
+        size:             size,
+        position:         position,
+        offset:           offset,
+        margin:           margin,
+        padding:          padding,
+        background_color: background_color,
+        background_image: background_image
+      }
+      "#<Reflex::Style #{attrs.map {|k, v| %(#{k}:#{v.to_s})}.join ' '}>"
+    end
+
     private
 
       SYM2FLOW = {

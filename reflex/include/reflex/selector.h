@@ -29,6 +29,10 @@ namespace Reflex
 
 			Selector (const char* name = NULL);
 
+			This copy () const;
+
+			bool contains (const This& selector) const;
+
 			void    set_name (const char* name);
 
 			const char* name () const;
@@ -45,11 +49,13 @@ namespace Reflex
 
 			const_iterator end () const;
 
-			bool match (const This& obj) const;
+			bool is_empty () const;
 
 			friend bool operator == (const This& lhs, const This& rhs);
 
 			friend bool operator != (const This& lhs, const This& rhs);
+
+			friend bool operator < (const This& lhs, const This& rhs);
 
 			struct Data;
 

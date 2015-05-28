@@ -48,7 +48,7 @@ module Reflex
     end
 
     def style (*args, &block)
-      s = get_style *args
+      s = get_style args.empty? ? nil : Selector.selector(*args)
       Xot::BlockUtil.instance_eval_or_block_call s, &block if block
       s
     end

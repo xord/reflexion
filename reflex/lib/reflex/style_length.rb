@@ -21,7 +21,7 @@ module Reflex
     end
 
     def inspect ()
-      "#<Reflex::StyleLength #{value}#{unit}>"
+      "#<#{self.class.name} #{to_s}>"
     end
 
   end# StyleLength
