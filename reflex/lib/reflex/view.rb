@@ -28,7 +28,8 @@ module Reflex
       :velocity,  :linear_velocity,  :angular_velocity,
       :apply_force, :apply_torque, :apply_impulse,
       :apply_linear_impulse, :apply_angular_impulse,
-      :density=, :density, :friction=, :friction, :restitution=, :restitution
+      :density=, :density, :friction=, :friction, :restitution=, :restitution,
+      :gravity_scale=, :gravity_scale
 
     alias add    add_child
     alias remove remove_child

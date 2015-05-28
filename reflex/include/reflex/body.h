@@ -91,6 +91,10 @@ namespace Reflex
 
 			float    restitution () const;
 
+			void set_gravity_scale (float scale);
+
+			float    gravity_scale () const;
+
 			      iterator begin ();
 
 			const_iterator begin () const;

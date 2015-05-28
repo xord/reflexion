@@ -244,6 +244,23 @@ RUCY_DEF0(get_restitution)
 RUCY_END
 
 static
+RUCY_DEF1(set_gravity_scale, scale)
+{
+	CHECK;
+	THIS->set_gravity_scale(scale.as_f(true));
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_gravity_scale)
+{
+	CHECK;
+	return value(THIS->gravity_scale());
+}
+RUCY_END
+
+static
 RUCY_DEF0(each)
 {
 	CHECK;
@@ -291,6 +308,8 @@ Init_body ()
 	cBody.define_method("friction",     get_friction);
 	cBody.define_method("restitution=", set_restitution);
 	cBody.define_method("restitution",  get_restitution);
+	cBody.define_method("gravity_scale=", set_gravity_scale);
+	cBody.define_method("gravity_scale",  get_gravity_scale);
 	cBody.define_method("each", each);
 }
 

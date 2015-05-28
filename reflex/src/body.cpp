@@ -443,6 +443,22 @@ namespace Reflex
 		return val;
 	}
 
+	void
+	Body::set_gravity_scale (float scale)
+	{
+		assert(PTR);
+
+		return PTR->SetGravityScale(scale);
+	}
+
+	float
+	Body::gravity_scale () const
+	{
+		assert(PTR);
+
+		return PTR->GetGravityScale();
+	}
+
 	Body::iterator
 	Body::begin ()
 	{
