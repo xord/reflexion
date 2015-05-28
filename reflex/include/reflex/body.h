@@ -67,6 +67,18 @@ namespace Reflex
 
 			float    angular_velocity () const;
 
+			void apply_force (coord x, coord y);
+
+			void apply_force (const Point& force);
+
+			void apply_torque (float torque);
+
+			void apply_linear_impulse (coord x, coord y);
+
+			void apply_linear_impulse (const Point& impulse);
+
+			void apply_angular_impulse (float impulse);
+
 			void set_density (float density);
 
 			float    density () const;

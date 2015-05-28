@@ -26,6 +26,8 @@ module Reflex
       :static=, :static?, :dynamic=, :dynamic?,
       :velocity=, :linear_velocity=, :angular_velocity=,
       :velocity,  :linear_velocity,  :angular_velocity,
+      :apply_force, :apply_torque, :apply_impulse,
+      :apply_linear_impulse, :apply_angular_impulse,
       :density=, :density, :friction=, :friction, :restitution=, :restitution
 
     alias add    add_child

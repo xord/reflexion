@@ -315,6 +315,51 @@ namespace Reflex
 	}
 
 	void
+	Body::apply_force (coord x, coord y)
+	{
+		apply_force(Point(x, y));
+	}
+
+	void
+	Body::apply_force (const Point& force)
+	{
+		assert(PTR);
+
+		PTR->ApplyForceToCenter(to_b2vec2(force, ppm), true);
+	}
+
+	void
+	Body::apply_torque (float torque)
+	{
+		assert(PTR);
+
+		PTR->ApplyTorque(torque, true);
+	}
+
+	void
+	Body::apply_linear_impulse (coord x, coord y)
+	{
+		apply_linear_impulse(Point(x, y));
+	}
+
+	void
+	Body::apply_linear_impulse (const Point& impulse)
+	{
+		assert(PTR);
+
+		PTR->ApplyLinearImpulse(
+			to_b2vec2(impulse, ppm), PTR->GetWorldCenter(), true);
+	}
+
+	void
+	Body::apply_angular_impulse (float impulse)
+	{
+		assert(PTR);
+
+		PTR->ApplyAngularImpulse(impulse, true);
+	}
+
+	void
 	Body::set_density (float density)
 	{
 		iterator end_ = end();

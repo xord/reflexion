@@ -13,6 +13,7 @@ module Reflex
 
     alias velocity= linear_velocity=
     alias velocity  linear_velocity
+    alias apply_impulse apply_linear_impulse
     alias meter meter2pixel
 
   end# Body

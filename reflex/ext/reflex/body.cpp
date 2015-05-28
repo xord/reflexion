@@ -157,6 +157,42 @@ RUCY_DEF0(get_angular_velocity)
 RUCY_END
 
 static
+RUCY_DEF1(apply_force, force)
+{
+	CHECK;
+	THIS->apply_force(to<Rays::Point&>(force));
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF1(apply_torque, torque)
+{
+	CHECK;
+	THIS->apply_torque(torque.as_f(true));
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF1(apply_linear_impulse, impulse)
+{
+	CHECK;
+	THIS->apply_linear_impulse(to<Rays::Point&>(impulse));
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF1(apply_angular_impulse, impulse)
+{
+	CHECK;
+	THIS->apply_angular_impulse(impulse.as_f(true));
+	return self;
+}
+RUCY_END
+
+static
 RUCY_DEF1(set_density, density)
 {
 	CHECK;
@@ -245,6 +281,10 @@ Init_body ()
 	cBody.define_method("linear_velocity",   get_linear_velocity);
 	cBody.define_method("angular_velocity=", set_angular_velocity);
 	cBody.define_method("angular_velocity",  get_angular_velocity);
+	cBody.define_method("apply_force",  apply_force);
+	cBody.define_method("apply_torque", apply_torque);
+	cBody.define_method("apply_linear_impulse",  apply_linear_impulse);
+	cBody.define_method("apply_angular_impulse", apply_angular_impulse);
 	cBody.define_method("density=",     set_density);
 	cBody.define_method("density",      get_density);
 	cBody.define_method("friction=",    set_friction);
