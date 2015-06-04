@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rake'
   s.add_runtime_dependency 'xot'
   s.add_runtime_dependency 'rucy'
+  s.add_runtime_dependency 'beeps'
   s.add_runtime_dependency 'rays'
   s.add_development_dependency 'gemcutter'
 
