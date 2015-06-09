@@ -13,7 +13,7 @@ module Reflex
   class View
     def view (frame = [0, 0, rand(10..200), rand(10..200)], color = [rand, rand, rand], &block)
       v = RectShape.new &block
-      v.set frame: frame, color: color
+      v.set frame: frame, fill: Color.color(*color)
       add v
       v
     end

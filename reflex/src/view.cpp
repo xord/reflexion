@@ -867,46 +867,46 @@ namespace Reflex
 		return *main != Style::FLOW_NONE;
 	}
 
-	static void
-	reflow_children (View* parent, const FrameEvent* event)
+	struct LayoutContext
 	{
-		assert(parent);
 
-		View::ChildList* children = parent->self->pchildren.get();
-		if (!children || children->empty()) return;
+		View* parent;
 
-		const Style* style = parent->style();
+		const Bounds& parent_frame;
+
+		const Style* style;
 
 		Style::Flow flow_main, flow_sub;
-		if (!get_style_flow(&flow_main, &flow_sub, style))
-			return;
+
+		coord x, y, size_max;
+
+		int child_count;
+
+		Bounds child_frame;
+
+		LayoutContext (View* parent)
+		:	parent(parent), parent_frame(parent->self->frame),
+			x(0), y(0), size_max(0), child_count(0)
+		{
+			style = parent->style();
+			if (!get_style_flow(&flow_main, &flow_sub, style))
+				return;
 
 #if 0
-		int main_h, main_v, sub_h, sub_v;
-		get_flow_factor(&main_h, &main_v, flow_main);
-		get_flow_factor(&sub_h,  &sub_v,  flow_sub);
+			int main_h, main_v, sub_h, sub_v;
+			get_flow_factor(&main_h, &main_v, flow_main);
+			get_flow_factor(&sub_h,  &sub_v,  flow_sub);
 #endif
+		}
 
-		const Bounds& parent_frame = parent->self->frame;
-		coord x = 0, y = 0, size_max = 0;
-		int child_count = 0;
-		bool multiline = flow_sub != Style::FLOW_NONE;
-
-		size_t nchildren = children->size();
-		for (size_t i = 0; i < nchildren; ++i)
+		void place_child (View* child)
 		{
-			View* child = (*children)[i].get();
-			Bounds child_frame = child->self->frame;
+			assert(child);
 
-			if (
-				(x + child_frame.width) > parent_frame.width &&
-				child_count > 0 && multiline)
-			{
-				x           = 0;
-				y          += size_max;
-				size_max    = 0;
-				child_count = 0;
-			}
+			Bounds& child_frame = child->self->frame;
+
+			if (is_line_end(child_frame.width))
+				break_line();
 
 			child_frame.x = x;
 			child_frame.y = y;
@@ -920,8 +920,44 @@ namespace Reflex
 			//	parent_frame.height = y + size_max;
 
 			++child_count;
-			child->set_frame(child_frame);
 		}
+
+		void break_line ()
+		{
+			x           = 0;
+			y          += size_max;
+			size_max    = 0;
+			child_count = 0;
+		}
+
+		bool is_line_end (coord child_width) const
+		{
+			return
+				is_multiline() &&
+				child_count > 0 &&
+				(x + child_width) > parent_frame.width;
+		}
+
+		bool is_multiline () const
+		{
+			return flow_sub != Style::FLOW_NONE;
+		}
+
+	};// LayoutContext
+
+	static void
+	reflow_children (View* parent, const FrameEvent* event)
+	{
+		assert(parent);
+
+		View::ChildList* children = parent->self->pchildren.get();
+		if (!children || children->empty()) return;
+
+		LayoutContext c(parent);
+
+		View::child_iterator end = parent->child_end();
+		for (View::child_iterator it = parent->child_begin(); it != end; ++it)
+			c.place_child(it->get());
 	}
 
 	template <typename FUN, typename EVENT>
