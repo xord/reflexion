@@ -17,6 +17,9 @@ namespace Reflex
 
 	bool set_style_owner (Style* style, View* owner);
 
+	bool get_pixel_length (
+		coord* pixel_length, const StyleLength& style_length, const coord* parent_size);
+
 
 	struct View::Data
 	{
@@ -874,22 +877,22 @@ namespace Reflex
 
 		const Bounds& parent_frame;
 
-		const Style* style;
+		const Style* parent_style;
 
 		Style::Flow flow_main, flow_sub;
 
 		coord x, y, size_max;
 
-		int child_count;
+		int flow_count;
 
 		Bounds child_frame;
 
 		LayoutContext (View* parent)
 		:	parent(parent), parent_frame(parent->self->frame),
-			x(0), y(0), size_max(0), child_count(0)
+			x(0), y(0), size_max(0), flow_count(0)
 		{
-			style = parent->style();
-			if (!get_style_flow(&flow_main, &flow_sub, style))
+			parent_style = parent->style();
+			if (!get_style_flow(&flow_main, &flow_sub, parent_style))
 				return;
 
 #if 0
@@ -903,38 +906,101 @@ namespace Reflex
 		{
 			assert(child);
 
-			Bounds& child_frame = child->self->frame;
+			Style* style = child->self->pstyle.get();
+			Bounds frame = child->self->frame;
 
-			if (is_line_end(child_frame.width))
+			if (!place_position(&frame, child, style))
+				place_in_flow(&frame, child);
+
+			child->set_frame(frame);
+		}
+
+		bool place_position (Bounds* frame, View* child, Style* style)
+		{
+			assert(frame && child);
+
+			if (!style)
+				return false;
+
+			const StyleLength& l = style->left();
+			const StyleLength& t = style->top();
+			const StyleLength& r = style->right();
+			const StyleLength& b = style->bottom();
+			if (!l && !t && !r && !b)
+				return false;
+
+			if (l && r)
+			{
+				coord ll, rr;
+				get_pixel_length(&ll, l, &parent_frame.width);
+				get_pixel_length(&rr, r, &parent_frame.width);
+				frame->set_left(ll);
+				frame->set_right(parent_frame.width - rr);
+			}
+			else if (l && !r)
+				get_pixel_length(&frame->x, l, &parent_frame.width);
+			else if (!l && r)
+			{
+				coord rr;
+				get_pixel_length(&rr, r, &parent_frame.width);
+				frame->move_to(parent_frame.width - (rr + frame->width), frame->y);
+			}
+
+			if (t && b)
+			{
+				coord tt, bb;
+				get_pixel_length(&tt, t, &parent_frame.height);
+				get_pixel_length(&bb, b, &parent_frame.height);
+				frame->set_top(tt);
+				frame->set_bottom(parent_frame.height - bb);
+			}
+			else if (t && !b)
+				get_pixel_length(&frame->y, t, &parent_frame.height);
+			else if (!t && b)
+			{
+				coord bb;
+				get_pixel_length(&bb, b, &parent_frame.height);
+				frame->move_to(frame->x, parent_frame.height - (bb + frame->height));
+			}
+
+			return true;
+		}
+
+		bool place_in_flow (Bounds* frame, View* child)
+		{
+			assert(frame && child);
+
+			if (is_line_end(frame->width))
 				break_line();
 
-			child_frame.x = x;
-			child_frame.y = y;
+			frame->x = x;
+			frame->y = y;
 
-			x += child_frame.width;
+			x += frame->width;
 
-			if (size_max < child_frame.height)
-				size_max = child_frame.height;
+			if (size_max < frame->height)
+				size_max = frame->height;
 
 			//if (y + size_max > parent_frame.height)
 			//	parent_frame.height = y + size_max;
 
-			++child_count;
+			++flow_count;
+			return true;
 		}
 
 		void break_line ()
 		{
-			x           = 0;
-			y          += size_max;
-			size_max    = 0;
-			child_count = 0;
+			x          = 0;
+			y         += size_max;
+			size_max   = 0;
+			flow_count = 0;
 		}
 
 		bool is_line_end (coord child_width) const
 		{
 			return
 				is_multiline() &&
-				child_count > 0 &&
+				flow_count > 0 &&
 				(x + child_width) > parent_frame.width;
 		}
 

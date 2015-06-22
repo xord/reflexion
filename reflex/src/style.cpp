@@ -848,13 +848,12 @@ namespace Reflex
 	}
 
 
-	static bool
+	bool
 	get_pixel_length (
 		coord* pixel_length,
 		const StyleLength& style_length, const coord* parent_size)
 	{
-		if (!pixel_length)
-			argument_error(__FILE__, __LINE__);
+		assert(pixel_length);
 
 		if (!style_length)
 			return false;

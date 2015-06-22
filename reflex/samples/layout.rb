@@ -28,6 +28,11 @@ win = Window.new title: 'Layout Sample', frame: [100, 100, 500, 400] do
   20.times do
     root.view
   end
+  root.view do
+    style do 
+      self.left = self.top = self.right = self.bottom = '10%'
+    end
+  end
 =begin
   lock_screen = View.new do
     view :header do
