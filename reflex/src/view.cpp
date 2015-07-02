@@ -26,17 +26,21 @@ namespace Reflex
 		enum Flags
 		{
 
-			ACTIVE         = 0x1 << 0,
+			ACTIVE               = 0x1 << 0,
 
-			UPDATE_STYLE   = 0x1 << 1,
+			UPDATE_STYLE         = 0x1 << 1,
 
-			UPDATE_LAYOUT  = 0x1 << 2,
+			APPLY_STYLE          = 0x1 << 2,
 
-			UPDATING_WORLD = 0x1 << 3,
+			UPDATE_LAYOUT        = 0x1 << 3,
 
-			REMOVE_SELF    = 0x1 << 4,
+			UPDATING_WORLD       = 0x1 << 4,
 
-			DEFAULT_FLAGS  = UPDATE_STYLE | UPDATE_LAYOUT
+			REMOVE_SELF          = 0x1 << 5,
+
+			HAS_VARIABLE_LENGTHS = 0x1 << 6,
+
+			DEFAULT_FLAGS        = UPDATE_STYLE | UPDATE_LAYOUT
 
 		};// Flags
 
@@ -187,6 +191,13 @@ namespace Reflex
 			return flags & flag;
 		}
 
+		bool check_flag (uint flag)
+		{
+			bool result = has_flag(flag);
+			remove_flag(flag);
+			return result;
+		}
+
 	};// View::Data
 
 
@@ -262,18 +273,27 @@ namespace Reflex
 	}
 
 	static void
+	apply_style_to_children_have_variable_lengths (View* parent)
+	{
+		View::child_iterator end = parent->child_end();
+		for (View::child_iterator it = parent->child_begin(); it != end; ++it)
+		{
+			View* child = *it;
+			if (child->self->has_flag(View::Data::HAS_VARIABLE_LENGTHS))
+				child->self->add_flag(View::Data::APPLY_STYLE);
+		}
+	}
+
+	static void
 	update_layout (View* view, bool update_parent = false)
 	{
 		assert(view);
 		View::Data* self = view->self.get();
 
-		if (self->has_flag(View::Data::UPDATE_LAYOUT))
-			return;
-
 		self->add_flag(View::Data::UPDATE_LAYOUT);
 
 		if (update_parent && self->parent)
-			update_layout(self->parent, true);
+			update_layout(self->parent);
 	}
 
 	static void
@@ -302,6 +322,7 @@ namespace Reflex
 			self->resize_world(view);
 			view->on_resize(&event);
 
+			apply_style_to_children_have_variable_lengths(view);
 			update_layout(view, true);
 		}
 
@@ -402,14 +423,19 @@ namespace Reflex
 		find_all_styles(styles, view, selector, false);
 	}
 
-	static void
+	static bool
 	get_styles_for_view (View::StyleList* styles, View* view)
 	{
+		assert(styles && view);
+
+		styles->clear();
+
 		Selector* sel = view->self->pselector.get();
 		if (!sel || sel->is_empty())
-			return;
+			return false;
 
 		get_styles_for_selector(styles, view, *sel);
+		return !styles->empty();
 	}
 
 	static void
@@ -418,23 +444,53 @@ namespace Reflex
 		assert(view);
 		View::Data* self = view->self.get();
 
-		if (!self->has_flag(View::Data::UPDATE_STYLE))
+		if (!self->check_flag(View::Data::UPDATE_STYLE))
 			return;
 
-		View::StyleList styles;
-		get_styles_for_view(&styles, view);
-
-		Style style;
-		for (View::StyleList::iterator it = styles.begin(); it != styles.end(); ++it)
+		Style* style = self->pstyle.get();
+		if (style)
 		{
-			void override_style (Style*, const Style&);
-			override_style(&style, *it);
+			void clear_inherited_values (Style*);
+			clear_inherited_values(style);
 		}
 
-		void apply_style (View*, const Style&);
-		apply_style(view, style);
+		View::StyleList styles;
+		if (get_styles_for_view(&styles, view))
+		{
+			if (!style)
+				style = &self->style(view);
 
-		self->remove_flag(View::Data::UPDATE_STYLE);
+			for (View::StyleList::iterator it = styles.begin(); it != styles.end(); ++it)
+			{
+				void override_style (Style*, const Style&);
+				override_style(style, *it);
+			}
+		}
+
+		bool has_variable_lengths (const Style&);
+		if (style && has_variable_lengths(*style))
+			self->add_flag(View::Data::HAS_VARIABLE_LENGTHS);
+		else
+			self->remove_flag(View::Data::HAS_VARIABLE_LENGTHS);
+
+		if (style)
+			self->add_flag(View::Data::APPLY_STYLE);
+	}
+
+	static void
+	apply_view_style (View* view)
+	{
+		assert(view);
+
+		View::Data* self = view->self.get();
+		if (!self->check_flag(View::Data::APPLY_STYLE))
+			return;
+
+		Style* style = self->pstyle.get();
+		if (!self) return;
+
+		void apply_style (View* view, const Style& style);
+		apply_style(view, *style);
 	}
 
 	static void reflow_children (View* parent, const FrameEvent* event = NULL);
@@ -445,11 +501,10 @@ namespace Reflex
 		assert(view);
 		View::Data* self = view->self.get();
 
-		if (!self->has_flag(View::Data::UPDATE_LAYOUT))
+		if (!self->check_flag(View::Data::UPDATE_LAYOUT))
 			return;
 
 		reflow_children(view);
-		self->remove_flag(View::Data::UPDATE_LAYOUT);
 	}
 
 	void
@@ -467,6 +522,7 @@ namespace Reflex
 
 		update_views_for_selectors(view);
 		update_view_style(view);
+		apply_view_style(view);
 
 		View::child_iterator end = view->child_end();
 		for (View::child_iterator it = view->child_begin(); it != end; ++it)
@@ -867,6 +923,151 @@ namespace Reflex
 		return *main != Style::FLOW_NONE;
 	}
 
+	struct LayoutContext
+	{
+
+		View* parent;
+
+		const Bounds& parent_frame;
+
+		const Style* parent_style;
+
+		Style::Flow flow_main, flow_sub;
+
+		coord x, y, size_max;
+
+		int flow_count;
+
+		Bounds child_frame;
+
+		LayoutContext (View* parent)
+		:	parent(parent), parent_frame(parent->self->frame),
+			x(0), y(0), size_max(0), flow_count(0)
+		{
+			parent_style = parent->style();
+			if (!get_style_flow(&flow_main, &flow_sub, parent_style))
+				return;
+
+#if 0
+			int main_h, main_v, sub_h, sub_v;
+			get_flow_factor(&main_h, &main_v, flow_main);
+			get_flow_factor(&sub_h,  &sub_v,  flow_sub);
+#endif
+		}
+
+		void place_child (View* child)
+		{
+			assert(child);
+
+			Style* style = child->self->pstyle.get();
+			Bounds frame = child->self->frame;
+
+			if (!place_position(&frame, child, style))
+				place_in_flow(&frame, child);
+
+			child->set_frame(frame);
+		}
+
+		bool place_position (Bounds* frame, View* child, Style* style)
+		{
+			assert(frame && child);
+
+			if (!style)
+				return false;
+
+			const StyleLength& l = style->left();
+			const StyleLength& t = style->top();
+			const StyleLength& r = style->right();
+			const StyleLength& b = style->bottom();
+			if (!l && !t && !r && !b)
+				return false;
+
+			bool get_pixel_length (
+				coord* pixel_length,
+				const StyleLength& style_length, const coord* parent_size);
+
+			if (l && r)
+			{
+				coord ll, rr;
+				get_pixel_length(&ll, l, &parent_frame.width);
+				get_pixel_length(&rr, r, &parent_frame.width);
+				frame->set_left(ll);
+				frame->set_right(parent_frame.width - rr);
+			}
+			else if (l && !r)
+				get_pixel_length(&frame->x, l, &parent_frame.width);
+			else if (!l && r)
+			{
+				coord rr;
+				get_pixel_length(&rr, r, &parent_frame.width);
+				frame->move_to(parent_frame.width - (rr + frame->width), frame->y);
+			}
+
+			if (t && b)
+			{
+				coord tt, bb;
+				get_pixel_length(&tt, t, &parent_frame.height);
+				get_pixel_length(&bb, b, &parent_frame.height);
+				frame->set_top(tt);
+				frame->set_bottom(parent_frame.height - bb);
+			}
+			else if (t && !b)
+				get_pixel_length(&frame->y, t, &parent_frame.height);
+			else if (!t && b)
+			{
+				coord bb;
+				get_pixel_length(&bb, b, &parent_frame.height);
+				frame->move_to(frame->x, parent_frame.height - (bb + frame->height));
+			}
+
+			return true;
+		}
+
+		bool place_in_flow (Bounds* frame, View* child)
+		{
+			assert(frame && child);
+
+			if (is_line_end(frame->width))
+				break_line();
+
+			frame->x = x;
+			frame->y = y;
+
+			x += frame->width;
+
+			if (size_max < frame->height)
+				size_max = frame->height;
+
+			//if (y + size_max > parent_frame.height)
+			//	parent_frame.height = y + size_max;
+
+			++flow_count;
+			return true;
+		}
+
+		void break_line ()
+		{
+			x          = 0;
+			y         += size_max;
+			size_max   = 0;
+			flow_count = 0;
+		}
+
+		bool is_line_end (coord child_width) const
+		{
+			return
+				is_multiline() &&
+				flow_count > 0 &&
+				(x + child_width) > parent_frame.width;
+		}
+
+		bool is_multiline () const
+		{
+			return flow_sub != Style::FLOW_NONE;
+		}
+
+	};// LayoutContext
+
 	static void
 	reflow_children (View* parent, const FrameEvent* event)
 	{
@@ -875,53 +1076,11 @@ namespace Reflex
 		View::ChildList* children = parent->self->pchildren.get();
 		if (!children || children->empty()) return;
 
-		const Style* style = parent->style();
+		LayoutContext c(parent);
 
-		Style::Flow flow_main, flow_sub;
-		if (!get_style_flow(&flow_main, &flow_sub, style))
-			return;
-
-#if 0
-		int main_h, main_v, sub_h, sub_v;
-		get_flow_factor(&main_h, &main_v, flow_main);
-		get_flow_factor(&sub_h,  &sub_v,  flow_sub);
-#endif
-
-		const Bounds& parent_frame = parent->self->frame;
-		coord x = 0, y = 0, size_max = 0;
-		int child_count = 0;
-		bool multiline = flow_sub != Style::FLOW_NONE;
-
-		size_t nchildren = children->size();
-		for (size_t i = 0; i < nchildren; ++i)
-		{
-			View* child = (*children)[i].get();
-			Bounds child_frame = child->self->frame;
-
-			if (
-				(x + child_frame.width) > parent_frame.width &&
-				child_count > 0 && multiline)
-			{
-				x           = 0;
-				y          += size_max;
-				size_max    = 0;
-				child_count = 0;
-			}
-
-			child_frame.x = x;
-			child_frame.y = y;
-
-			x += child_frame.width;
-
-			if (size_max < child_frame.height)
-				size_max = child_frame.height;
-
-			//if (y + size_max > parent_frame.height)
-			//	parent_frame.height = y + size_max;
-
-			++child_count;
-			child->set_frame(child_frame);
-		}
+		View::child_iterator end = parent->child_end();
+		for (View::child_iterator it = parent->child_begin(); it != end; ++it)
+			c.place_child(it->get());
 	}
 
 	template <typename FUN, typename EVENT>
