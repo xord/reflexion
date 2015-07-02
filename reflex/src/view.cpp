@@ -17,9 +17,6 @@ namespace Reflex
 
 	bool set_style_owner (Style* style, View* owner);
 
-	bool get_pixel_length (
-		coord* pixel_length, const StyleLength& style_length, const coord* parent_size);
-
 
 	struct View::Data
 	{
@@ -29,17 +26,21 @@ namespace Reflex
 		enum Flags
 		{
 
-			ACTIVE         = 0x1 << 0,
+			ACTIVE               = 0x1 << 0,
 
-			UPDATE_STYLE   = 0x1 << 1,
+			UPDATE_STYLE         = 0x1 << 1,
 
-			UPDATE_LAYOUT  = 0x1 << 2,
+			APPLY_STYLE          = 0x1 << 2,
 
-			UPDATING_WORLD = 0x1 << 3,
+			UPDATE_LAYOUT        = 0x1 << 3,
 
-			REMOVE_SELF    = 0x1 << 4,
+			UPDATING_WORLD       = 0x1 << 4,
 
-			DEFAULT_FLAGS  = UPDATE_STYLE | UPDATE_LAYOUT
+			REMOVE_SELF          = 0x1 << 5,
+
+			HAS_VARIABLE_LENGTHS = 0x1 << 6,
+
+			DEFAULT_FLAGS        = UPDATE_STYLE | UPDATE_LAYOUT
 
 		};// Flags
 
@@ -190,6 +191,13 @@ namespace Reflex
 			return flags & flag;
 		}
 
+		bool check_flag (uint flag)
+		{
+			bool result = has_flag(flag);
+			remove_flag(flag);
+			return result;
+		}
+
 	};// View::Data
 
 
@@ -265,18 +273,27 @@ namespace Reflex
 	}
 
 	static void
+	apply_style_to_children_have_variable_lengths (View* parent)
+	{
+		View::child_iterator end = parent->child_end();
+		for (View::child_iterator it = parent->child_begin(); it != end; ++it)
+		{
+			View* child = *it;
+			if (child->self->has_flag(View::Data::HAS_VARIABLE_LENGTHS))
+				child->self->add_flag(View::Data::APPLY_STYLE);
+		}
+	}
+
+	static void
 	update_layout (View* view, bool update_parent = false)
 	{
 		assert(view);
 		View::Data* self = view->self.get();
 
-		if (self->has_flag(View::Data::UPDATE_LAYOUT))
-			return;
-
 		self->add_flag(View::Data::UPDATE_LAYOUT);
 
 		if (update_parent && self->parent)
-			update_layout(self->parent, true);
+			update_layout(self->parent);
 	}
 
 	static void
@@ -305,6 +322,7 @@ namespace Reflex
 			self->resize_world(view);
 			view->on_resize(&event);
 
+			apply_style_to_children_have_variable_lengths(view);
 			update_layout(view, true);
 		}
 
@@ -405,14 +423,19 @@ namespace Reflex
 		find_all_styles(styles, view, selector, false);
 	}
 
-	static void
+	static bool
 	get_styles_for_view (View::StyleList* styles, View* view)
 	{
+		assert(styles && view);
+
+		styles->clear();
+
 		Selector* sel = view->self->pselector.get();
 		if (!sel || sel->is_empty())
-			return;
+			return false;
 
 		get_styles_for_selector(styles, view, *sel);
+		return !styles->empty();
 	}
 
 	static void
@@ -421,23 +444,53 @@ namespace Reflex
 		assert(view);
 		View::Data* self = view->self.get();
 
-		if (!self->has_flag(View::Data::UPDATE_STYLE))
+		if (!self->check_flag(View::Data::UPDATE_STYLE))
 			return;
 
-		View::StyleList styles;
-		get_styles_for_view(&styles, view);
-
-		Style style;
-		for (View::StyleList::iterator it = styles.begin(); it != styles.end(); ++it)
+		Style* style = self->pstyle.get();
+		if (style)
 		{
-			void override_style (Style*, const Style&);
-			override_style(&style, *it);
+			void clear_inherited_values (Style*);
+			clear_inherited_values(style);
 		}
 
-		void apply_style (View*, const Style&);
-		apply_style(view, style);
+		View::StyleList styles;
+		if (get_styles_for_view(&styles, view))
+		{
+			if (!style)
+				style = &self->style(view);
 
-		self->remove_flag(View::Data::UPDATE_STYLE);
+			for (View::StyleList::iterator it = styles.begin(); it != styles.end(); ++it)
+			{
+				void override_style (Style*, const Style&);
+				override_style(style, *it);
+			}
+		}
+
+		bool has_variable_lengths (const Style&);
+		if (style && has_variable_lengths(*style))
+			self->add_flag(View::Data::HAS_VARIABLE_LENGTHS);
+		else
+			self->remove_flag(View::Data::HAS_VARIABLE_LENGTHS);
+
+		if (style)
+			self->add_flag(View::Data::APPLY_STYLE);
+	}
+
+	static void
+	apply_view_style (View* view)
+	{
+		assert(view);
+
+		View::Data* self = view->self.get();
+		if (!self->check_flag(View::Data::APPLY_STYLE))
+			return;
+
+		Style* style = self->pstyle.get();
+		if (!self) return;
+
+		void apply_style (View* view, const Style& style);
+		apply_style(view, *style);
 	}
 
 	static void reflow_children (View* parent, const FrameEvent* event = NULL);
@@ -448,11 +501,10 @@ namespace Reflex
 		assert(view);
 		View::Data* self = view->self.get();
 
-		if (!self->has_flag(View::Data::UPDATE_LAYOUT))
+		if (!self->check_flag(View::Data::UPDATE_LAYOUT))
 			return;
 
 		reflow_children(view);
-		self->remove_flag(View::Data::UPDATE_LAYOUT);
 	}
 
 	void
@@ -470,6 +522,7 @@ namespace Reflex
 
 		update_views_for_selectors(view);
 		update_view_style(view);
+		apply_view_style(view);
 
 		View::child_iterator end = view->child_end();
 		for (View::child_iterator it = view->child_begin(); it != end; ++it)
@@ -928,6 +981,10 @@ namespace Reflex
 			const StyleLength& b = style->bottom();
 			if (!l && !t && !r && !b)
 				return false;
+
+			bool get_pixel_length (
+				coord* pixel_length,
+				const StyleLength& style_length, const coord* parent_size);
 
 			if (l && r)
 			{

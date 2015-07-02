@@ -26,7 +26,12 @@ end
 
 win = Window.new title: 'Layout Sample', frame: [100, 100, 500, 400] do
   20.times do
-    root.view
+    root.view do
+      style do
+        self.width = '25%'
+        self.height = '50%'
+      end
+    end
   end
   root.view do
     style do 

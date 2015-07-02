@@ -161,7 +161,15 @@ namespace Reflex
 
 		Unit unit;
 
-		Data () : value(0), unit(NONE) {}
+		Data ()
+		:	value(0), unit(NONE)
+		{
+		}
+
+		bool is_variable () const
+		{
+			return unit == PERCENT;
+		}
 
 		friend bool operator == (const Data& lhs, const Data& rhs)
 		{
@@ -393,6 +401,47 @@ namespace Reflex
 
 		void update_styles_for_selector (View*, const Selector&);
 		update_styles_for_selector(owner, style.self->selector);
+	}
+
+	template <typename T>
+	static void
+	clear_inherited_value (StyleValue<T>* value)
+	{
+		assert(value);
+
+		if (value->is_inherited())
+			value->clear();
+	}
+
+	void
+	clear_inherited_values (Style* style)
+	{
+		assert(style);
+
+		Style::Data* self = style->self.get();
+
+		clear_inherited_value(&self->flow);
+		clear_inherited_value(&self->width);
+		clear_inherited_value(&self->height);
+		clear_inherited_value(&self->left);
+		clear_inherited_value(&self->top);
+		clear_inherited_value(&self->right);
+		clear_inherited_value(&self->bottom);
+		clear_inherited_value(&self->offset_left);
+		clear_inherited_value(&self->offset_top);
+		clear_inherited_value(&self->offset_right);
+		clear_inherited_value(&self->offset_bottom);
+		clear_inherited_value(&self->margin_left);
+		clear_inherited_value(&self->margin_top);
+		clear_inherited_value(&self->margin_right);
+		clear_inherited_value(&self->margin_bottom);
+		clear_inherited_value(&self->padding_left);
+		clear_inherited_value(&self->padding_top);
+		clear_inherited_value(&self->padding_right);
+		clear_inherited_value(&self->padding_bottom);
+		clear_inherited_value(&self->fill);
+		clear_inherited_value(&self->stroke);
+		clear_inherited_value(&self->image);
 	}
 
 	void
@@ -847,6 +896,43 @@ namespace Reflex
 		return !operator==(lhs, rhs);
 	}
 
+
+	static bool
+	is_variable (const StyleValue<StyleLength>& length)
+	{
+		return length && length.get(Zero::length).self->is_variable();
+	}
+
+	bool
+	has_variable_lengths (const Style& style)
+	{
+		Style::Data* s = style.self.get();
+		if (!s) return false;
+
+		return
+			is_variable(s->width)  ||
+			is_variable(s->height) ||
+
+			is_variable(s->left)   ||
+			is_variable(s->top)    ||
+			is_variable(s->right)  ||
+			is_variable(s->bottom) ||
+
+			is_variable(s->offset_left)   ||
+			is_variable(s->offset_top)    ||
+			is_variable(s->offset_right)  ||
+			is_variable(s->offset_bottom) ||
+
+			is_variable(s->margin_left)   ||
+			is_variable(s->margin_top)    ||
+			is_variable(s->margin_right)  ||
+			is_variable(s->margin_bottom) ||
+
+			is_variable(s->padding_left)  ||
+			is_variable(s->padding_top)   ||
+			is_variable(s->padding_right) ||
+			is_variable(s->padding_bottom);
+	}
 
 	bool
 	get_pixel_length (
