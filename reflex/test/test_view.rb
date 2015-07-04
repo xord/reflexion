@@ -24,7 +24,7 @@ class TestView < Test::Unit::TestCase
   def bounds (*args) Rays::Bounds.new *args end
 
   def test_initialize ()
-    assert_equal nil, view.name
+    assert_equal '', view.name
     assert_equal 'Test', view(:name => 'Test').name
   end
 
@@ -105,7 +105,7 @@ class TestView < Test::Unit::TestCase
 
   def test_name ()
     v = view
-    assert_equal nil, v.name
+    assert_equal '', v.name
     v.name = 'Test'
     assert_equal 'Test', v.name
   end
