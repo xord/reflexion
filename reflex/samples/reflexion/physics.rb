@@ -9,6 +9,7 @@ require 'reflexion/include'
 
 
 setup do
+  style.flow = :none
   set size: [600, 400], gravity: Point.new(0, 9.8) * meter #, debug: true
 end
 

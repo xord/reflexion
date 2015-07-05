@@ -11,6 +11,13 @@ namespace Reflex
 
 
 	template <typename T>
+	static T get_style_default_value        () {return T();}
+
+	template <>
+	Color    get_style_default_value<Color> () {return Color(0, 0);}
+
+
+	template <typename T>
 	class StyleValue
 	{
 
@@ -23,7 +30,7 @@ namespace Reflex
 
 			public:
 
-				Wrapper () {}
+				Wrapper () : value(get_style_default_value<T>()) {}
 
 				Wrapper (const Value& value) : value(value) {}
 
@@ -93,7 +100,13 @@ namespace Reflex
 				return p->get();
 			}
 
-			const Value& get (const Value& defval) const
+			const Value& get () const
+			{
+				Wrapper* p = pointer();
+				return p ? p->get() : default_value();
+			}
+
+			const Value& get (const T& defval) const
 			{
 				Wrapper* p = pointer();
 				return p ? p->get() : defval;
@@ -111,7 +124,10 @@ namespace Reflex
 
 			void override (const This& value)
 			{
-				if (!value || (*this && !is_inherited()))
+				if (!value)
+					return;
+
+				if (*this && !is_inherited())
 					return;
 
 				reset(value.pointer());
@@ -150,6 +166,12 @@ namespace Reflex
 			}
 
 			Wrapper* pointer () const {return Xot::set_pointer_flag(pwrapper, false);}
+
+			const T& default_value () const
+			{
+				static T defval = get_style_default_value<T>();
+				return defval;
+			}
 
 	};// StyleValue
 
@@ -367,18 +389,6 @@ namespace Reflex
 		}
 
 	};// Data
-
-
-	namespace Zero
-	{
-
-		static const Color       color;
-
-		static const Image       image;
-
-		static const StyleLength length;
-
-	}// Zero
 
 
 	bool
@@ -628,13 +638,13 @@ namespace Reflex
 	const StyleLength&
 	Style::width () const
 	{
-		return self->width.get(Zero::length);
+		return self->width.get();
 	}
 
 	const StyleLength&
 	Style::height () const
 	{
-		return self->height.get(Zero::length);
+		return self->height.get();
 	}
 
 	void
@@ -668,25 +678,25 @@ namespace Reflex
 	const StyleLength&
 	Style::left () const
 	{
-		return self->left.get(Zero::length);
+		return self->left.get();
 	}
 
 	const StyleLength&
 	Style::top () const
 	{
-		return self->top.get(Zero::length);
+		return self->top.get();
 	}
 
 	const StyleLength&
 	Style::right () const
 	{
-		return self->right.get(Zero::length);
+		return self->right.get();
 	}
 
 	const StyleLength&
 	Style::bottom () const
 	{
-		return self->bottom.get(Zero::length);
+		return self->bottom.get();
 	}
 
 	void
@@ -720,25 +730,25 @@ namespace Reflex
 	const StyleLength&
 	Style::offset_left () const
 	{
-		return self->offset_left.get(Zero::length);
+		return self->offset_left.get();
 	}
 
 	const StyleLength&
 	Style::offset_top () const
 	{
-		return self->offset_top.get(Zero::length);
+		return self->offset_top.get();
 	}
 
 	const StyleLength&
 	Style::offset_right () const
 	{
-		return self->offset_right.get(Zero::length);
+		return self->offset_right.get();
 	}
 
 	const StyleLength&
 	Style::offset_bottom () const
 	{
-		return self->offset_bottom.get(Zero::length);
+		return self->offset_bottom.get();
 	}
 
 	void
@@ -772,25 +782,25 @@ namespace Reflex
 	const StyleLength&
 	Style::margin_left () const
 	{
-		return self->margin_left.get(Zero::length);
+		return self->margin_left.get();
 	}
 
 	const StyleLength&
 	Style::margin_top () const
 	{
-		return self->margin_top.get(Zero::length);
+		return self->margin_top.get();
 	}
 
 	const StyleLength&
 	Style::margin_right () const
 	{
-		return self->margin_right.get(Zero::length);
+		return self->margin_right.get();
 	}
 
 	const StyleLength&
 	Style::margin_bottom () const
 	{
-		return self->margin_bottom.get(Zero::length);
+		return self->margin_bottom.get();
 	}
 
 	void
@@ -824,25 +834,25 @@ namespace Reflex
 	const StyleLength&
 	Style::padding_left () const
 	{
-		return self->padding_left.get(Zero::length);
+		return self->padding_left.get();
 	}
 
 	const StyleLength&
 	Style::padding_top () const
 	{
-		return self->padding_top.get(Zero::length);
+		return self->padding_top.get();
 	}
 
 	const StyleLength&
 	Style::padding_right () const
 	{
-		return self->padding_right.get(Zero::length);
+		return self->padding_right.get();
 	}
 
 	const StyleLength&
 	Style::padding_bottom () const
 	{
-		return self->padding_bottom.get(Zero::length);
+		return self->padding_bottom.get();
 	}
 
 	void
@@ -855,7 +865,7 @@ namespace Reflex
 	const Color&
 	Style::fill () const
 	{
-		return self->fill.get(Zero::color);
+		return self->fill.get();
 	}
 
 	void
@@ -868,7 +878,7 @@ namespace Reflex
 	const Color&
 	Style::stroke () const
 	{
-		return self->stroke.get(Zero::color);
+		return self->stroke.get();
 	}
 
 	void
@@ -881,7 +891,7 @@ namespace Reflex
 	const Image&
 	Style::image () const
 	{
-		return self->image.get(Zero::image);
+		return self->image.get();
 	}
 
 	bool
@@ -900,7 +910,7 @@ namespace Reflex
 	static bool
 	is_variable (const StyleValue<StyleLength>& length)
 	{
-		return length && length.get(Zero::length).self->is_variable();
+		return length && length.get().self->is_variable();
 	}
 
 	bool

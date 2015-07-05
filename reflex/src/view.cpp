@@ -393,7 +393,8 @@ namespace Reflex
 
 	static void
 	find_all_styles (
-		View::StyleList* result, const View* view, const Selector& selector, bool recursive)
+		View::StyleList* result, const View* view, const Selector& selector,
+		bool recursive)
 	{
 		View::const_style_iterator end = view->style_end();
 		for (View::const_style_iterator it = view->style_begin(); it != end; ++it)
@@ -510,8 +511,7 @@ namespace Reflex
 	void
 	update_view_tree (View* view, const UpdateEvent& event)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
 		if (event.is_blocked() || remove_self(view))
 			return;
@@ -532,6 +532,33 @@ namespace Reflex
 	}
 
 	static void
+	draw_view (View* view, Painter* painter)
+	{
+		assert(view && painter);
+
+		View::Data* self = view->self.get();
+		Style* style     = self->pstyle.get();
+		if (!style)
+			return;
+
+		const Color& fill   = style->fill();
+		const Color& stroke = style->stroke();
+
+		if (fill.alpha == 0 && stroke.alpha == 0)
+			return;
+
+		Color fill_org   = painter->fill();
+		Color stroke_org = painter->stroke();
+
+		painter->set_fill(fill);
+		painter->set_stroke(stroke);
+		painter->rect(0, 0, self->frame.width, self->frame.height);
+
+		painter->set_fill(fill_org);
+		painter->set_stroke(stroke_org);
+	}
+
+	static void
 	draw_world (View* view, Painter* painter)
 	{
 		assert(view);
@@ -544,15 +571,15 @@ namespace Reflex
 	draw_view_tree (
 		View* view, const DrawEvent& event, const Point& offset, const Bounds& clip)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
 		if (event.is_blocked() || view->hidden())
 			return;
 
-		DrawEvent e = event;
-		Painter*  p = e.painter;
-		Body*     b = view->self->pbody.get();
+		View::Data* self = view->self.get();
+		DrawEvent e      = event;
+		Painter*  p      = e.painter;
+		Body*     b      = self->pbody.get();
 
 		p->push_matrix();
 		p->push_attr();
@@ -561,10 +588,10 @@ namespace Reflex
 		Point  pos   = frame.position() - view->scroll();
 		p->translate(pos);
 
-		float angle = view->self->angle;
+		float angle = self->angle;
 		if (angle != 0) p->rotate(angle);
 
-		float zoom = view->self->zoom;
+		float zoom = self->zoom;
 		if (zoom != 1 && zoom > 0) p->scale(zoom, zoom);
 
 		pos += offset;
@@ -576,6 +603,7 @@ namespace Reflex
 
 		e.view   = view;
 		e.bounds = frame.move_to(0, 0, frame.z);
+		draw_view(view, p);
 		view->on_draw(&e);
 
 		View::child_iterator end = view->child_end();
@@ -908,21 +936,6 @@ namespace Reflex
 	}
 #endif
 
-	static bool
-	get_style_flow (Style::Flow* main, Style::Flow* sub, const Style* style)
-	{
-		void get_default_flow (Style::Flow*, Style::Flow*);
-
-		assert(main && sub);
-
-		if (style)
-			style->get_flow(main, sub);
-		else
-			get_default_flow(main, sub);
-
-		return *main != Style::FLOW_NONE;
-	}
-
 	struct LayoutContext
 	{
 
@@ -941,12 +954,18 @@ namespace Reflex
 		Bounds child_frame;
 
 		LayoutContext (View* parent)
-		:	parent(parent), parent_frame(parent->self->frame),
+		:	parent(parent),
+			parent_frame(parent->self->frame),
+			parent_style(parent->style()),
 			x(0), y(0), size_max(0), flow_count(0)
 		{
-			parent_style = parent->style();
-			if (!get_style_flow(&flow_main, &flow_sub, parent_style))
-				return;
+			if (parent_style)
+				parent_style->get_flow(&flow_main, &flow_sub);
+			else
+			{
+				void get_default_flow (Style::Flow*, Style::Flow*);
+				get_default_flow(&flow_main, &flow_sub);
+			}
 
 #if 0
 			int main_h, main_v, sub_h, sub_v;
@@ -1066,6 +1085,16 @@ namespace Reflex
 			return flow_sub != Style::FLOW_NONE;
 		}
 
+		operator bool () const
+		{
+			return flow_main != Style::FLOW_NONE;
+		}
+
+		bool operator ! () const
+		{
+			return !operator bool();
+		}
+
 	};// LayoutContext
 
 	static void
@@ -1074,9 +1103,12 @@ namespace Reflex
 		assert(parent);
 
 		View::ChildList* children = parent->self->pchildren.get();
-		if (!children || children->empty()) return;
+		if (!children || children->empty())
+			return;
 
 		LayoutContext c(parent);
+		if (!c)
+			return;
 
 		View::child_iterator end = parent->child_end();
 		for (View::child_iterator it = parent->child_begin(); it != end; ++it)

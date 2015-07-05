@@ -47,8 +47,10 @@ namespace Reflex
 
 		iterator end = selector.end();
 		for (iterator tag = selector.begin(); tag != end; ++tag)
+		{
 			if (tags.find(*tag) == tags_end)
 				return false;
+		}
 
 		return selector.self->name.empty() || selector.self->name == self->name;
 	}

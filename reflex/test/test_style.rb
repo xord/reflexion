@@ -64,8 +64,8 @@ class TestStyle < Test::Unit::TestCase
   end
 
   def test_fill_stroke ()
-    assert_equal [0, 0, 0, 1], style.fill.to_a
-    assert_equal [0, 0, 0, 1], style.stroke.to_a
+    assert_equal [0, 0, 0, 0], style.fill.to_a
+    assert_equal [0, 0, 0, 0], style.stroke.to_a
   end
 
   def test_image ()
