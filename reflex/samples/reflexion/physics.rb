@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-%w[xot rays reflex]
+%w[xot beeps rays reflex]
   .map  {|s| File.expand_path "../../../../#{s}/lib", __FILE__}
   .each {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 

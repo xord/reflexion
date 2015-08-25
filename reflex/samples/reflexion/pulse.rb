@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-%w[xot rays reflex]
+%w[xot beeps rays reflex]
   .map  {|s| File.expand_path "../../../../#{s}/lib", __FILE__}
   .each {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 
@@ -13,6 +13,7 @@ fps   = 0
 
 
 setup do
+  style.flow = :none
   set width: 600, height: 300
   painter.font = Font.new nil, 24
 end
