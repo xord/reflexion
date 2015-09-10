@@ -232,11 +232,22 @@ namespace Rucy
 %	end
 
 
-	template <typename T>        T value_to (Value obj, bool convert = true);
+	template <typename T> T
+	value_to (Value obj, bool convert = true);
 
-	template <typename T> inline T       to (Value obj, bool convert = true)
+	template <typename T> inline T
+	to       (Value obj, bool convert = true)
 	{
 		return value_to<T>(obj, convert);
+	}
+
+	template <typename T> T
+	value_to (int argc, const Value* argv, bool convert = true);
+
+	template <typename T> inline T
+	to       (int argc, const Value* argv, bool convert = true)
+	{
+		return value_to<T>(argc, argv, convert);
 	}
 
 	template <typename T> inline T Value::as (bool convert) const

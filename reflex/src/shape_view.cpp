@@ -10,105 +10,20 @@ namespace Reflex
 {
 
 
-	struct ShapeView::Data
-	{
-
-		Color fill, stroke;
-
-		Data ()
-		:	fill(1, 1), stroke(0, 0)
-		{
-		}
-
-	};// ShapeView::Data
-
-
 	ShapeView::ShapeView (const char* name)
 	:	Super(name)
 	{
+		style(true)->set_fill(1);
 	}
 
 	ShapeView::~ShapeView ()
 	{
 	}
 
-	void
-	ShapeView::set_fill (float red, float green, float blue, float alpha)
-	{
-		self->fill.reset(red, green, blue, alpha);
-	}
-
-	void
-	ShapeView::set_fill (const Color& color)
-	{
-		self->fill = color;
-	}
-
-	void
-	ShapeView::no_fill ()
-	{
-		self->fill.alpha = 0;
-	}
-
-	const Color&
-	ShapeView::fill () const
-	{
-		return self->fill;
-	}
-
-	void
-	ShapeView::set_stroke (float red, float green, float blue, float alpha)
-	{
-		self->stroke.reset(red, green, blue, alpha);
-	}
-
-	void
-	ShapeView::set_stroke (const Color& color)
-	{
-		self->stroke = color;
-	}
-
-	void
-	ShapeView::no_stroke ()
-	{
-		self->stroke.alpha = 0;
-	}
-
-	const Color&
-	ShapeView::stroke () const
-	{
-		return self->stroke;
-	}
-
 	Point
 	ShapeView::content_size () const
 	{
 		return frame().size();
-	}
-
-	void
-	ShapeView::on_draw (DrawEvent* e)
-	{
-		Color& fill   = self->fill;
-		Color& stroke = self->stroke;
-		if (fill.a <= 0 && stroke.a <= 0) return;
-
-		assert(e && e->painter);
-		Painter* p = e->painter;
-
-		Color f = p->fill(), s = p->stroke();
-		p->set_fill(fill);
-		p->set_stroke(stroke);
-
-		on_draw_shape(e);
-
-		p->set_fill(f);
-		p->set_stroke(s);
-	}
-
-	void
-	ShapeView::on_draw_shape (DrawEvent* e)
-	{
 	}
 
 
@@ -154,7 +69,7 @@ namespace Reflex
 	}
 
 	void
-	RectShape::on_draw_shape (DrawEvent* e)
+	RectShape::on_draw (DrawEvent* e)
 	{
 		assert(e && e->painter);
 
@@ -224,7 +139,7 @@ namespace Reflex
 	}
 
 	void
-	EllipseShape::on_draw_shape (DrawEvent* e)
+	EllipseShape::on_draw (DrawEvent* e)
 	{
 		assert(e && e->painter);
 
@@ -293,7 +208,7 @@ namespace Reflex
 	}
 
 	void
-	ArcShape::on_draw_shape (DrawEvent* e)
+	ArcShape::on_draw (DrawEvent* e)
 	{
 		assert(e && e->painter);
 

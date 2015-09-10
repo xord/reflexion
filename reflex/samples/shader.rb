@@ -24,7 +24,7 @@ win = Reflex::Window.new do
   END
 
   on :draw do |e|
-    e.painter.push do
+    e.painter.push :all do
       attach shader, resolution: bounds.size.to_a, time: Time.now.to_f - start
       rect *bounds.to_a
     end

@@ -2,6 +2,7 @@
 
 
 #include <stdio.h>
+#include <boost/algorithm/string.hpp>
 #include <boost/scoped_array.hpp>
 
 
@@ -16,6 +17,24 @@ namespace Xot
 	String::String (const char* str)
 	:	Super(str)
 	{
+	}
+
+	String
+	String::upcase () const
+	{
+		return boost::to_upper_copy(*this);
+	}
+
+	String
+	String::downcase () const
+	{
+		return boost::to_lower_copy(*this);
+	}
+
+	String
+	String::strip () const
+	{
+		return boost::trim_copy(*this);
 	}
 
 	String::operator const char* () const

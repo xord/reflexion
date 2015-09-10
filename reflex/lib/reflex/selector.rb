@@ -20,9 +20,9 @@ module Reflex
       arg0.kind_of?(Selector) ? arg0 : self.new(*args)
     end
 
-    def initialize (opts = {}, &block)
+    def initialize (options = nil, &block)
       super()
-      set opts
+      set options if options
       Xot::BlockUtil.instance_eval_or_block_call self, &block if block
     end
 

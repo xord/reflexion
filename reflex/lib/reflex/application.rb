@@ -2,6 +2,7 @@
 
 
 require 'xot/setter'
+require 'xot/universal_accessor'
 require 'xot/block_util'
 require 'reflex/ext'
 require 'reflex/helper'
@@ -15,9 +16,13 @@ module Reflex
     include Xot::Setter
     include Hookable
 
-    def initialize (opts = {}, &block)
+    extend Xot::UniversalAccessor
+
+    universal_accessor :name
+
+    def initialize (options = nil, &block)
       super()
-      set opts
+      set options if options
       @start_block = block if block
     end
 

@@ -21,7 +21,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::ArcShape)
 static
 RUCY_DEF_ALLOC(alloc, klass)
 {
-	return value(new Reflex::RubyShapeView<Reflex::ArcShape>, klass);
+	return value(new Reflex::RubyView<Reflex::ArcShape>, klass);
 }
 RUCY_END
 

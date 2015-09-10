@@ -14,9 +14,9 @@ win = Window.new do
   images = [:red, :blue].map do |col|
     Image.new(32, 32).tap do |img|
       img.paint do
-        color :white
+        fill :white
         rect img.bounds
-        color col
+        fill col
         ellipse img.bounds.inset_by(2, 2)
       end
     end

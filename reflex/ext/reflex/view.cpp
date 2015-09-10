@@ -307,10 +307,11 @@ RUCY_DEF0(get_selector)
 RUCY_END
 
 static
-RUCY_DEF1(set_frame, arg)
+RUCY_DEFN(set_frame)
 {
 	CHECK;
-	THIS->set_frame(to<Rays::Bounds>(arg));
+	THIS->set_frame(to<Rays::Bounds>(argc, argv));
+	return value(THIS->frame());
 }
 RUCY_END
 
@@ -482,7 +483,7 @@ RUCY_DEF1(set_debug, state)
 RUCY_END
 
 static
-RUCY_DEF0(debugging)
+RUCY_DEF0(is_debugging)
 {
 	CHECK;
 	return value(THIS->debugging());
@@ -725,11 +726,11 @@ Init_view ()
 	cView.define_method("each_tag", each_tag);
 	cView.define_method("selector=", set_selector);
 	cView.define_method("selector",  get_selector);
-	cView.define_private_method("set_frame", set_frame);
-	cView.define_private_method("get_frame", get_frame);
+	cView.define_method("frame=", set_frame);
+	cView.define_method("frame",  get_frame);
 	cView.define_method("zoom=", set_zoom);
 	cView.define_method("zoom",  get_zoom);
-	cView.define_method("angle",  get_angle);
+	cView.define_method("angle", get_angle);
 	cView.define_method("scroll_to", scroll_to);
 	cView.define_method("scroll_by", scroll_by);
 	cView.define_method("scroll", get_scroll);
@@ -739,11 +740,11 @@ Init_view ()
 	cView.define_method("window", window);
 	cView.define_method("body", body);
 	cView.define_method("meter2pixel", meter2pixel);
-	cView.define_method("set_gravity", set_gravity);
-	cView.define_method("gravity",     get_gravity);
+	cView.define_method("gravity=", set_gravity);
+	cView.define_method("gravity",  get_gravity);
 	cView.define_method("wall", wall);
 	cView.define_method("debug=", set_debug);
-	cView.define_method("debug?",     debugging);
+	cView.define_method("debug",   is_debugging);
 	cView.define_method("on_attach", on_attach);
 	cView.define_method("on_detach", on_detach);
 	cView.define_method("on_show", on_show);

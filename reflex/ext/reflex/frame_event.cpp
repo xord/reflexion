@@ -117,7 +117,7 @@ Init_frame_event ()
 
 	cFrameEvent = mReflex.define_class("FrameEvent", Reflex::event_class());
 	cFrameEvent.define_alloc_func(alloc);
-	cFrameEvent.define_private_method("initialize", initialize);
+	cFrameEvent.define_private_method("initialize",      initialize);
 	cFrameEvent.define_private_method("initialize_copy", initialize_copy);
 	cFrameEvent.define_method("frame", frame);
 	cFrameEvent.define_method("dx", dx);

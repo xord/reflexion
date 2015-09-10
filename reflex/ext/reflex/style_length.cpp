@@ -109,17 +109,28 @@ namespace Rucy
 
 
 	template <> Reflex::StyleLength
-	value_to<Reflex::StyleLength> (Value value, bool convert)
+	value_to<Reflex::StyleLength> (int argc, const Value* argv, bool convert)
 	{
-		if (convert)
+		if (argc == 1 && argv->is_array())
 		{
-			     if (value.is_nil()) return Reflex::StyleLength();
-			else if (value.is_i())   return Reflex::StyleLength(value.as_i());
-			else if (value.is_f())   return Reflex::StyleLength(value.as_f());
-			else if (value.is_s())   return Reflex::StyleLength(value.c_str());
+			argc = argv->size();
+			argv = argv->as_array();
 		}
 
-		return value_to<Reflex::StyleLength&>(value, convert);
+		assert(argc > 0 && argv);
+
+		if (convert)
+		{
+			     if (argv->is_nil()) return Reflex::StyleLength();
+			else if (argv->is_i())   return Reflex::StyleLength(argv[0].as_i());
+			else if (argv->is_f())   return Reflex::StyleLength(argv[0].as_f());
+			else if (argv->is_s())   return Reflex::StyleLength(argv[0].c_str());
+		}
+
+		if (argc != 1)
+			argument_error(__FILE__, __LINE__);
+
+		return value_to<Reflex::StyleLength&>(*argv, convert);
 	}
 
 

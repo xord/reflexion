@@ -105,7 +105,7 @@ Init_key_event ()
 
 	cKeyEvent = mReflex.define_class("KeyEvent", Reflex::event_class());
 	cKeyEvent.define_alloc_func(alloc);
-	cKeyEvent.define_private_method("initialize", initialize);
+	cKeyEvent.define_private_method("initialize",      initialize);
 	cKeyEvent.define_private_method("initialize_copy", initialize_copy);
 	cKeyEvent.define_method("get_type", get_type);
 	cKeyEvent.define_method("chars", chars);

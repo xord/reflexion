@@ -25,30 +25,6 @@ namespace Reflex
 	// class Reflex::ArcShape
 
 
-	template <typename T>
-	class RubyShapeView : public RubyView<T>
-	{
-
-		public:
-
-			RUCY_OVERRIDE_BEGIN(RubyView<T>)
-
-			RUCY_OVERRIDE_ID(on_draw_shape)
-
-			RUCY_OVERRIDE_END
-
-			virtual void on_draw_shape (DrawEvent* e)
-			{
-				RUCY_SYM(on_draw_shape);
-				if (RUCY_IS_OVERRIDDEN(on_draw_shape))
-					this->value.call(on_draw_shape, Rucy::value(e));
-				else
-					Super::on_draw_shape(e);
-			}
-
-	};// RubyShapeView
-
-
 }// Reflex
 
 

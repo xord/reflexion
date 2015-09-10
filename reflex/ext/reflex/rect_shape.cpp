@@ -22,7 +22,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::RectShape)
 static
 RUCY_DEF_ALLOC(alloc, klass)
 {
-	return value(new Reflex::RubyShapeView<Reflex::RectShape>, klass);
+	return value(new Reflex::RubyView<Reflex::RectShape>, klass);
 }
 RUCY_END
 

@@ -82,10 +82,11 @@ RUCY_DEF0(get_title)
 RUCY_END
 
 static
-RUCY_DEF1(set_frame, arg)
+RUCY_DEFN(set_frame)
 {
 	CHECK;
-	THIS->set_frame(to<Rays::Bounds>(arg));
+	THIS->set_frame(to<Rays::Bounds>(argc, argv));
+	return value(THIS->frame());
 }
 RUCY_END
 
@@ -272,8 +273,8 @@ Init_window ()
 	cWindow.define_method("redraw", redraw);
 	cWindow.define_method("title=", set_title);
 	cWindow.define_method("title", get_title);
-	cWindow.define_private_method("set_frame", set_frame);
-	cWindow.define_private_method("get_frame", get_frame);
+	cWindow.define_method("frame=", set_frame);
+	cWindow.define_method("frame",  get_frame);
 	cWindow.define_method("hidden", hidden);
 	cWindow.define_method("root", root);
 	cWindow.define_method("focus", focus);

@@ -71,7 +71,7 @@ Init_contact_event ()
 
 	cContactEvent = mReflex.define_class("ContactEvent", Reflex::event_class());
 	cContactEvent.define_alloc_func(alloc);
-	cContactEvent.define_private_method("initialize", initialize);
+	cContactEvent.define_private_method("initialize",      initialize);
 	cContactEvent.define_private_method("initialize_copy", initialize_copy);
 	cContactEvent.define_method("get_type", get_type);
 	cContactEvent.define_method("view",     get_view);

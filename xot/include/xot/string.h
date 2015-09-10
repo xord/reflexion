@@ -38,6 +38,15 @@ namespace Xot
 
 			String (const char* str);
 
+			template <typename ITERATOR>
+			String (ITERATOR begin, ITERATOR end) : Super(begin, end) {}
+
+			String upcase () const;
+
+			String downcase () const;
+
+			String strip () const;
+
 			operator const char* () const;
 
 			friend String operator + (const String& lhs, const String& rhs);

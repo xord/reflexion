@@ -130,7 +130,7 @@ Init_wheel_event ()
 
 	cWheelEvent = mReflex.define_class("WheelEvent", Reflex::event_class());
 	cWheelEvent.define_alloc_func(alloc);
-	cWheelEvent.define_private_method("initialize", initialize);
+	cWheelEvent.define_private_method("initialize",      initialize);
 	cWheelEvent.define_private_method("initialize_copy", initialize_copy);
 	cWheelEvent.define_method("dx", dx);
 	cWheelEvent.define_method("dy", dy);

@@ -13,7 +13,7 @@ module Reflex
   class View
     def view (frame = [0, 0, rand(10..200), rand(10..200)], color = [rand, rand, rand], &block)
       v = RectShape.new &block
-      v.set frame: frame, fill: Color.color(*color)
+      v.set frame: frame, fill: color
       add v
       v
     end
@@ -27,16 +27,16 @@ end
 win = Window.new title: 'Layout Sample', frame: [100, 100, 500, 400] do
   20.times do
     root.view do
-      style do
-        self.width = '25%'
-        self.height = '50%'
-      end
+      style {
+        width  '25%'
+        height '50%'
+      }
     end
   end
   root.view do
-    style do 
-      self.left = self.top = self.right = self.bottom = '10%'
-    end
+    style {
+      left top right bottom '10%'
+    }
   end
 =begin
   lock_screen = View.new do

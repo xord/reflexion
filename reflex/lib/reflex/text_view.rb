@@ -32,7 +32,7 @@ module Reflex
       return unless @image
 
       pa = e.painter
-      pa.color 1
+      pa.fill 1
       pa.image @image
     end
 

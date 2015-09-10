@@ -71,7 +71,7 @@ Init_capture_event ()
 
 	cCaptureEvent = mReflex.define_class("CaptureEvent", Reflex::event_class());
 	cCaptureEvent.define_alloc_func(alloc);
-	cCaptureEvent.define_private_method("initialize", initialize);
+	cCaptureEvent.define_private_method("initialize",      initialize);
 	cCaptureEvent.define_private_method("initialize_copy", initialize_copy);
 	cCaptureEvent.define_private_method("get_begin", begin);
 	cCaptureEvent.define_private_method("get_end",   end);

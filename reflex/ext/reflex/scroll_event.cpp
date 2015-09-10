@@ -125,7 +125,7 @@ Init_scroll_event ()
 
 	cScrollEvent = mReflex.define_class("ScrollEvent", Reflex::event_class());
 	cScrollEvent.define_alloc_func(alloc);
-	cScrollEvent.define_private_method("initialize", initialize);
+	cScrollEvent.define_private_method("initialize",      initialize);
 	cScrollEvent.define_private_method("initialize_copy", initialize_copy);
 	cScrollEvent.define_method("x", x);
 	cScrollEvent.define_method("y", y);

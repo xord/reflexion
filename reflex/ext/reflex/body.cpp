@@ -289,9 +289,9 @@ Init_body ()
 	cBody.define_method("clear_fixtures", clear_fixtures);
 	cBody.define_method("meter2pixel", meter2pixel);
 	cBody.define_method("static=", set_static);
-	cBody.define_method("static?",  is_static);
+	cBody.define_method("static",   is_static);
 	cBody.define_method("dynamic=", set_dynamic);
-	cBody.define_method("dynamic?",  is_dynamic);
+	cBody.define_method("dynamic",   is_dynamic);
 	cBody.define_method("position", get_position);
 	cBody.define_method("angle",    get_angle);
 	cBody.define_method("linear_velocity=",  set_linear_velocity);

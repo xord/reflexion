@@ -23,13 +23,16 @@ class V < Reflex::View
     e.painter.push do
       b = e.bounds.to_a
 
-      color [0.2, 0.1]
+      fill 0.2
+      stroke 0.1
       rect *b
 
-      color :green, :red
+      fill :green
+      stroke :red
       text e.fps.to_i.to_s + " FPS."
 
-      color :none, [1, 0, 0, 0.4]
+      fill :none
+      stroke 1, 0, 0, 0.4
       rect *b
     end
   end

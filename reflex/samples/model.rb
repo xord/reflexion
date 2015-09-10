@@ -15,8 +15,21 @@ class SliderView < View
   has_model
 
   def initialize ()
-    add @back = RectShape.new {set name: :back, border: :white, follow: :all}
-    add @knob = RectShape.new {set name: :knob, border: :white, follow: [:top, :bottom], color: :gray, width: 50, x: 50}
+    flow :none
+
+    add @back = View.new(name: :back, stroke: :white) {
+      style {
+        width  '100%'
+        height '100%'
+      }
+    }
+
+    add @knob = View.new(name: :knob, stroke: :white, fill: :gray, x: 50) {
+      style {
+        width  50
+        height '100%'
+      }
+    }
 
     start = nil
     @knob.on :pointer do |e|
@@ -28,7 +41,7 @@ class SliderView < View
         start = nil
         @knob.capture :none
       when :move
-        self.data = (@knob.x + e.x - start.x) / knob_left_max.to_f if start
+        self.data = (@knob.x + e.x - start.x) / knob_x_max.to_f if start
       end
     end
 
@@ -36,13 +49,13 @@ class SliderView < View
   end
 
   def on_data_update (e)
-    @knob.x = knob_left_max * data.to_f
+    @knob.x = knob_x_max * data.to_f
     super
   end
 
   private
 
-    def knob_left_max ()
+    def knob_x_max ()
       width - @knob.width
     end
 
@@ -72,13 +85,15 @@ end# ArrayView
 
 
 win = Window.new do
+  title 'Model View Sample'
+  frame 100, 100, 500, 400
+  flow  :none
+
   add @slider = SliderView.new {set name: :slider, frame: [50, 50, 300, 30]}
   add @text   = LabelView.new  {set name: :text,   frame: [50, 150, 300, 30]}
   add @array  = ArrayView.new  {set name: :array,  frame: [50, 250, 300, 30]}
 
   @slider.model = @text.model = @array.model = Model.new(0) {set minmax: 0..1}
-
-  set title: 'Model View Sample', frame: [100, 100, 500, 400]
 end
 
 

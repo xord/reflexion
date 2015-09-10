@@ -28,7 +28,7 @@ module Reflex
     end
 
     def on_draw (e)
-      e.painter.color (pressing? ? :white : :none), :white do |p|
+      e.painter.push fill: (pressing? ? :white : :none), stroke: :white do |p|
         p.rect e.bounds
 
         if @text

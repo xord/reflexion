@@ -180,6 +180,14 @@ namespace Reflex
 
 			const StyleLength&  padding_bottom () const;
 
+			void           set_center_x (const StyleLength& x);
+
+			void           set_center_y (const StyleLength& y);
+
+			const StyleLength& center_x () const;
+
+			const StyleLength& center_y () const;
+
 			void     set_fill (const Color& fill);
 
 			const Color& fill () const;

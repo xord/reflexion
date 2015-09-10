@@ -61,7 +61,7 @@ Init_update_event ()
 
 	cUpdateEvent = mReflex.define_class("UpdateEvent", Reflex::event_class());
 	cUpdateEvent.define_alloc_func(alloc);
-	cUpdateEvent.define_private_method("initialize", initialize);
+	cUpdateEvent.define_private_method("initialize",      initialize);
 	cUpdateEvent.define_private_method("initialize_copy", initialize_copy);
 	cUpdateEvent.define_method("dt", dt);
 }

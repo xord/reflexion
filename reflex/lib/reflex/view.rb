@@ -3,6 +3,7 @@
 
 require 'forwardable'
 require 'xot/setter'
+require 'xot/universal_accessor'
 require 'xot/block_util'
 require 'reflex/ext'
 require 'reflex/model_view'
@@ -21,24 +22,41 @@ module Reflex
     include HasTags
 
     extend Forwardable
+    extend Xot::UniversalAccessor
+
+    def_delegators :style,
+      :flow=,   :flow,
+      :fill=,   :fill,
+      :stroke=, :stroke,
+      :image=,  :image
 
     def_delegators :body,
-      :static=, :static?, :dynamic=, :dynamic?,
-      :velocity=, :linear_velocity=, :angular_velocity=,
-      :velocity,  :linear_velocity,  :angular_velocity,
-      :apply_force, :apply_torque, :apply_impulse,
-      :apply_linear_impulse, :apply_angular_impulse,
-      :density=, :density, :friction=, :friction, :restitution=, :restitution,
-      :gravity_scale=, :gravity_scale
+      :static=,           :static,  :static?,
+      :dynamic=,          :dynamic, :dynamic?,
+      :density=,          :density,
+      :friction=,         :friction,
+      :restitution=,      :restitution,
+      :velocity=,         :velocity,
+      :linear_velocity=,  :linear_velocity,
+      :angular_velocity=, :angular_velocity,
+      :gravity_scale=,    :gravity_scale,
+      :apply_force,
+      :apply_torque,
+      :apply_impulse,
+      :apply_linear_impulse,
+      :apply_angular_impulse
 
     alias add    add_child
     alias remove remove_child
     alias find   find_children
-    alias meter meter2pixel
+    alias meter  meter2pixel
+    alias debug? debug
 
-    def initialize (opts = {}, &block)
+    universal_accessor :name, :selector, :frame, :zoom, :gravity, :debug
+
+    def initialize (options = nil, &block)
       super()
-      set opts
+      set options if options
       @attach_block = block if block
     end
 
@@ -68,14 +86,6 @@ module Reflex
     def capturing? (*args)
       cap = capture
       args.all? {|type| cap.include? type}
-    end
-
-    def gravity= (*args)
-      case arg = args[0]
-      when Point then set_gravity arg.x, arg.y
-      when Array then set_gravity arg[0], arg[1]
-      else            set_gravity *args
-      end
     end
 
     def self.has_model ()

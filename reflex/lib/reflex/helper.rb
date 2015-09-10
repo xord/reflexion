@@ -2,6 +2,7 @@
 
 
 require 'xot/hookable'
+require 'xot/universal_accessor'
 require 'reflex/point'
 require 'reflex/bounds'
 
@@ -22,38 +23,30 @@ module Reflex
 
   module HasFrame
 
-    def frame= (*args)
-      set_frame args.flatten
-      get_frame
-    end
-
-    def frame (*args)
-      send :frame=, *args unless args.empty?
-      get_frame
-    end
+    extend Xot::UniversalAccessor
 
     def move_to (*args)
-      self.frame = get_frame.move_to *args
+      self.frame = frame.move_to *args
       self
     end
 
     def move_by (*args)
-      self.frame = get_frame.move_by *args
+      self.frame = frame.move_by *args
       self
     end
 
     def resize_to (*args)
-      self.frame = get_frame.resize_to *args
+      self.frame = frame.resize_to *args
       self
     end
 
     def resize_by (*args)
-      self.frame = get_frame.resize_by *args
+      self.frame = frame.resize_by *args
       self
     end
 
     def inset_by (*args)
-      self.frame = get_frame.inset_by *args
+      self.frame = frame.inset_by *args
       self
     end
 
@@ -64,20 +57,17 @@ module Reflex
       lt rt lb rb
       position pos size center
     ].each do |name|
-      name_assign = "#{name}=".intern
-      name        = name.intern
+      class_eval <<-END
+        def #{name} ()
+          frame.#{name}
+        end
+        def #{name}= (*args)
+          self.frame = frame.tap {|b| b.send :#{name}=, *args}
+          #{name}
+        end
+      END
 
-      define_method name do |*args|
-        send name_assign, *args unless args.empty?
-        get_frame.send name
-      end
-
-      define_method name_assign do |*args|
-        b   = get_frame
-        ret = b.send name_assign, *args
-        set_frame b
-        ret
-      end
+      universal_accessor name
     end
 
   end# HasFrame

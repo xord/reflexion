@@ -2,6 +2,7 @@
 
 
 require 'xot/setter'
+require 'xot/universal_accessor'
 require 'xot/block_util'
 require 'reflex/ext'
 require 'reflex/helper'
@@ -15,9 +16,11 @@ module Reflex
     include Xot::Setter
     include HasTags
 
-    def initialize (opts = {}, &block)
+    extend Xot::UniversalAccessor
+
+    def initialize (options = nil, &block)
       super()
-      set opts
+      set options if options
       Xot::BlockUtil.instance_eval_or_block_call self, &block if block
     end
 
@@ -29,17 +32,25 @@ module Reflex
       get_flow.map {|n| flow2sym n}
     end
 
+    universal_accessor :name, :selector, :flow, :width, :height, :size,
+              :left,         :top,         :right,         :bottom, :position,
+       :offset_left,  :offset_top,  :offset_right,  :offset_bottom, :offset,
+       :margin_left,  :margin_top,  :margin_right,  :margin_bottom, :margin,
+      :padding_left, :padding_top, :padding_right, :padding_bottom, :padding,
+      :fill, :stroke, :image
+
     def inspect ()
       attrs = {
-        selector:         selector,
-        flow:             flow,
-        size:             size,
-        position:         position,
-        offset:           offset,
-        margin:           margin,
-        padding:          padding,
-        background_color: background_color,
-        background_image: background_image
+        selector: selector,
+        flow:     flow,
+        size:     size,
+        position: position,
+        offset:   offset,
+        margin:   margin,
+        padding:  padding,
+        fill:     fill,
+        stroke:   stroke,
+        image:    image
       }
       "#<Reflex::Style #{attrs.map {|k, v| %(#{k}:#{v.to_s})}.join ' '}>"
     end

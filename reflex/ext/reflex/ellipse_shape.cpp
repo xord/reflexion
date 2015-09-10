@@ -21,7 +21,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::EllipseShape)
 static
 RUCY_DEF_ALLOC(alloc, klass)
 {
-	return value(new Reflex::RubyShapeView<Reflex::EllipseShape>, klass);
+	return value(new Reflex::RubyView<Reflex::EllipseShape>, klass);
 }
 RUCY_END
 

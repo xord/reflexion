@@ -13,8 +13,8 @@ fps   = 0
 
 
 setup do
-  style.flow = :none
-  set width: 600, height: 300
+  flow :none
+  size 600, 300
   painter.font = Font.new nil, 24
 end
 
@@ -31,7 +31,9 @@ end
 pointer do
   if down? || drag?
     window.add EllipseShape.new {
-      set frame: [*(event.pos - 10).to_a, 20, 20], fill: :red
+      pos  event.pos
+      size 20, 20
+      fill :red
     }
   end
 end

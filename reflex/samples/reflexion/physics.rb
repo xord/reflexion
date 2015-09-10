@@ -9,8 +9,10 @@ require 'reflexion/include'
 
 
 setup do
-  style.flow = :none
-  set size: [600, 400], gravity: Point.new(0, 9.8) * meter #, debug: true
+  flow    :none
+  size    600, 400
+  gravity 0, 9.8 * meter
+  #debug   true
 end
 
 draw do
@@ -20,10 +22,11 @@ end
 pointer do
   if down? || drag?
     window.add [RectShape, EllipseShape].sample.new {
-      size  = rand 20..40
-      color = event.right? ? :gray : [:red, :green, :blue].sample
-      set frame: [*event.pos.to_a, size, size], fill: color
-      set dynamic: event.left?, density: 1
+      pos     event.pos
+      size    rand 20..40
+      fill    event.right? ? :gray : [:red, :green, :blue].sample
+      dynamic event.left?
+      density 1
     }
   end
 end

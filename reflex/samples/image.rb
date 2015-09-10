@@ -13,9 +13,9 @@ include Reflex
 win = Window.new do
   image = Image.new(32, 32).tap do |img|
     img.paint do
-      color :white
+      fill :white
       rect img.bounds
-      color :red
+      fill :red
       ellipse img.bounds.inset_by(2, 2)
     end
   end
@@ -29,14 +29,15 @@ win = Window.new do
   end
 
   after :draw do |e|
-    e.painter.color :blank do
+    e.painter.push fill: :black do
       rect 0, 0, 100, 40
       fill :white
       text "#{e.fps.to_i} FPS", 10, 10
     end
   end
 
-  set title: 'Many Image Views', frame: [100, 100, 500, 400]
+  title 'Many Image Views'
+  frame 100, 100, 500, 400
 end
 
 

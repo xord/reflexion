@@ -14,7 +14,7 @@ array = []
 draw do
   gray += 0.01
   gray %= 1
-  background gray, gray, gray
+  background gray
   array.unshift event.fps
   array.slice! 32..-1
   text "#{array.reduce(0) {|sum, n| sum + n}.tap {|n| break n / array.size}.to_i} FPS", 10, 30

@@ -87,7 +87,7 @@ Init_draw_event ()
 
 	cDrawEvent = mReflex.define_class("DrawEvent", Reflex::event_class());
 	cDrawEvent.define_alloc_func(alloc);
-	cDrawEvent.define_private_method("initialize", initialize);
+	cDrawEvent.define_private_method("initialize",      initialize);
 	cDrawEvent.define_private_method("initialize_copy", initialize_copy);
 	cDrawEvent.define_method("painter", painter);
 	cDrawEvent.define_method("bounds", bounds);

@@ -10,38 +10,41 @@ require 'reflex'
 
 Reflex.start name: "Physics" do |app|
   Reflex::Window.show title: app.name, frame: [100, 100, 500, 500] do
-    root.set gravity: Reflex::Point.new(0, 9.8), debug: true
+    flow    :none
+    gravity 0, 9.8 * meter
+    #debug   true
 
-    add_dynamic = -> size = 50, x = rand(10..400), y = rand(10..100) do
+    add_dynamic = -> x = rand(10..400), y = rand(10..100), size_ = 50 do
       add Reflex::EllipseShape.new {
-        set :fill, [:red, :green, :blue, :yellow, :cyan, :magenta, :gray].sample
-        set :pos, [x, y]
-        set :size, [rand(5..size)] * 2
-        body.set dynamic: true, density: 1
+        pos     x, y
+        size    rand 5..size_
+        fill    [:red, :green, :blue, :yellow, :cyan, :magenta, :gray].sample
+        dynamic true
+        density 1
       }
     end
 
-    add_static = -> size = 50 do
+    add_static = -> size_ = 50 do
       add Reflex::RectShape.new {
-        set :fill, :white
-        set :pos, [rand(10..400), rand(200..400)]
-        set :size, [rand(5..(size * 2)), rand(5..size)]
-        body.set static: true
+        pos    rand(10..400), rand(200..400)
+        size   rand(5..(size_ * 2)), rand(5..size_)
+        fill   :white
+        static true
       }
     end
 
     50.times {|n| add_dynamic.call}
-    5.times {|n| add_static.call}
+    5.times  {|n| add_static.call}
 
     after :draw do |e|
-      e.painter.fill :white
-      e.painter.text "#{e.fps.to_i} FPS", 10, 10
+      e.painter.push do
+        fill :white
+        text "#{e.fps.to_i} FPS", 10, 10
+      end
     end
 
     on :pointer do |e|
-      if e.down? || e.drag?
-        add_dynamic.call 50, *e.pos.to_a
-      end
+      add_dynamic.call *e.pos.to_a if e.down? || e.drag?
     end
   end
 end

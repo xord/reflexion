@@ -118,12 +118,26 @@ namespace Rucy
 
 
 	template <> Reflex::Selector
-	value_to<Reflex::Selector> (Value value, bool convert)
+	value_to<Reflex::Selector> (int argc, const Value* argv, bool convert)
 	{
-		if (convert && (value.is_s() || value.is_sym()))
-			return Reflex::Selector(value.c_str());
+		if (argc == 1 && argv->is_array())
+		{
+			argc = argv->size();
+			argv = argv->as_array();
+		}
 
-		return value_to<Reflex::Selector&>(value, convert);
+		assert(argc > 0 && argv);
+
+		if (convert)
+		{
+			if (argc == 1 && (argv->is_s() || argv->is_sym()))
+				return Reflex::Selector(argv[0].c_str());
+		}
+
+		if (argc != 1)
+			argument_error(__FILE__, __LINE__);
+
+		return value_to<Reflex::Selector&>(*argv, convert);
 	}
 
 

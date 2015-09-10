@@ -531,42 +531,6 @@ namespace Reflex
 		update_view_layout(view);
 	}
 
-	static void
-	draw_view (View* view, Painter* painter)
-	{
-		assert(view && painter);
-
-		View::Data* self = view->self.get();
-		Style* style     = self->pstyle.get();
-		if (!style)
-			return;
-
-		const Color& fill   = style->fill();
-		const Color& stroke = style->stroke();
-
-		if (fill.alpha == 0 && stroke.alpha == 0)
-			return;
-
-		Color fill_org   = painter->fill();
-		Color stroke_org = painter->stroke();
-
-		painter->set_fill(fill);
-		painter->set_stroke(stroke);
-		painter->rect(0, 0, self->frame.width, self->frame.height);
-
-		painter->set_fill(fill_org);
-		painter->set_stroke(stroke_org);
-	}
-
-	static void
-	draw_world (View* view, Painter* painter)
-	{
-		assert(view);
-
-		World* world = view->self->pworld.get();
-		if (world) world->draw(painter);
-	}
-
 	void
 	draw_view_tree (
 		View* view, const DrawEvent& event, const Point& offset, const Bounds& clip)
@@ -578,41 +542,58 @@ namespace Reflex
 
 		View::Data* self = view->self.get();
 		DrawEvent e      = event;
-		Painter*  p      = e.painter;
-		Body*     b      = self->pbody.get();
+		Painter* p       = e.painter;
 
 		p->push_matrix();
-		p->push_attr();
 
 		Bounds frame = view->frame();
 		Point  pos   = frame.position() - view->scroll();
 		p->translate(pos);
 
 		float angle = self->angle;
-		if (angle != 0) p->rotate(angle);
+		if (angle != 0)
+			p->rotate(angle);
 
 		float zoom = self->zoom;
-		if (zoom != 1 && zoom > 0) p->scale(zoom, zoom);
+		if (zoom != 1 && zoom > 0)
+			p->scale(zoom, zoom);
+
+		p->push_attrs();
 
 		pos += offset;
 		Bounds clip2 = clip & frame.move_to(pos);
-		if (b)
+		if (self->pbody)
 			p->no_clip();
 		else
 			p->set_clip(clip2);
 
+		Style* style = self->pstyle.get();
+		if (style)
+		{
+			const Color& f = style->fill();
+			const Color& s = style->stroke();
+			if (f.alpha > 0) p->set_fill(f);
+			if (s.alpha > 0) p->set_stroke(s);
+		}
+
 		e.view   = view;
 		e.bounds = frame.move_to(0, 0, frame.z);
-		draw_view(view, p);
 		view->on_draw(&e);
+
+		p->pop_attrs();
 
 		View::child_iterator end = view->child_end();
 		for (View::child_iterator it = view->child_begin(); it != end; ++it)
 			draw_view_tree(it->get(), e, pos, clip2);
 
-		draw_world(view, p);
+		World* world = view->self->pworld.get();
+		if (world)
+		{
+			p->push_attrs();
+			world->draw(p);
+			p->pop_attrs();
+		}
 
-		p->pop_attr();
 		p->pop_matrix();
 	}
 #if 0
@@ -1944,6 +1925,21 @@ namespace Reflex
 	{
 		if (!e)
 			argument_error(__FILE__, __LINE__);
+
+		Style* style = self->pstyle.get();
+		if (!style) return;
+
+		const Color& f = style->fill();
+		const Color& s = style->stroke();
+		if (f.alpha <= 0 && s.alpha <= 0)
+			return;
+
+		Painter* p = e->painter;
+		p->set_fill(f);
+		p->set_stroke(s);
+
+		const Bounds& b = self->frame;
+		p->rect(0, 0, b.width, b.height);
 	}
 
 	void

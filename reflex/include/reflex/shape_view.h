@@ -23,31 +23,7 @@ namespace Reflex
 
 			virtual ~ShapeView ();
 
-			virtual void     set_fill (float red, float green, float blue, float alpha = 1);
-
-			virtual void     set_fill (const Color& color);
-
-			virtual void      no_fill ();
-
-			virtual const Color& fill () const;
-
-			virtual void     set_stroke (float red, float green, float blue, float alpha = 1);
-
-			virtual void     set_stroke (const Color& color);
-
-			virtual void      no_stroke ();
-
-			virtual const Color& stroke () const;
-
 			virtual Point content_size () const;
-
-			virtual void on_draw       (DrawEvent* e);
-
-			virtual void on_draw_shape (DrawEvent* e);
-
-			struct Data;
-
-			Xot::PImpl<Data> self;
 
 	};// ShapeView
 
@@ -71,7 +47,7 @@ namespace Reflex
 
 			virtual const Point& round () const;
 
-			virtual void on_draw_shape (DrawEvent* e);
+			virtual void on_draw (DrawEvent* e);
 
 			struct Data;
 
@@ -101,7 +77,7 @@ namespace Reflex
 
 			virtual void make_body ();
 
-			virtual void on_draw_shape (DrawEvent* e);
+			virtual void on_draw (DrawEvent* e);
 
 			struct Data;
 
@@ -131,7 +107,7 @@ namespace Reflex
 
 			virtual void make_body ();
 
-			virtual void on_draw_shape (DrawEvent* e);
+			virtual void on_draw (DrawEvent* e);
 
 			struct Data;
 

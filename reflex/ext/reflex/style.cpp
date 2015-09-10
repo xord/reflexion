@@ -517,10 +517,10 @@ RUCY_DEF0(get_padding)
 RUCY_END
 
 static
-RUCY_DEF1(set_fill, color)
+RUCY_DEFN(set_fill)
 {
 	CHECK;
-	THIS->set_fill(to<Reflex::Color&>(color));
+	THIS->set_fill(to<Reflex::Color>(argc, argv));
 }
 RUCY_END
 
@@ -533,10 +533,10 @@ RUCY_DEF0(get_fill)
 RUCY_END
 
 static
-RUCY_DEF1(set_stroke, color)
+RUCY_DEFN(set_stroke)
 {
 	CHECK;
-	THIS->set_stroke(to<Reflex::Color&>(color));
+	THIS->set_stroke(to<Reflex::Color>(argc, argv));
 }
 RUCY_END
 

@@ -169,7 +169,7 @@ namespace Reflex
 
 			const T& default_value () const
 			{
-				static T defval = get_style_default_value<T>();
+				static const T defval = get_style_default_value<T>();
 				return defval;
 			}
 
@@ -358,6 +358,8 @@ namespace Reflex
 
 		Length padding_left, padding_top, padding_right, padding_bottom;
 
+		Length center_x, center_y;
+
 		Color fill, stroke;
 
 		Image image;
@@ -449,6 +451,8 @@ namespace Reflex
 		clear_inherited_value(&self->padding_top);
 		clear_inherited_value(&self->padding_right);
 		clear_inherited_value(&self->padding_bottom);
+		clear_inherited_value(&self->center_x);
+		clear_inherited_value(&self->center_y);
 		clear_inherited_value(&self->fill);
 		clear_inherited_value(&self->stroke);
 		clear_inherited_value(&self->image);
@@ -482,6 +486,8 @@ namespace Reflex
 		to->padding_top   .override(from->padding_top);
 		to->padding_right .override(from->padding_right);
 		to->padding_bottom.override(from->padding_bottom);
+		to->center_x      .override(from->center_x);
+		to->center_y      .override(from->center_y);
 		to->fill          .override(from->fill);
 		to->stroke        .override(from->stroke);
 		to->image         .override(from->image);
@@ -856,6 +862,32 @@ namespace Reflex
 	}
 
 	void
+	Style::set_center_x (const StyleLength& x)
+	{
+		if (self->center_x.set(x))
+			update_owner(*this);
+	}
+
+	void
+	Style::set_center_y (const StyleLength& y)
+	{
+		if (self->center_y.set(y))
+			update_owner(*this);
+	}
+
+	const StyleLength&
+	Style::center_x () const
+	{
+		return self->center_x.get();
+	}
+
+	const StyleLength&
+	Style::center_y () const
+	{
+		return self->center_y.get();
+	}
+
+	void
 	Style::set_fill (const Color& fill)
 	{
 		if (self->fill.set(fill))
@@ -938,10 +970,13 @@ namespace Reflex
 			is_variable(s->margin_right)  ||
 			is_variable(s->margin_bottom) ||
 
-			is_variable(s->padding_left)  ||
-			is_variable(s->padding_top)   ||
-			is_variable(s->padding_right) ||
-			is_variable(s->padding_bottom);
+			is_variable(s->padding_left)   ||
+			is_variable(s->padding_top)    ||
+			is_variable(s->padding_right)  ||
+			is_variable(s->padding_bottom) ||
+
+			is_variable(s->center_x)  ||
+			is_variable(s->center_y);
 	}
 
 	bool

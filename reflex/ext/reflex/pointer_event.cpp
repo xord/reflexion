@@ -154,7 +154,7 @@ Init_pointer_event ()
 
 	cPointerEvent = mReflex.define_class("PointerEvent", Reflex::event_class());
 	cPointerEvent.define_alloc_func(alloc);
-	cPointerEvent.define_private_method("initialize", initialize);
+	cPointerEvent.define_private_method("initialize",      initialize);
 	cPointerEvent.define_private_method("initialize_copy", initialize_copy);
 	cPointerEvent.define_method("get_type", get_type);
 	cPointerEvent.define_method("get_pointer_type", get_pointer_type);

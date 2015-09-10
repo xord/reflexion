@@ -79,7 +79,7 @@ Init_focus_event ()
 
 	cFocusEvent = mReflex.define_class("FocusEvent", Reflex::event_class());
 	cFocusEvent.define_alloc_func(alloc);
-	cFocusEvent.define_private_method("initialize", initialize);
+	cFocusEvent.define_private_method("initialize",      initialize);
 	cFocusEvent.define_private_method("initialize_copy", initialize_copy);
 	cFocusEvent.define_method("get_type", get_type);
 	cFocusEvent.define_method("focus", focus);

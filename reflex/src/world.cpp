@@ -35,12 +35,12 @@ namespace Reflex
 			void begin (Painter* painter)
 			{
 				this->painter = painter;
-				painter->push_attr();
+				painter->push_attrs();
 			}
 
 			void end ()
 			{
-				painter->pop_attr();
+				painter->pop_attrs();
 				painter = NULL;
 			}
 
