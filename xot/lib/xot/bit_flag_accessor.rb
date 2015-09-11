@@ -8,24 +8,29 @@ require 'xot/block_util'
 class Module
 
   def bit_flag_accessor (name, bit_flag = nil, &block)
-    bf = make_bit_flag bit_flag, block
+    bf = define_bit_flag name, bit_flag, block
     define_bit_flag_writer name, bf
     define_bit_flag_reader name, bf
   end
 
   def bit_flag_writer (name, bit_flag = nil, &block)
-    define_bit_flag_writer name, make_bit_flag(bit_flag, block)
+    define_bit_flag_writer name, define_bit_flag(name, bit_flag, block)
   end
 
   def bit_flag_reader (name, bit_flag = nil, &block)
-    define_bit_flag_reader name, make_bit_flag(bit_flag, block)
+    define_bit_flag_reader name, define_bit_flag(name, bit_flag, block)
   end
 
   private
 
-    def make_bit_flag (bit_flag, block)
+    def define_bit_flag (name, bit_flag, block)
       bit_flag ||= Xot::BitFlag.new
       Xot::BlockUtil.instance_eval_or_block_call bit_flag, &block if block
+
+      define_singleton_method "#{name}_flag".intern do
+        bit_flag
+      end
+
       bit_flag
     end
 

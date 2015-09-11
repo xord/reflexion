@@ -33,6 +33,10 @@ class TestBitFlagAccessor < Test::Unit::TestCase
     SymbolAccessor.new &block
   end
 
+  def flag ()
+    SymbolAccessor.bits_flag
+  end
+
   def test_int_accessor ()
     assert_equal 0b0,  int.get
     assert_equal 0b1,  int{|o| o.bits = bit 0}.get
@@ -50,6 +54,11 @@ class TestBitFlagAccessor < Test::Unit::TestCase
     assert_equal [:bit0],        symbol{|o| o.set bit 0}.bits
     assert_equal [:bit1],        symbol{|o| o.set bit 1}.bits
     assert_equal [:bit0, :bit1], symbol{|o| o.set bit 0, 1}.bits
+  end
+
+  def test_singleton_flag_reader ()
+    assert_equal 0b11,           flag.symbols2bits(:bit0, :bit1)
+    assert_equal [:bit0, :bit1], flag.bits2symbols(0b11)
   end
 
 end# TestBitFlagAccessor
