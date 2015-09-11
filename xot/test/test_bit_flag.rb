@@ -6,9 +6,7 @@ require_relative 'helper'
 
 class TestBitFlag < Test::Unit::TestCase
 
-  def bit (*args)
-    Xot::BitFlag.bit *args
-  end
+  include Xot::BitUtil
 
   def flag (*args, &block)
     bf = Xot::BitFlag.new *args, &block
@@ -18,13 +16,6 @@ class TestBitFlag < Test::Unit::TestCase
     bf.flag :bit5, bit(5)
     bf.flag :all,  bit(1, 2, 3, 5)
     bf
-  end
-
-  def test_bit ()
-    assert_equal 0b1,    bit(0)
-    assert_equal 0b10,   bit(1)
-    assert_equal 0b1000, bit(3)
-    assert_equal 0b1010, bit(1, 3)
   end
 
   def test_bits2symbols ()

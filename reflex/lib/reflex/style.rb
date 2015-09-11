@@ -16,8 +16,6 @@ module Reflex
     include Xot::Setter
     include HasTags
 
-    extend Xot::UniversalAccessor
-
     def initialize (options = nil, &block)
       super()
       set options if options

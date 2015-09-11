@@ -23,8 +23,6 @@ module Reflex
 
   module HasFrame
 
-    extend Xot::UniversalAccessor
-
     def move_to (*args)
       self.frame = frame.move_to *args
       self

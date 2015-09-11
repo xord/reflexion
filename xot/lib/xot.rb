@@ -3,6 +3,8 @@
 
 require 'xot/module'
 require 'xot/bit_flag'
+require 'xot/bit_flag_accessor'
+require 'xot/bit_util'
 require 'xot/block_util'
 require 'xot/hookable'
 require 'xot/invoker'

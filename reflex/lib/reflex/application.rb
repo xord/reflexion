@@ -16,8 +16,6 @@ module Reflex
     include Xot::Setter
     include Hookable
 
-    extend Xot::UniversalAccessor
-
     universal_accessor :name
 
     def initialize (options = nil, &block)

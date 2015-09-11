@@ -19,7 +19,6 @@ module Reflex
     include HasFrame
 
     extend Forwardable
-    extend Xot::UniversalAccessor
 
     def_delegators :root,
       :add_child, :remove_child, :find_children,

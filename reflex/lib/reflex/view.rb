@@ -22,7 +22,6 @@ module Reflex
     include HasTags
 
     extend Forwardable
-    extend Xot::UniversalAccessor
 
     def_delegators :style,
       :flow=,   :flow,

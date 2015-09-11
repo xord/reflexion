@@ -8,8 +8,6 @@ class TestUniversalAccessor < Test::Unit::TestCase
 
   class Accessor
 
-    extend Xot::UniversalAccessor
-
     attr_accessor :val
 
     attr_reader :args

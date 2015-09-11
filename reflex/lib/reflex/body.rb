@@ -12,8 +12,6 @@ module Reflex
 
     include Xot::Setter
 
-    extend Xot::UniversalAccessor
-
     alias meter meter2pixel
     alias static?  static
     alias dynamic? dynamic
