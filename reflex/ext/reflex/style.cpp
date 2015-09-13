@@ -655,6 +655,7 @@ Init_style ()
 	cStyle.define_method("image",  get_image);
 
 	cStyle.define_method("==", equal);
+
 	cStyle.define_const("FLOW_NONE",  Reflex::Style::FLOW_NONE);
 	cStyle.define_const("FLOW_DOWN",  Reflex::Style::FLOW_DOWN);
 	cStyle.define_const("FLOW_RIGHT", Reflex::Style::FLOW_RIGHT);

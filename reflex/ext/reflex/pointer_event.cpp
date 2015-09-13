@@ -54,7 +54,7 @@ RUCY_DEF1(initialize_copy, obj)
 RUCY_END
 
 static
-RUCY_DEF0(get_type)
+RUCY_DEF0(type)
 {
 	CHECK;
 	return value(THIS->type);
@@ -62,7 +62,7 @@ RUCY_DEF0(get_type)
 RUCY_END
 
 static
-RUCY_DEF0(get_pointer_type)
+RUCY_DEF0(pointer_type)
 {
 	CHECK;
 	return value(THIS->pointer_type);
@@ -156,8 +156,8 @@ Init_pointer_event ()
 	cPointerEvent.define_alloc_func(alloc);
 	cPointerEvent.define_private_method("initialize",      initialize);
 	cPointerEvent.define_private_method("initialize_copy", initialize_copy);
-	cPointerEvent.define_method("get_type", get_type);
-	cPointerEvent.define_method("get_pointer_type", get_pointer_type);
+	cPointerEvent.define_method("type", type);
+	cPointerEvent.define_method("pointer_type", pointer_type);
 	cPointerEvent.define_method("size", size);
 	cPointerEvent.define_method("modifiers", modifiers);
 	cPointerEvent.define_method("count", count);

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+require 'xot/const_symbol_accessor'
 require 'reflex/ext'
 
 
@@ -9,9 +10,13 @@ module Reflex
 
   class ContactEvent
 
-    def type ()
-      TYPE2SYM[get_type] || :none
-    end
+    alias get_type type
+
+    const_symbol_reader :type, {
+      none:  TYPE_NONE,
+      begin: TYPE_BEGIN,
+      end:   TYPE_END
+    }
 
     def begin? ()
       get_type == TYPE_BEGIN
@@ -24,13 +29,6 @@ module Reflex
     def inspect ()
       "#<Reflex::ContactEvent type:#{type} view:#{view}>"
     end
-
-    private
-
-      TYPE2SYM = {
-        TYPE_BEGIN => :begin,
-        TYPE_END   => :end,
-      }
 
   end# ContactEvent
 

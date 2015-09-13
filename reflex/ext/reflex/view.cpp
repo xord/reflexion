@@ -734,8 +734,8 @@ Init_view ()
 	cView.define_method("scroll_to", scroll_to);
 	cView.define_method("scroll_by", scroll_by);
 	cView.define_method("scroll", get_scroll);
-	cView.define_method("set_capture", set_capture);
-	cView.define_method("get_capture", get_capture);
+	cView.define_method("capture=", set_capture);
+	cView.define_method("capture",  get_capture);
 	cView.define_method("parent", parent);
 	cView.define_method("window", window);
 	cView.define_method("body", body);

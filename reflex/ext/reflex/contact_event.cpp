@@ -46,7 +46,7 @@ RUCY_DEF1(initialize_copy, obj)
 RUCY_END
 
 static
-RUCY_DEF0(get_type)
+RUCY_DEF0(type)
 {
 	CHECK;
 	return value(THIS->type);
@@ -54,7 +54,7 @@ RUCY_DEF0(get_type)
 RUCY_END
 
 static
-RUCY_DEF0(get_view)
+RUCY_DEF0(view)
 {
 	CHECK;
 	return value(THIS->view);
@@ -73,8 +73,8 @@ Init_contact_event ()
 	cContactEvent.define_alloc_func(alloc);
 	cContactEvent.define_private_method("initialize",      initialize);
 	cContactEvent.define_private_method("initialize_copy", initialize_copy);
-	cContactEvent.define_method("get_type", get_type);
-	cContactEvent.define_method("view",     get_view);
+	cContactEvent.define_method("type", type);
+	cContactEvent.define_method("view", view);
 	cContactEvent.define_const("TYPE_NONE",  Reflex::ContactEvent::NONE);
 	cContactEvent.define_const("TYPE_BEGIN", Reflex::ContactEvent::BEGIN);
 	cContactEvent.define_const("TYPE_END",   Reflex::ContactEvent::END);

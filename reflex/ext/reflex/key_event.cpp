@@ -48,7 +48,7 @@ RUCY_DEF1(initialize_copy, obj)
 RUCY_END
 
 static
-RUCY_DEF0(get_type)
+RUCY_DEF0(type)
 {
 	CHECK;
 	return value(THIS->type);
@@ -107,7 +107,7 @@ Init_key_event ()
 	cKeyEvent.define_alloc_func(alloc);
 	cKeyEvent.define_private_method("initialize",      initialize);
 	cKeyEvent.define_private_method("initialize_copy", initialize_copy);
-	cKeyEvent.define_method("get_type", get_type);
+	cKeyEvent.define_method("type", type);
 	cKeyEvent.define_method("chars", chars);
 	cKeyEvent.define_method("code", code);
 	cKeyEvent.define_method("modifiers", modifiers);

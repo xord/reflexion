@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-require 'reflex/flags'
+require 'reflex/view'
 
 
 module Reflex
@@ -10,20 +10,20 @@ module Reflex
   class CaptureEvent
 
     def begin ()
-      CAPTURE_FLAG.bits2symbols get_begin
+      View.capture_flag.bits2symbols get_begin
     end
 
     def begin? (*symbols)
-      bits = CAPTURE_FLAG.symbols2bits *symbols
+      bits = View.capture_flag.symbols2bits *symbols
       (bits & get_begin) == bits
     end
 
     def end ()
-      CAPTURE_FLAG.bits2symbols get_end
+      View.capture_flag.bits2symbols get_end
     end
 
     def end? (*symbols)
-      bits = CAPTURE_FLAG.symbols2bits *symbols
+      bits = View.capture_flag.symbols2bits *symbols
       (bits & get_end) == bits
     end
 

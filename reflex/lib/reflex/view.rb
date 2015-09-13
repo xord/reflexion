@@ -7,7 +7,6 @@ require 'xot/universal_accessor'
 require 'xot/block_util'
 require 'reflex/ext'
 require 'reflex/model_view'
-require 'reflex/flags'
 require 'reflex/helper'
 
 
@@ -22,6 +21,12 @@ module Reflex
     include HasTags
 
     extend Forwardable
+
+    alias add    add_child
+    alias remove remove_child
+    alias find   find_children
+    alias meter  meter2pixel
+    alias debug? debug
 
     def_delegators :style,
       :flow=,   :flow,
@@ -45,13 +50,13 @@ module Reflex
       :apply_linear_impulse,
       :apply_angular_impulse
 
-    alias add    add_child
-    alias remove remove_child
-    alias find   find_children
-    alias meter  meter2pixel
-    alias debug? debug
+    bit_flag_accessor :capture do
+      flag :key,     CAPTURE_KEY
+      flag :pointer, CAPTURE_POINTER
+      flag :all,     CAPTURE_ALL
+    end
 
-    universal_accessor :name, :selector, :frame, :zoom, :gravity, :debug
+    universal_accessor :name, :selector, :frame, :zoom, :capture, :gravity, :debug
 
     def initialize (options = nil, &block)
       super()
@@ -71,15 +76,6 @@ module Reflex
       s = get_style args.empty? ? nil : Selector.selector(*args)
       Xot::BlockUtil.instance_eval_or_block_call s, &block if block
       s
-    end
-
-    def capture= (*args)
-      set_capture CAPTURE_FLAG.symbols2bits(*args.flatten)
-    end
-
-    def capture (*args)
-      send :capture=, *args unless args.empty?
-      CAPTURE_FLAG.bits2symbols get_capture
     end
 
     def capturing? (*args)

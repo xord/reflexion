@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
+require 'xot/bit_flag_accessor'
+require 'xot/const_symbol_accessor'
 require 'reflex/ext'
 
 
@@ -11,9 +13,24 @@ module Reflex
 
     alias pos position
 
-    def type ()
-      TYPE2SYM[get_type] || :none
-    end
+    alias get_type         type
+    alias get_pointer_type pointer_type
+
+    const_symbol_reader :type, {
+      none: TYPE_NONE,
+      down: TYPE_DOWN,
+      up:   TYPE_UP,
+      move: TYPE_MOVE
+    }
+
+    bit_flag_reader :pointer_type, {
+      none:         POINTER_NONE,
+      mouse_left:   POINTER_MOUSE_LEFT,
+      mouse_right:  POINTER_MOUSE_RIGHT,
+      mouse_middle: POINTER_MOUSE_MIDDLE,
+      touch:        POINTER_TOUCH,
+      pen:          POINTER_PEN
+    }
 
     def down? ()
       get_type == TYPE_DOWN
@@ -28,56 +45,28 @@ module Reflex
     end
 
     def left? ()
-      pointer_type.include? :mouse_left
+      (get_pointer_type & POINTER_MOUSE_LEFT) != 0
     end
 
     def right? ()
-      pointer_type.include? :mouse_right
+      (get_pointer_type & POINTER_MOUSE_RIGHT) != 0
     end
 
     def middle? ()
-      pointer_type.include? :mouse_middle
+      (get_pointer_type & POINTER_MOUSE_MIDDLE) != 0
     end
 
     def touch? ()
-      pointer_type.include? :touch
+      (get_pointer_type & POINTER_TOUCH) != 0
     end
 
     def pen? ()
-      pointer_type.include? :pen
-    end
-
-    def pointer_type ()
-      type_, array = get_pointer_type, []
-      POINTER_TYPE_LAST.to_s(2).sub(/^0+/, '').size.times do |i|
-        bit = 0x1 << i
-        if (type_ & bit) != 0
-          sym = POINTERTYPE2SYM[bit]
-          array << sym if sym
-        end
-      end
-      array
+      (get_pointer_type & POINTER_PEN) != 0
     end
 
     def inspect ()
       "#<Reflex::PointerEvent type:#{type}/#{pointer_type} x:#{x} y:#{y} size:#{size} mod:#{modifiers} count:#{count} drag:#{drag?}>"
     end
-
-    private
-
-      TYPE2SYM = {
-        TYPE_DOWN => :down,
-        TYPE_UP   => :up,
-        TYPE_MOVE => :move
-      }
-
-      POINTERTYPE2SYM = {
-        POINTER_MOUSE_LEFT   => :mouse_left,
-        POINTER_MOUSE_RIGHT  => :mouse_right,
-        POINTER_MOUSE_MIDDLE => :mouse_middle,
-        POINTER_TOUCH        => :touch,
-        POINTER_PEN          => :pen,
-      }
 
   end# PointerEvent
 

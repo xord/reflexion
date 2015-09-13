@@ -13,8 +13,9 @@ module Xot
 
     alias make_bit bit
 
-    def initialize (none = 0, &block)
+    def initialize (none = 0, **flags, &block)
       @bit2sym, @sym2bit = {}, {none: none, no: none}
+      flags.each {|sym, value| flag sym, value}
       BlockUtil.instance_eval_or_block_call self, &block if block
     end
 

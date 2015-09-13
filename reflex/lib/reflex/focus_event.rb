@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+require 'xot/const_symbol_accessor'
 require 'reflex/ext'
 
 
@@ -9,9 +10,13 @@ module Reflex
 
   class FocusEvent
 
-    def type ()
-      TYPE2SYM[get_type] || :none
-    end
+    alias get_type type
+
+    const_symbol_reader :type, {
+      none:  TYPE_NONE,
+      focus: TYPE_FOCUS,
+      blur:  TYPE_BLUR
+    }
 
     def focus? ()
       get_type == TYPE_FOCUS
@@ -24,13 +29,6 @@ module Reflex
     def inspect ()
       "#<Reflex::FocusEvent type:#{type} focus:#{focus} last:#{last}>"
     end
-
-    private
-
-      TYPE2SYM = {
-        TYPE_FOCUS => :focus,
-        TYPE_BLUR  => :blur,
-      }
 
   end# FocusEvent
 

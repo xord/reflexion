@@ -7,7 +7,9 @@ require_relative 'helper'
 class TestCaptureEvent < Test::Unit::TestCase
 
   def cap (*args)
-    Reflex::CaptureEvent.new *args.map {|arg| Reflex::CAPTURE_FLAG.symbols2bits *arg}
+    Reflex::CaptureEvent.new *args.map {|arg|
+      Reflex::View.capture_flag.symbols2bits *arg
+    }
   end
 
   def test_begin ()
