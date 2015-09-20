@@ -75,6 +75,57 @@ RUCY_DEF0(get_restitution)
 }
 RUCY_END
 
+static
+RUCY_DEF1(set_sensor, sensor)
+{
+	CHECK;
+	THIS->set_sensor(sensor);
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_sensor)
+{
+	CHECK;
+	return value(THIS->is_sensor());
+}
+RUCY_END
+
+static
+RUCY_DEF1(set_category, bits)
+{
+	CHECK;
+	THIS->set_category(bits.as_i(true));
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_category)
+{
+	CHECK;
+	return value(THIS->category());
+}
+RUCY_END
+
+static
+RUCY_DEF1(set_collision, category_mask)
+{
+	CHECK;
+	THIS->set_collision(category_mask.as_i(true));
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_collision)
+{
+	CHECK;
+	return value(THIS->collision());
+}
+RUCY_END
+
 
 static Class cFixture;
 
@@ -91,6 +142,12 @@ Init_fixture ()
 	cFixture.define_method("friction",     get_friction);
 	cFixture.define_method("restitution=", set_restitution);
 	cFixture.define_method("restitution",  get_restitution);
+	cFixture.define_method("sensor=",    set_sensor);
+	cFixture.define_method("sensor",     get_sensor);
+	cFixture.define_method("category=",  set_category);
+	cFixture.define_method("category",   get_category);
+	cFixture.define_method("collision=", set_collision);
+	cFixture.define_method("collision",  get_collision);
 }
 
 

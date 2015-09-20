@@ -9,7 +9,7 @@ module Xot
     module_function
 
     def bit (*bits)
-      return nil if bits.empty?
+      return nil if bits.compact.empty?
       bits.reduce(0) {|value, nth| value | (0x1 << nth)}
     end
 

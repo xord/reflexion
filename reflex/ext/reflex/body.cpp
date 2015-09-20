@@ -244,6 +244,57 @@ RUCY_DEF0(get_restitution)
 RUCY_END
 
 static
+RUCY_DEF1(set_sensor, sensor)
+{
+	CHECK;
+	THIS->set_sensor(sensor);
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_sensor)
+{
+	CHECK;
+	return value(THIS->is_sensor());
+}
+RUCY_END
+
+static
+RUCY_DEF1(set_category, bits)
+{
+	CHECK;
+	THIS->set_category(bits.as_i(true));
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_category)
+{
+	CHECK;
+	return value(THIS->category());
+}
+RUCY_END
+
+static
+RUCY_DEF1(set_collision, category_mask)
+{
+	CHECK;
+	THIS->set_collision(category_mask.as_i(true));
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_collision)
+{
+	CHECK;
+	return value(THIS->collision());
+}
+RUCY_END
+
+static
 RUCY_DEF1(set_gravity_scale, scale)
 {
 	CHECK;
@@ -308,6 +359,12 @@ Init_body ()
 	cBody.define_method("friction",     get_friction);
 	cBody.define_method("restitution=", set_restitution);
 	cBody.define_method("restitution",  get_restitution);
+	cBody.define_method("sensor=",    set_sensor);
+	cBody.define_method("sensor",     get_sensor);
+	cBody.define_method("category=",  set_category);
+	cBody.define_method("category",   get_category);
+	cBody.define_method("collision=", set_collision);
+	cBody.define_method("collision",  get_collision);
 	cBody.define_method("gravity_scale=", set_gravity_scale);
 	cBody.define_method("gravity_scale",  get_gravity_scale);
 	cBody.define_method("each", each);

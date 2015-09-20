@@ -2,7 +2,9 @@
 
 
 #include <assert.h>
+#include <limits.h>
 #include <Box2D/Dynamics/b2Fixture.h>
+#include "reflex/exception.h"
 
 
 #define PTR ((b2Fixture*) handle)
@@ -71,6 +73,64 @@ namespace Reflex
 		assert(PTR);
 
 		return PTR->GetRestitution();
+	}
+
+	void
+	Fixture::set_sensor (bool sensor)
+	{
+		assert(PTR);
+
+		PTR->SetSensor(sensor);
+	}
+
+	bool
+	Fixture::is_sensor () const
+	{
+		assert(PTR);
+
+		return PTR->IsSensor();
+	}
+
+	void
+	Fixture::set_category (uint bits)
+	{
+		assert(PTR);
+
+		if (bits > USHRT_MAX)
+			argument_error(__FILE__, __LINE__, "category value must be less then USHRT_MAX.");
+
+		b2Filter f = PTR->GetFilterData();
+		f.categoryBits = bits;
+		PTR->SetFilterData(f);
+	}
+
+	uint
+	Fixture::category () const
+	{
+		assert(PTR);
+
+		return PTR->GetFilterData().categoryBits;
+	}
+
+	void
+	Fixture::set_collision (uint category_mask)
+	{
+		assert(PTR);
+
+		if (category_mask > USHRT_MAX)
+			argument_error(__FILE__, __LINE__, "category mask value must be less then USHRT_MAX.");
+
+		b2Filter f = PTR->GetFilterData();
+		f.maskBits = category_mask;
+		PTR->SetFilterData(f);
+	}
+
+	uint
+	Fixture::collision () const
+	{
+		assert(PTR);
+
+		return PTR->GetFilterData().maskBits;
 	}
 
 	Fixture::Handle

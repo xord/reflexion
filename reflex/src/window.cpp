@@ -9,6 +9,23 @@ namespace Reflex
 {
 
 
+	typedef View* (*CreateRootViewFun) ();
+
+	static CreateRootViewFun create_root_view_fun = NULL;
+
+	void
+	set_create_root_view_fun (CreateRootViewFun fun)
+	{
+		create_root_view_fun = fun;
+	}
+
+	View*
+	create_root_view ()
+	{
+		return create_root_view_fun ? create_root_view_fun() : new View();
+	}
+
+
 	const View*
 	Window::root () const
 	{

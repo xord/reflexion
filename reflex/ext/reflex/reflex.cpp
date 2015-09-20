@@ -1,15 +1,31 @@
 #include <rucy.h>
 #include "reflex/reflex.h"
+#include "reflex/ruby/view.h"
 #include "defs.h"
 
 
 using namespace Rucy;
 
 
+namespace Reflex
+{
+	typedef View* (*CreateRootViewFun) ();
+	void set_create_root_view_fun (CreateRootViewFun);
+}
+
+static Reflex::View*
+create_root_view ()
+{
+	return new Reflex::RubyView<Reflex::View>();
+}
+
+
 static
 RUCY_DEF0(init)
 {
 	Reflex::init();
+	Reflex::set_create_root_view_fun(create_root_view);
+
 	return self;
 }
 RUCY_END

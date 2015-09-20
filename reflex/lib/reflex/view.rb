@@ -3,6 +3,7 @@
 
 require 'forwardable'
 require 'xot/setter'
+require 'xot/bit_flag_accessor'
 require 'xot/universal_accessor'
 require 'xot/block_util'
 require 'reflex/ext'
@@ -40,6 +41,7 @@ module Reflex
       :density=,          :density,
       :friction=,         :friction,
       :restitution=,      :restitution,
+      :sensor=,           :sensor,
       :velocity=,         :velocity,
       :linear_velocity=,  :linear_velocity,
       :angular_velocity=, :angular_velocity,
@@ -55,8 +57,6 @@ module Reflex
       flag :pointer, CAPTURE_POINTER
       flag :all,     CAPTURE_ALL
     end
-
-    universal_accessor :name, :selector, :frame, :zoom, :capture, :gravity, :debug
 
     def initialize (options = nil, &block)
       super()
@@ -78,14 +78,44 @@ module Reflex
       s
     end
 
+    def categories ()
+      @categories ||= Xot::BitFlag.new(auto: true, all: 1)
+    end
+
+    def category= (*symbols)
+      body.category = parent_categories.symbols2bits *symbols
+    end
+
+    def category ()
+      parent_categories.bits2symbols body.category
+    end
+
+    def collision= (*categories)
+      body.collision = parent_categories.symbols2bits *categories
+    end
+
+    def collision ()
+      parent_categories.bits2symbols body.collision
+    end
+
     def capturing? (*args)
       cap = capture
       args.all? {|type| cap.include? type}
     end
 
+    universal_accessor :name, :selector, :frame, :zoom, :capture,
+      :gravity, :category, :collision, :debug
+
     def self.has_model ()
       include ModelView
     end
+
+    protected
+
+      def parent_categories ()
+        raise InvalidStateError unless parent
+        parent.categories
+      end
 
     private
 

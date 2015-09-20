@@ -444,6 +444,90 @@ namespace Reflex
 	}
 
 	void
+	Body::set_sensor (bool sensor)
+	{
+		iterator end_ = end();
+		for (iterator it = begin(); it != end_; ++it)
+			it->set_sensor(sensor);
+	}
+
+	bool
+	Body::is_sensor () const
+	{
+		const_iterator it = begin(), end_ = end();
+		if (it == end_)
+			invalid_state_error(__FILE__, __LINE__, "no fixture.");
+
+		bool val = it->is_sensor();
+		for (; it != end_; ++it)
+		{
+			if (val != it->is_sensor())
+			{
+				invalid_state_error(
+					__FILE__, __LINE__,
+					"each fixture have different values.");
+			}
+		}
+		return val;
+	}
+
+	void
+	Body::set_category (uint bits)
+	{
+		iterator end_ = end();
+		for (iterator it = begin(); it != end_; ++it)
+			it->set_category(bits);
+	}
+
+	uint
+	Body::category () const
+	{
+		const_iterator it = begin(), end_ = end();
+		if (it == end_)
+			invalid_state_error(__FILE__, __LINE__, "no fixture.");
+
+		uint val = it->category();
+		for (; it != end_; ++it)
+		{
+			if (val != it->category())
+			{
+				invalid_state_error(
+					__FILE__, __LINE__,
+					"each fixture have different values.");
+			}
+		}
+		return val;
+	}
+
+	void
+	Body::set_collision (uint category_mask)
+	{
+		iterator end_ = end();
+		for (iterator it = begin(); it != end_; ++it)
+			it->set_collision(category_mask);
+	}
+
+	uint
+	Body::collision () const
+	{
+		const_iterator it = begin(), end_ = end();
+		if (it == end_)
+			invalid_state_error(__FILE__, __LINE__, "no fixture.");
+
+		uint val = it->collision();
+		for (; it != end_; ++it)
+		{
+			if (val != it->collision())
+			{
+				invalid_state_error(
+					__FILE__, __LINE__,
+					"each fixture have different values.");
+			}
+		}
+		return val;
+	}
+
+	void
 	Body::set_gravity_scale (float scale)
 	{
 		assert(PTR);

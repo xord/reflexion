@@ -91,6 +91,18 @@ namespace Reflex
 
 			float    restitution () const;
 
+			void set_sensor (bool sensor);
+
+			bool  is_sensor () const;
+
+			void set_category (uint bits);
+
+			uint     category () const;
+
+			void set_collision (uint category_mask);
+
+			uint     collision () const;
+
 			void set_gravity_scale (float scale);
 
 			float    gravity_scale () const;

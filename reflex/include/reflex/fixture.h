@@ -5,6 +5,7 @@
 
 
 #include <iterator>
+#include <reflex/defs.h>
 
 
 namespace Reflex
@@ -35,6 +36,18 @@ namespace Reflex
 			void set_restitution (float restitution);
 
 			float    restitution () const;
+
+			void set_sensor (bool sensor);
+
+			bool  is_sensor () const;
+
+			void set_category (uint bits);
+
+			uint     category () const;
+
+			void set_collision (uint category_mask);
+
+			uint     collision () const;
 
 			Handle next () const;
 

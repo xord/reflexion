@@ -148,10 +148,10 @@
 	OID_##name,
 
 #define RUCY_IS_OVERRIDABLE() \
-	this->is_overridable()
+	!this->value.is_nil() && this->is_overridable()
 
 #define RUCY_IS_OVERRIDDEN(name) \
-	this->is_overridden(name, OID_##name)
+	!this->value.is_nil() && this->is_overridden(name, OID_##name)
 
 
 #define RUCY_TRY \

@@ -20,7 +20,8 @@ module Reflex
     alias apply_impulse apply_linear_impulse
 
     universal_accessor :static, :dynamic, :density, :friction, :restitution,
-      :linear_velocity, :angular_velocity, :velocity, :gravity_scale
+      :linear_velocity, :angular_velocity, :velocity,
+      :sensor, :category, :collision, :gravity_scale
 
   end# Body
 

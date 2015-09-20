@@ -44,7 +44,7 @@ namespace Reflex
 		CapturingViews capturing_views;
 
 		Data ()
-		:	native(nil), hide_count(1), redraw(true), root(create_root_view()), prev_fps(0)
+		:	native(nil), hide_count(1), redraw(true), prev_fps(0)
 		{
 			prev_time_update = prev_time_draw = Xot::time();
 		}
@@ -57,13 +57,6 @@ namespace Reflex
 		bool operator ! () const
 		{
 			return !operator bool();
-		}
-
-		static View* create_root_view ()
-		{
-			View* v = new View;
-			v->set_name("ROOT");
-			return v;
 		}
 
 	};// Window::Data
