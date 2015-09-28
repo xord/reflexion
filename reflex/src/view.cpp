@@ -6,8 +6,11 @@
 #include <boost/scoped_ptr.hpp>
 #include <xot/util.h>
 #include "reflex/window.h"
+#include "reflex/timer.h"
 #include "reflex/body.h"
 #include "reflex/exception.h"
+#include "timer.h"
+#include "selector.h"
 #include "world.h"
 
 
@@ -58,7 +61,7 @@ namespace Reflex
 
 		uint flags;
 
-		boost::scoped_ptr<Selector>    pselector;
+		SelectorPtr                    pselector;
 
 		boost::scoped_ptr<SelectorSet> pselectors_for_update;
 
@@ -69,6 +72,8 @@ namespace Reflex
 		boost::scoped_ptr<Style>       pstyle;
 
 		boost::scoped_ptr<StyleList>   pstyles;
+
+		boost::scoped_ptr<Timers>      ptimers;
 
 		boost::scoped_ptr<World>       pworld;
 
@@ -122,6 +127,12 @@ namespace Reflex
 		{
 			if (!pstyles) pstyles.reset(new StyleList);
 			return *pstyles;
+		}
+
+		Timers& timers ()
+		{
+			if (!ptimers) ptimers.reset(new Timers);
+			return *ptimers;
 		}
 
 		World* world (View* this_)
@@ -352,6 +363,17 @@ namespace Reflex
 		}
 	}
 
+	static void
+	fire_timers (View* view, double now)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		Timers* timers = self->ptimers.get();
+		if (timers)
+			timers->fire(now);
+	}
+
 	void
 	update_styles_for_selector (View* view, const Selector& selector)
 	{
@@ -519,6 +541,7 @@ namespace Reflex
 		UpdateEvent e = event;
 		update_view_world(view, e.dt);
 		view->on_update(&e);
+		fire_timers(view, e.now);
 
 		update_views_for_selectors(view);
 		update_view_style(view);
@@ -1178,7 +1201,7 @@ namespace Reflex
 
 	View::View (const char* name)
 	{
-		if (name) self->selector().set_name(name);
+		if (name) set_name(name);
 	}
 
 	View::~View ()
@@ -1230,6 +1253,44 @@ namespace Reflex
 		if (!w) return;
 
 		w->redraw();
+	}
+
+	void
+	View::focus (bool state)
+	{
+		Window* w = window();
+		if (!w) return;
+
+		void set_focus (Window*, View*);
+		if (state)
+			set_focus(w, this);
+		else if (w->focus() == this)
+			set_focus(w, NULL);
+	}
+
+	void
+	View::blur ()
+	{
+		focus(false);
+	}
+
+	bool
+	View::has_focus () const
+	{
+		const Window* w = window();
+		return w && w->focus() == this;
+	}
+
+	Timer*
+	View::start_timer (float seconds, int count)
+	{
+		return self->timers().add(this, seconds, count);
+	}
+
+	Timer*
+	View::start_interval (float seconds)
+	{
+		return start_timer(seconds, -1);
 	}
 
 	void
@@ -1448,155 +1509,69 @@ namespace Reflex
 	}
 
 	void
-	View::focus (bool state)
-	{
-		Window* w = window();
-		if (!w) return;
-
-		void set_focus (Window*, View*);
-		if (state)
-			set_focus(w, this);
-		else if (w->focus() == this)
-			set_focus(w, NULL);
-	}
-
-	void
-	View::blur ()
-	{
-		focus(false);
-	}
-
-	bool
-	View::has_focus () const
-	{
-		const Window* w = window();
-		return w && w->focus() == this;
-	}
-
-	void
-	View::resize_to_fit ()
-	{
-		Point size = content_size();
-		if (size.x < 0 && size.y < 0 && size.z <= 0) return;
-
-		const Style* st = style();
-
-		Bounds b = frame();
-		if ((!st || !st->width())  && size.x >= 0) b.width  = size.x;
-		if ((!st || !st->height()) && size.y >= 0) b.height = size.y;
-		if (                          size.z >= 0) b.depth  = size.z;
-		set_frame(b);
-	}
-
-	Point
-	View::content_size () const
-	{
-		return -1;
-	}
-
-	void
-	View::make_body ()
-	{
-		Body* b = body();
-		if (!b) return;
-
-		b->clear_fixtures();
-
-		const Point& size = frame().size();
-		b->add_box(size.x, size.y);
-	}
-
-	void
-	View::clear_body ()
-	{
-		Body* body = self->pbody.get();
-		if (!body) return;
-
-		World* world = self->parent_world();
-		if (!world)
-			invalid_state_error(__FILE__, __LINE__);
-
-		world->destroy_body(body);
-		self->pbody.reset();
-	}
-
-	void
 	View::set_name (const char* name)
 	{
-		self->selector().set_name(name);
+		self->pselector.set_name(name);
 	}
 
 	const char*
 	View::name () const
 	{
-		const Selector* sel = self->pselector.get();
-		return sel ? sel->name() : "";
+		return self->pselector.name();
 	}
 
 	void
 	View::add_tag (const char* tag)
 	{
-		self->selector().add_tag(tag);
+		self->pselector.add_tag(tag);
 	}
 
 	void
 	View::remove_tag (const char* tag)
 	{
-		Selector* sel = self->pselector.get();
-		if (!sel) return;
-
-		sel->remove_tag(tag);
+		self->pselector.remove_tag(tag);
 	}
-
-	static Selector::TagSet empty_tags;
 
 	View::tag_iterator
 	View::tag_begin ()
 	{
-		Selector* sel = self->pselector.get();
-		return sel ? sel->begin() : empty_tags.begin();
+		return self->pselector.tag_begin();
 	}
 
 	View::const_tag_iterator
 	View::tag_begin () const
 	{
-		const Selector* sel = self->pselector.get();
-		return sel ? sel->begin() : empty_tags.begin();
+		return self->pselector.tag_begin();
 	}
 
 	View::tag_iterator
 	View::tag_end ()
 	{
-		Selector* sel = self->pselector.get();
-		return sel ? sel->end() : empty_tags.end();
+		return self->pselector.tag_end();
 	}
 
 	View::const_tag_iterator
 	View::tag_end () const
 	{
-		const Selector* sel = self->pselector.get();
-		return sel ? sel->end() : empty_tags.end();
+		return self->pselector.tag_end();
 	}
 
 	void
 	View::set_selector (const Selector& selector)
 	{
-		self->selector() = selector;
+		self->pselector.set_selector(selector);
 	}
 
 	Selector&
 	View::selector ()
 	{
-		return self->selector();
+		return self->pselector.selector();
 	}
 
 	const Selector&
 	View::selector () const
 	{
-		static const Selector EMPTY;
-
-		const Selector* sel = self->pselector.get();
-		return sel ? *sel : EMPTY;
+		return self->pselector.selector();
 	}
 
 	void
@@ -1615,6 +1590,27 @@ namespace Reflex
 	View::frame () const
 	{
 		return self->frame;
+	}
+
+	Point
+	View::content_size () const
+	{
+		return -1;
+	}
+
+	void
+	View::resize_to_fit ()
+	{
+		Point size = content_size();
+		if (size.x < 0 && size.y < 0 && size.z <= 0) return;
+
+		const Style* st = style();
+
+		Bounds b = frame();
+		if ((!st || !st->width())  && size.x >= 0) b.width  = size.x;
+		if ((!st || !st->height()) && size.y >= 0) b.height = size.y;
+		if (                          size.z >= 0) b.depth  = size.z;
+		set_frame(b);
 	}
 
 	void
@@ -1739,6 +1735,32 @@ namespace Reflex
 	View::window () const
 	{
 		return const_cast<View*>(this)->window();
+	}
+
+	void
+	View::make_body ()
+	{
+		Body* b = body();
+		if (!b) return;
+
+		b->clear_fixtures();
+
+		const Point& size = frame().size();
+		b->add_box(size.x, size.y);
+	}
+
+	void
+	View::clear_body ()
+	{
+		Body* body = self->pbody.get();
+		if (!body) return;
+
+		World* world = self->parent_world();
+		if (!world)
+			invalid_state_error(__FILE__, __LINE__);
+
+		world->destroy_body(body);
+		self->pbody.reset();
 	}
 
 	Body*
@@ -2059,6 +2081,13 @@ namespace Reflex
 
 	void
 	View::on_capture (CaptureEvent* e)
+	{
+		if (!e)
+			argument_error(__FILE__, __LINE__);
+	}
+
+	void
+	View::on_timer (TimerEvent* e)
 	{
 		if (!e)
 			argument_error(__FILE__, __LINE__);

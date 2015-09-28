@@ -21,7 +21,7 @@ class TestSelector < Test::Unit::TestCase
 
   def test_name ()
     s = sel
-    assert_equal '', s.name
+    assert_equal nil, s.name
     s.name = 'Test'
     assert_equal 'Test', s.name
   end

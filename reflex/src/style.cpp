@@ -4,6 +4,7 @@
 #include <boost/noncopyable.hpp>
 #include "reflex/view.h"
 #include "reflex/exception.h"
+#include "selector.h"
 
 
 namespace Reflex
@@ -344,7 +345,7 @@ namespace Reflex
 
 		View* owner;
 
-		Selector selector;
+		SelectorPtr pselector;
 
 		Int flow;
 
@@ -367,6 +368,12 @@ namespace Reflex
 		Data ()
 		:	owner(NULL)
 		{
+		}
+
+		Selector& selector ()
+		{
+			if (!pselector) pselector.reset(new Selector);
+			return *pselector;
 		}
 
 		enum FlowOffset {FLOW_MASK = 0xffff, FLOW_SHIFT = 16};
@@ -412,7 +419,7 @@ namespace Reflex
 		if (!owner) return;
 
 		void update_styles_for_selector (View*, const Selector&);
-		update_styles_for_selector(owner, style.self->selector);
+		update_styles_for_selector(owner, style.selector());
 	}
 
 	template <typename T>
@@ -508,7 +515,7 @@ namespace Reflex
 	{
 		update_owner(*this);
 
-		self->selector.set_name(name);
+		self->pselector.set_name(name);
 
 		update_owner(*this);
 	}
@@ -516,7 +523,7 @@ namespace Reflex
 	const char*
 	Style::name () const
 	{
-		return self->selector.name();
+		return self->pselector.name();
 	}
 
 	void
@@ -524,7 +531,7 @@ namespace Reflex
 	{
 		update_owner(*this);
 
-		self->selector.add_tag(tag);
+		self->pselector.add_tag(tag);
 
 		update_owner(*this);
 	}
@@ -534,7 +541,7 @@ namespace Reflex
 	{
 		update_owner(*this);
 
-		self->selector.remove_tag(tag);
+		self->pselector.remove_tag(tag);
 
 		update_owner(*this);
 	}
@@ -542,25 +549,25 @@ namespace Reflex
 	Selector::iterator
 	Style::tag_begin ()
 	{
-		return self->selector.begin();
+		return self->pselector.tag_begin();
 	}
 
 	Selector::const_iterator
 	Style::tag_begin () const
 	{
-		return self->selector.begin();
+		return self->pselector.tag_begin();
 	}
 
 	Selector::iterator
 	Style::tag_end ()
 	{
-		return self->selector.end();
+		return self->pselector.tag_end();
 	}
 
 	Selector::const_iterator
 	Style::tag_end () const
 	{
-		return self->selector.end();
+		return self->pselector.tag_end();
 	}
 
 	void
@@ -568,7 +575,7 @@ namespace Reflex
 	{
 		update_owner(*this);
 
-		self->selector = selector;
+		self->pselector.set_selector(selector);
 
 		update_owner(*this);
 	}
@@ -576,13 +583,13 @@ namespace Reflex
 	Selector&
 	Style::selector ()
 	{
-		return self->selector;
+		return self->pselector.selector();
 	}
 
 	const Selector&
 	Style::selector () const
 	{
-		return self->selector;
+		return self->pselector.selector();
 	}
 
 	enum FlowDir {FLOW_INVALID = 0, FLOW_H, FLOW_V};

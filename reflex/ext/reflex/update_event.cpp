@@ -26,9 +26,10 @@ static
 RUCY_DEFN(initialize)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "UpdateEvent#initialize", argc, 0, 1);
+	check_arg_count(__FILE__, __LINE__, "UpdateEvent#initialize", argc, 0, 1, 2);
 
-	THIS->dt = (argc >= 1) ? argv[0].as_f() : 0;
+	THIS->now = (argc >= 1) ? argv[0].as_f() : 0;
+	THIS->dt  = (argc >= 2) ? argv[1].as_f() : 0;
 
 	return rb_call_super(0, NULL);
 }
@@ -40,6 +41,14 @@ RUCY_DEF1(initialize_copy, obj)
 	CHECK;
 	*THIS = to<Reflex::UpdateEvent&>(obj);
 	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(now)
+{
+	CHECK;
+	return value(THIS->now);
 }
 RUCY_END
 
@@ -63,6 +72,7 @@ Init_update_event ()
 	cUpdateEvent.define_alloc_func(alloc);
 	cUpdateEvent.define_private_method("initialize",      initialize);
 	cUpdateEvent.define_private_method("initialize_copy", initialize_copy);
+	cUpdateEvent.define_method("now", now);
 	cUpdateEvent.define_method("dt", dt);
 }
 

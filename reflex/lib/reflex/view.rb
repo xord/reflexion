@@ -64,6 +64,16 @@ module Reflex
       @attach_block = block if block
     end
 
+    def timeout (seconds, count: 1, &block)
+      timer = start_timer seconds, count
+      timer.block = block if block
+      timer
+    end
+
+    def interval (seconds, &block)
+      timeout seconds, count: -1, &block
+    end
+
     def children ()
       to_enum :each_child
     end

@@ -10,6 +10,7 @@ void Init_reflex ();
 void Init_selector ();
 void Init_style ();
 void Init_style_length ();
+void Init_timer ();
 
 void Init_event ();
 void Init_update_event ();
@@ -21,6 +22,7 @@ void Init_key_event ();
 void Init_pointer_event ();
 void Init_wheel_event ();
 void Init_capture_event ();
+void Init_timer_event ();
 void Init_contact_event ();
 
 void Init_body ();
@@ -54,6 +56,7 @@ extern "C" void
 	Init_selector();
 	Init_style();
 	Init_style_length();
+	Init_timer();
 
 	Init_event();
 	Init_update_event();
@@ -65,6 +68,7 @@ extern "C" void
 	Init_pointer_event();
 	Init_wheel_event();
 	Init_capture_event();
+	Init_timer_event();
 	Init_contact_event();
 
 	Init_body();

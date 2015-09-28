@@ -44,6 +44,9 @@ namespace Reflex
 	Rucy::Class capture_event_class ();
 	// class Reflex::CaptureEvent
 
+	Rucy::Class timer_event_class ();
+	// class Reflex::TimerEvent
+
 	Rucy::Class contact_event_class ();
 	// class Reflex::ContactEvent
 
@@ -70,6 +73,8 @@ RUCY_DECLARE_VALUE_FROM_TO(Reflex::PointerEvent)
 RUCY_DECLARE_VALUE_FROM_TO(Reflex::WheelEvent)
 
 RUCY_DECLARE_VALUE_FROM_TO(Reflex::CaptureEvent)
+
+RUCY_DECLARE_VALUE_FROM_TO(Reflex::TimerEvent)
 
 RUCY_DECLARE_VALUE_FROM_TO(Reflex::ContactEvent)
 
@@ -136,6 +141,12 @@ namespace Rucy
 	get_ruby_class<Reflex::CaptureEvent> ()
 	{
 		return Reflex::capture_event_class();
+	}
+
+	template <> inline Class
+	get_ruby_class<Reflex::TimerEvent> ()
+	{
+		return Reflex::timer_event_class();
 	}
 
 	template <> inline Class

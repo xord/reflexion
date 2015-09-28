@@ -1,6 +1,7 @@
 #include "reflex/event.h"
 
 
+#include "reflex/timer.h"
 #include "reflex/exception.h"
 
 
@@ -26,8 +27,8 @@ namespace Reflex
 	}
 
 
-	UpdateEvent::UpdateEvent (float dt)
-	:	dt(dt)
+	UpdateEvent::UpdateEvent (double now, float dt)
+	:	now(now), dt(dt)
 	{
 	}
 
@@ -238,6 +239,48 @@ namespace Reflex
 	CaptureEvent::CaptureEvent (uint begin, uint end)
 	:	begin(begin), end(end)
 	{
+	}
+
+
+	TimerEvent::TimerEvent (Timer* timer)
+	:	timer(timer)
+	{
+	}
+
+	View*
+	TimerEvent::owner () const
+	{
+		return timer ? timer->owner() : NULL;
+	}
+
+	int
+	TimerEvent::id () const
+	{
+		return timer ? timer->id() : Timer::ID_INVALID;
+	}
+
+	float
+	TimerEvent::interval () const
+	{
+		return timer ? timer->interval() : -1;
+	}
+
+	void
+	TimerEvent::set_count (int count)
+	{
+		if (timer) timer->set_count(count);
+	}
+
+	int
+	TimerEvent::count () const
+	{
+		return timer ? timer->count() : 0;
+	}
+
+	bool
+	TimerEvent::is_finished () const
+	{
+		return timer ? timer->is_finished() : true;
 	}
 
 

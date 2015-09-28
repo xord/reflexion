@@ -8,6 +8,7 @@
 #include "reflex/ruby/window.h"
 #include "reflex/ruby/selector.h"
 #include "reflex/ruby/style.h"
+#include "reflex/ruby/timer.h"
 #include "reflex/ruby/body.h"
 
 
@@ -18,7 +19,8 @@ using Reflex::coord;
 
 RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::View)
 
-#define THIS      to<Reflex::View*>(self)
+#define   THIS    to<      Reflex::View*>(self)
+#define C_THIS    to<const Reflex::View*>(self)
 
 #define CHECK     RUCY_CHECK_OBJECT(Reflex::View, self)
 
@@ -74,6 +76,50 @@ RUCY_DEF0(redraw)
 	CHECK;
 	THIS->redraw();
 	return self;
+}
+RUCY_END
+
+static
+RUCY_DEFN(focus)
+{
+	CHECK;
+	check_arg_count(__FILE__, __LINE__, "View#focus", argc, 0, 1);
+
+	bool state = (argc >= 1) ? to<bool>(argv[0]) : true;
+
+	THIS->focus(state);
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(blur)
+{
+	CHECK;
+	THIS->blur();
+	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(has_focus)
+{
+	CHECK;
+	return value(THIS->has_focus());
+}
+RUCY_END
+
+static
+RUCY_DEFN(start_timer)
+{
+	CHECK;
+	check_arg_count(__FILE__, __LINE__, "View#start_timer", argc, 1, 2);
+
+	Reflex::Timer* timer = THIS->start_timer(
+		argv[0].as_f(true),
+		argc >= 2 ? argv[1].as_i() : 1);
+
+	return value(timer);
 }
 RUCY_END
 
@@ -183,69 +229,6 @@ RUCY_DEF0(each_style)
 RUCY_END
 
 static
-RUCY_DEFN(focus)
-{
-	CHECK;
-	check_arg_count(__FILE__, __LINE__, "View#focus", argc, 0, 1);
-
-	bool state = (argc >= 1) ? to<bool>(argv[0]) : true;
-
-	THIS->focus(state);
-	return self;
-}
-RUCY_END
-
-static
-RUCY_DEF0(blur)
-{
-	CHECK;
-	THIS->blur();
-	return self;
-}
-RUCY_END
-
-static
-RUCY_DEF0(has_focus)
-{
-	CHECK;
-	return value(THIS->has_focus());
-}
-RUCY_END
-
-static
-RUCY_DEF0(resize_to_fit)
-{
-	CHECK;
-	THIS->resize_to_fit();
-	return self;
-}
-RUCY_END
-
-static
-RUCY_DEF0(content_size)
-{
-	CHECK;
-	return value(CALL(content_size()));
-}
-RUCY_END
-
-static
-RUCY_DEF0(make_body)
-{
-	CHECK;
-	CALL(make_body());
-}
-RUCY_END
-
-static
-RUCY_DEF0(clear_body)
-{
-	CHECK;
-	THIS->clear_body();
-}
-RUCY_END
-
-static
 RUCY_DEF1(set_name, name)
 {
 	CHECK;
@@ -283,8 +266,8 @@ RUCY_DEF0(each_tag)
 	CHECK;
 
 	Value ret;
-	Reflex::View::tag_iterator end = THIS->tag_end();
-	for (Reflex::View::tag_iterator it = THIS->tag_begin(); it != end; ++it)
+	Reflex::View::const_tag_iterator end = C_THIS->tag_end();
+	for (Reflex::View::const_tag_iterator it = C_THIS->tag_begin(); it != end; ++it)
 		ret = rb_yield(value(*it));
 	return ret;
 }
@@ -302,7 +285,7 @@ static
 RUCY_DEF0(get_selector)
 {
 	CHECK;
-	return value(THIS->selector());
+	return value(C_THIS->selector());
 }
 RUCY_END
 
@@ -320,6 +303,23 @@ RUCY_DEF0(get_frame)
 {
 	CHECK;
 	return value(THIS->frame());
+}
+RUCY_END
+
+static
+RUCY_DEF0(content_size)
+{
+	CHECK;
+	return value(CALL(content_size()));
+}
+RUCY_END
+
+static
+RUCY_DEF0(resize_to_fit)
+{
+	CHECK;
+	THIS->resize_to_fit();
+	return self;
 }
 RUCY_END
 
@@ -425,6 +425,22 @@ RUCY_DEF0(window)
 {
 	CHECK;
 	return value(THIS->window());
+}
+RUCY_END
+
+static
+RUCY_DEF0(make_body)
+{
+	CHECK;
+	CALL(make_body());
+}
+RUCY_END
+
+static
+RUCY_DEF0(clear_body)
+{
+	CHECK;
+	THIS->clear_body();
 }
 RUCY_END
 
@@ -663,6 +679,14 @@ RUCY_DEF1(on_capture, event)
 RUCY_END
 
 static
+RUCY_DEF1(on_timer, event)
+{
+	CHECK;
+	CALL(on_timer(to<Reflex::TimerEvent*>(event)));
+}
+RUCY_END
+
+static
 RUCY_DEF1(on_contact, event)
 {
 	CHECK;
@@ -703,6 +727,10 @@ Init_view ()
 	cView.define_method("hide",    hide);
 	cView.define_method("hidden?", hidden);
 	cView.define_method("redraw",  redraw);
+	cView.define_method("focus",  focus);
+	cView.define_method("blur",   blur);
+	cView.define_method("focus?", has_focus);
+	cView.define_private_method("start_timer", start_timer);
 	cView.define_method("add_child",     add_child);
 	cView.define_method("remove_child",  remove_child);
 	cView.define_method("find_children", find_children);
@@ -712,13 +740,6 @@ Init_view ()
 	cView.define_method("get_style",    get_style);
 	cView.define_method("find_styles",  find_styles);
 	cView.define_method("each_style",   each_style);
-	cView.define_method("focus",  focus);
-	cView.define_method("blur",   blur);
-	cView.define_method("focus?", has_focus);
-	cView.define_method("resize_to_fit", resize_to_fit);
-	cView.define_method("content_size",  content_size);
-	cView.define_method("make_body",  make_body);
-	cView.define_method("clear_body", clear_body);
 	cView.define_method("name=", set_name);
 	cView.define_method("name",  get_name);
 	cView.define_method("add_tag",    add_tag);
@@ -728,6 +749,8 @@ Init_view ()
 	cView.define_method("selector",  get_selector);
 	cView.define_method("frame=", set_frame);
 	cView.define_method("frame",  get_frame);
+	cView.define_method("content_size",  content_size);
+	cView.define_method("resize_to_fit", resize_to_fit);
 	cView.define_method("zoom=", set_zoom);
 	cView.define_method("zoom",  get_zoom);
 	cView.define_method("angle", get_angle);
@@ -738,7 +761,9 @@ Init_view ()
 	cView.define_method("capture",  get_capture);
 	cView.define_method("parent", parent);
 	cView.define_method("window", window);
-	cView.define_method("body", body);
+	cView.define_method("make_body",   make_body);
+	cView.define_method("clear_body", clear_body);
+	cView.define_method("body",             body);
 	cView.define_method("meter2pixel", meter2pixel);
 	cView.define_method("gravity=", set_gravity);
 	cView.define_method("gravity",  get_gravity);
@@ -766,6 +791,7 @@ Init_view ()
 	cView.define_method("on_pointer_move", on_pointer_move);
 	cView.define_method("on_wheel", on_wheel);
 	cView.define_method("on_capture", on_capture);
+	cView.define_method("on_timer", on_timer);
 	cView.define_method("on_contact",       on_contact);
 	cView.define_method("on_contact_begin", on_contact_begin);
 	cView.define_method("on_contact_end",   on_contact_end);

@@ -45,6 +45,7 @@ namespace Reflex
 			RUCY_OVERRIDE_ID(on_pointer_move)
 			RUCY_OVERRIDE_ID(on_wheel)
 			RUCY_OVERRIDE_ID(on_capture)
+			RUCY_OVERRIDE_ID(on_timer)
 			RUCY_OVERRIDE_ID(on_contact)
 			RUCY_OVERRIDE_ID(on_contact_begin)
 			RUCY_OVERRIDE_ID(on_contact_end)
@@ -259,6 +260,15 @@ namespace Reflex
 					this->value.call(on_capture, Rucy::value(e));
 				else
 					Super::on_capture(e);
+			}
+
+			virtual void on_timer (TimerEvent* e)
+			{
+				RUCY_SYM(on_timer);
+				if (RUCY_IS_OVERRIDDEN(on_timer))
+					this->value.call(on_timer, Rucy::value(e));
+				else
+					Super::on_timer(e);
 			}
 
 			virtual void on_contact (ContactEvent* e)

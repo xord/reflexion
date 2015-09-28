@@ -13,9 +13,10 @@ using namespace Rucy;
 
 RUCY_DEFINE_VALUE_FROM_TO(Reflex::Style)
 
-#define THIS  to<Reflex::Style*>(self)
+#define   THIS to<      Reflex::Style*>(self)
+#define C_THIS to<const Reflex::Style*>(self)
 
-#define CHECK RUCY_CHECK_OBJ(Reflex::Style, self)
+#define CHECK  RUCY_CHECK_OBJ(Reflex::Style, self)
 
 
 static
@@ -46,7 +47,7 @@ static
 RUCY_DEF0(get_name)
 {
 	CHECK;
-	return THIS->name() ? value(THIS->name()) : nil();
+	return C_THIS->name() ? value(C_THIS->name()) : nil();
 }
 RUCY_END
 
@@ -72,8 +73,8 @@ RUCY_DEF0(each_tag)
 	CHECK;
 
 	Value ret;
-	Reflex::Style::tag_iterator end = THIS->tag_end();
-	for (Reflex::Style::tag_iterator it = THIS->tag_begin(); it != end; ++it)
+	Reflex::Style::const_tag_iterator end = C_THIS->tag_end();
+	for (Reflex::Style::const_tag_iterator it = C_THIS->tag_begin(); it != end; ++it)
 		ret = rb_yield(value(*it));
 	return ret;
 }
@@ -91,7 +92,7 @@ static
 RUCY_DEF0(get_selector)
 {
 	CHECK;
-	return value(THIS->selector());
+	return value(C_THIS->selector());
 }
 RUCY_END
 

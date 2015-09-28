@@ -11,7 +11,7 @@ class TestStyle < Test::Unit::TestCase
   end
 
   def test_initialize ()
-    assert_equal '',  style.name
+    assert_equal nil, style.name
     assert_equal 'A', style(name: :A).name
     assert_equal 'A', style{self.name = :A}.name
   end

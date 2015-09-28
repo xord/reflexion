@@ -2,6 +2,7 @@
 
 
 #include "reflex/exception.h"
+#include "selector.h"
 
 
 namespace Reflex
@@ -45,8 +46,8 @@ namespace Reflex
 		const TagSet& tags      = self->tags;
 		const_iterator tags_end = tags.end();
 
-		iterator end = selector.end();
-		for (iterator tag = selector.begin(); tag != end; ++tag)
+		const_iterator end = selector.end();
+		for (const_iterator tag = selector.begin(); tag != end; ++tag)
 		{
 			if (tags.find(*tag) == tags_end)
 				return false;
@@ -58,13 +59,17 @@ namespace Reflex
 	void
 	Selector::set_name (const char* name)
 	{
-		self->name = name ? name : "";
+		if (name && *name != '\0')
+			self->name = name;
+		else
+			self->name.clear();
 	}
 
 	const char*
 	Selector::name () const
 	{
-		return self->name.c_str();
+		const String& s = self->name;
+		return !s.empty() ? s.c_str() : NULL;
 	}
 
 	void
@@ -139,6 +144,103 @@ namespace Reflex
 		Selector::Data* l = lhs.self.get();
 		Selector::Data* r = rhs.self.get();
 		return l->name < r->name || l->tags < r->tags;
+	}
+
+
+	static Selector*
+	get_selector (SelectorPtr* this_, bool create = false)
+	{
+		assert(this_);
+
+		SelectorPtr& ptr = *this_;
+
+		if (create && !ptr) ptr.reset(new Selector());
+		return ptr.get();
+	}
+
+	static const Selector*
+	get_selector (const SelectorPtr* this_)
+	{
+		return get_selector(const_cast<SelectorPtr*>(this_));
+	}
+
+	void
+	SelectorPtr::set_name (const char* name)
+	{
+		get_selector(this, true)->set_name(name);
+	}
+
+	const char*
+	SelectorPtr::name () const
+	{
+		const Selector* sel = get_selector(this);
+		return sel ? sel->name() : NULL;
+	}
+
+	void
+	SelectorPtr::add_tag (const char* tag)
+	{
+		get_selector(this, true)->add_tag(tag);
+	}
+
+	void
+	SelectorPtr::remove_tag (const char* tag)
+	{
+		Selector* sel = get_selector(this);
+		if (sel) sel->remove_tag(tag);
+	}
+
+	static Selector::TagSet empty_tags;
+
+	Selector::iterator
+	SelectorPtr::tag_begin ()
+	{
+		assert(empty_tags.empty());
+
+		Selector* sel = get_selector(this);
+		return sel ? sel->begin() : empty_tags.begin();
+	}
+
+	Selector::const_iterator
+	SelectorPtr::tag_begin () const
+	{
+		return selector().begin();
+	}
+
+	Selector::iterator
+	SelectorPtr::tag_end ()
+	{
+		assert(empty_tags.empty());
+
+		Selector* sel = get_selector(this);
+		return sel ? sel->end() : empty_tags.end();
+	}
+
+	Selector::const_iterator
+	SelectorPtr::tag_end () const
+	{
+		return selector().end();
+	}
+
+	void
+	SelectorPtr::set_selector (const Selector& selector)
+	{
+		*get_selector(this, true) = selector;
+	}
+
+	Selector&
+	SelectorPtr::selector ()
+	{
+		return *get_selector(this, true);
+	}
+
+	const Selector&
+	SelectorPtr::selector () const
+	{
+		static const Selector EMPTY;
+
+		const Selector* sel = get_selector(this);
+		return sel ? *sel : EMPTY;
 	}
 
 

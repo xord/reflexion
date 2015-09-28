@@ -74,6 +74,16 @@ namespace Reflex
 
 			virtual void redraw ();
 
+			virtual void focus (bool state = true);
+
+			virtual void blur ();
+
+			virtual bool has_focus () const;
+
+			virtual Timer* start_timer    (float seconds, int count = 1);
+
+			virtual Timer* start_interval (float seconds);
+
 			virtual void             add_child (View* child);
 
 			virtual void          remove_child (View* child);
@@ -112,20 +122,6 @@ namespace Reflex
 
 			virtual const_style_iterator style_end () const;
 
-			virtual void focus (bool state = true);
-
-			virtual void blur ();
-
-			virtual bool has_focus () const;
-
-			virtual void resize_to_fit ();
-
-			virtual Point content_size () const;
-
-			virtual void  make_body ();
-
-			virtual void clear_body ();
-
 			virtual void    set_name (const char* name);
 
 			virtual const char* name () const;
@@ -154,6 +150,10 @@ namespace Reflex
 
 			virtual const Bounds& frame () const;
 
+			virtual Point content_size () const;
+
+			virtual void resize_to_fit ();
+
 			virtual void set_zoom (float zoom);
 
 			virtual float    zoom () const;
@@ -181,6 +181,10 @@ namespace Reflex
 			virtual       Window* window ();
 
 			virtual const Window* window () const;
+
+			virtual void   make_body ();
+
+			virtual void  clear_body ();
 
 			virtual       Body* body ();
 
@@ -257,6 +261,8 @@ namespace Reflex
 			virtual void on_wheel (WheelEvent* e);
 
 			virtual void on_capture (CaptureEvent* e);
+
+			virtual void on_timer (TimerEvent* e);
 
 			virtual void on_contact       (ContactEvent* e);
 

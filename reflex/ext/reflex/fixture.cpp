@@ -96,7 +96,7 @@ static
 RUCY_DEF1(set_category, bits)
 {
 	CHECK;
-	THIS->set_category(bits.as_i(true));
+	THIS->set_category(bits.as_i());
 	return self;
 }
 RUCY_END
@@ -113,7 +113,7 @@ static
 RUCY_DEF1(set_collision, category_mask)
 {
 	CHECK;
-	THIS->set_collision(category_mask.as_i(true));
+	THIS->set_collision(category_mask.as_i());
 	return self;
 }
 RUCY_END

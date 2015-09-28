@@ -137,7 +137,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		if (!REF) return;
 
 		double now = Xot::time();
-		Reflex::UpdateEvent e(now - REF->self->prev_time_update);
+		Reflex::UpdateEvent e(now, now - REF->self->prev_time_update);
 		REF->self->prev_time_update = now;
 
 		REF->on_update(&e);

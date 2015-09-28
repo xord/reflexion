@@ -15,6 +15,7 @@ namespace Reflex
 
 
 	class View;
+	class Timer;
 
 
 	class Event
@@ -38,9 +39,11 @@ namespace Reflex
 	struct UpdateEvent : public Event
 	{
 
+		double now;
+
 		float dt;
 
-		UpdateEvent (float dt = 0);
+		UpdateEvent (double now = 0, float dt = 0);
 
 	};// UpdateEvent
 
@@ -253,6 +256,28 @@ namespace Reflex
 		CaptureEvent (uint begin, uint end);
 
 	};// CaptureEvent
+
+
+	struct TimerEvent : public Event
+	{
+
+		Timer* timer;
+
+		TimerEvent (Timer* timer = NULL);
+
+		View* owner () const;
+
+		int id () const;
+
+		float interval () const;
+
+		void set_count (int count);
+
+		int      count () const;
+
+		bool is_finished () const;
+
+	};// TimerEvent
 
 
 	struct ContactEvent : public Event

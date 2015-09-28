@@ -27,6 +27,7 @@ pointer do
       fill    event.right? ? :gray : [:red, :green, :blue].sample
       dynamic event.left?
       density 1
+      interval(1) {fill rand, rand, rand}
     }
   end
 end

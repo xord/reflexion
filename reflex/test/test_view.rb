@@ -23,11 +23,6 @@ class TestView < Test::Unit::TestCase
   def point  (*args) Rays::Point.new *args end
   def bounds (*args) Rays::Bounds.new *args end
 
-  def test_initialize ()
-    assert_equal '', view.name
-    assert_equal 'Test', view(:name => 'Test').name
-  end
-
   def test_hidden ()
     v = view
     assert_equal false, v.hidden?
@@ -105,9 +100,12 @@ class TestView < Test::Unit::TestCase
 
   def test_name ()
     v = view
-    assert_equal '', v.name
-    v.name = 'Test'
-    assert_equal 'Test', v.name
+    assert_equal nil, v.name
+    v.name = 'A'
+    assert_equal 'A', v.name
+    v.name = :B
+    assert_equal 'B', v.name
+    assert_equal 'C', view(:name => 'C').name
   end
 
   def test_frame ()
