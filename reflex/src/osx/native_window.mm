@@ -35,6 +35,12 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 @implementation NativeWindow
 
+	{
+		Reflex::Window::Ref* pref;
+		OpenGLView* view;
+		NSTimer* timer;
+	}
+
 	- (id) init
 	{
 		self = [super

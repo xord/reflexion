@@ -4,10 +4,4 @@
 
 
 @interface OpenGLViewController : GLKViewController
-
-	{
-		@private
-			EAGLContext* context;
-	}
-
 @end// OpenGLViewController

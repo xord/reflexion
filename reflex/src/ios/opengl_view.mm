@@ -13,6 +13,10 @@
 
 @implementation OpenGLViewController
 
+	{
+		EAGLContext* context;
+	}
+
 	- (void) viewDidLoad
 	{
 		[super viewDidLoad];

@@ -26,6 +26,11 @@ namespace Reflex
 
 @implementation NativeWindow
 
+	{
+		Reflex::Window::Ref* pref;
+		OpenGLViewController* view_controller;
+	}
+
 	- (id) init
 	{
 		self = [super initWithFrame: UIScreen.mainScreen.bounds];

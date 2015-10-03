@@ -13,6 +13,10 @@
 
 @implementation AppDelegate
 
+	{
+		Reflex::Application::Ref* pref;
+	}
+
 	- (id) init
 	{
 		self = [super init];

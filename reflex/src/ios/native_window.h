@@ -8,12 +8,6 @@
 
 @interface NativeWindow : UIWindow
 
-	{
-		@private
-			Reflex::Window::Ref* pref;
-			OpenGLViewController* view_controller;
-	}
-
 	- (void) bind:   (Reflex::Window*) instance;
 
 	- (void) unbind: (Reflex::Window*) instance;
