@@ -179,7 +179,7 @@ namespace Reflex
 	Timer::operator bool () const
 	{
 		const Data* p = self.get();
-		return p->owner && p->id != ID_INVALID && p->interval >= 0 && p->next_time > 0;
+		return p->owner && p->id != ID_INVALID && p->interval >= 0;
 	}
 
 	bool
