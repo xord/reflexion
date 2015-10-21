@@ -465,11 +465,11 @@ RUCY_DEFN(meter2pixel)
 RUCY_END
 
 static
-RUCY_DEF2(set_gravity, x, y)
+RUCY_DEFN(set_gravity)
 {
 	CHECK;
-	THIS->set_gravity(x.as_f(true), y.as_f(true));
-	return self;
+	THIS->set_gravity(to<Rays::Point>(argc, argv));
+	return value(THIS->gravity());
 }
 RUCY_END
 

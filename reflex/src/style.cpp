@@ -26,7 +26,7 @@ namespace Reflex
 
 		typedef T Value;
 
-		class Wrapper : public boost::noncopyable, public Xot::RefCountable<>
+		class Wrapper : public Xot::RefCountable<>
 		{
 
 			public:

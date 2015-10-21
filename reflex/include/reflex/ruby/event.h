@@ -17,6 +17,9 @@ namespace Reflex
 	Rucy::Class event_class ();
 	// class Reflex::Event
 
+	Rucy::Class motion_event_class ();
+	// class Reflex::MotionEvent
+
 	Rucy::Class update_event_class ();
 	// class Reflex::UpdateEvent
 
@@ -56,6 +59,8 @@ namespace Reflex
 
 RUCY_DECLARE_VALUE_FROM_TO(Reflex::Event)
 
+RUCY_DECLARE_VALUE_FROM_TO(Reflex::MotionEvent)
+
 RUCY_DECLARE_VALUE_FROM_TO(Reflex::UpdateEvent)
 
 RUCY_DECLARE_VALUE_FROM_TO(Reflex::DrawEvent)
@@ -87,6 +92,12 @@ namespace Rucy
 	get_ruby_class<Reflex::Event> ()
 	{
 		return Reflex::event_class();
+	}
+
+	template <> inline Class
+	get_ruby_class<Reflex::MotionEvent> ()
+	{
+		return Reflex::motion_event_class();
 	}
 
 	template <> inline Class

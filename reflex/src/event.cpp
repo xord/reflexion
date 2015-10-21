@@ -27,6 +27,12 @@ namespace Reflex
 	}
 
 
+	MotionEvent::MotionEvent (const Point& gravity)
+	:	gravity(gravity)
+	{
+	}
+
+
 	UpdateEvent::UpdateEvent (double now, float dt)
 	:	now(now), dt(dt)
 	{

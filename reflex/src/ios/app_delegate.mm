@@ -3,6 +3,7 @@
 
 
 #include <assert.h>
+#import  <CoreMotion/CoreMotion.h>
 #include "reflex/event.h"
 #include "reflex/exception.h"
 #include "application_data.h"
@@ -15,6 +16,7 @@
 
 	{
 		Reflex::Application::Ref* pref;
+		CMMotionManager* motion_manager;
 	}
 
 	- (id) init
@@ -31,6 +33,7 @@
 	{
 		assert(pref && !REF);
 
+		[self stopDeviceMotionUpdate];
 		delete pref;
 
 		[super dealloc];
@@ -76,6 +79,8 @@
 
 		[self bind: Reflex::app()];
 
+		[self startUpdateDeviceMotion];
+
 		if (REF)
 		{
 			Reflex::Event e;
@@ -87,6 +92,38 @@
 		}
 
 		return YES;
+	}
+
+	- (void) startUpdateDeviceMotion
+	{
+		CMMotionManager* man = [[[CMMotionManager alloc] init] autorelease];
+		if (!man || !man.deviceMotionAvailable)
+			return;
+
+		man.deviceMotionUpdateInterval = 1 / 60.0;
+		[man
+			startDeviceMotionUpdatesToQueue: NSOperationQueue.currentQueue
+			withHandler: ^(CMDeviceMotion* motion, NSError* error)
+			{
+				if (!REF) return;
+
+				Reflex::MotionEvent e(
+					Reflex::Point(motion.gravity.x, -motion.gravity.y, motion.gravity.z));
+				REF->on_motion(&e);
+			}
+		];
+
+		motion_manager = [man retain];
+	}
+
+	- (void)stopUpdateDeviceMotion
+	{
+		if (!motion_manager || !motion_manager.deviceMotionActive)
+			return;
+
+		[motion_manager stopDeviceMotionUpdates];
+		[motion_manager release];
+		motion_manager = nil;
 	}
 
 	- (void) applicationWillResignActive: (UIApplication*) application

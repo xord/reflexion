@@ -93,6 +93,13 @@ namespace Reflex
 	}
 
 	void
+	Application::on_motion (MotionEvent* e)
+	{
+		if (!*this)
+			invalid_state_error(__FILE__, __LINE__);
+	}
+
+	void
 	Application::on_preference (Event* e)
 	{
 		if (!*this)

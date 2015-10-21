@@ -26,6 +26,9 @@ namespace Reflex
 		public:
 
 			RUCY_OVERRIDE_BEGIN(Rucy::ClassWrapper<T>)
+
+			RUCY_OVERRIDE_ID(on_motion)
+
 			RUCY_OVERRIDE_END
 
 			virtual void start ()
@@ -62,6 +65,15 @@ namespace Reflex
 					this->value.call(on_quit, Rucy::value(e));
 				else
 					return Super::on_quit(e);
+			}
+
+			virtual void on_motion (MotionEvent* e)
+			{
+				RUCY_SYM(on_motion);
+				if (RUCY_IS_OVERRIDDEN(on_motion))
+					this->value.call(on_motion, Rucy::value(e));
+				else
+					Super::on_motion(e);
 			}
 
 			virtual void on_preference (Event* e)

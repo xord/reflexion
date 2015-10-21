@@ -18,6 +18,23 @@ module Reflexion
   }
 
 
+  def call_event (event, *args, &block)
+    $event = event
+    Xot::BlockUtil.instance_eval_or_block_call *args, &block if block
+    $event = nil
+  end
+
+
+  class App < Application
+
+    def on_motion (e)
+      super
+      call_event e, e, &$motion
+    end
+
+  end# App
+
+
   class MainWindow < Window
 
     attr_reader :event
@@ -49,11 +66,6 @@ module Reflexion
       call_event e, e, &$pointer
     end
 
-    def call_event (event, *args, &block)
-      @event = event
-      Xot::BlockUtil.instance_eval_or_block_call *args, &block if block
-    end
-
   end# MainWindow
 
 
@@ -64,7 +76,7 @@ module Reflexion
   end
 
   def event ()
-    window.event
+    $event
   end
 
   def setup (&block)
@@ -87,8 +99,12 @@ module Reflexion
     $pointer = block
   end
 
+  def motion (&block)
+    $motion = block
+  end
+
   def start ()
-    Reflex.start {window.show}
+    App.new {window.show}.start
   end
 
   def quit ()

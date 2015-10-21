@@ -42,7 +42,7 @@ Pod::Spec.new do |s|
 
   s.osx.source_files  = mods.map {|m| "#{m}/src/osx/*.{cpp,mm}"}
   s.ios.source_files  = mods.map {|m| "#{m}/src/ios/*.{cpp,mm}"}
-  s.ios.frameworks     = %w[OpenAL GLKit ImageIO MobileCoreServices]
+  s.ios.frameworks     = %w[OpenAL GLKit ImageIO MobileCoreServices CoreMotion]
   s.osx.compiler_flags = "-DOSX"
   s.ios.compiler_flags = "-DIOS"
   s.osx.xcconfig = {"HEADER_SEARCH_PATHS" => "${PODS_ROOT}/CRuby/build/CRuby_osx.framework/Headers"}

@@ -81,6 +81,14 @@ RUCY_DEF1(on_quit, event)
 RUCY_END
 
 static
+RUCY_DEF1(on_motion, event)
+{
+	CHECK;
+	CALL(on_motion(to<Reflex::MotionEvent*>(event)));
+}
+RUCY_END
+
+static
 RUCY_DEF1(on_preference, event)
 {
 	CHECK;
@@ -119,6 +127,7 @@ Init_application ()
 	cApplication.define_method("name",  get_name);
 	cApplication.define_method("on_start", on_start);
 	cApplication.define_method("on_quit",  on_quit);
+	cApplication.define_method("on_motion", on_motion);
 	cApplication.define_method("on_preference", on_preference);
 	cApplication.define_method("on_about",      on_about);
 	cApplication.define_singleton_method("instance", instance);

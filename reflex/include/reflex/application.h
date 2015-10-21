@@ -37,6 +37,8 @@ namespace Reflex
 
 			virtual void on_quit (Event* e);
 
+			virtual void on_motion (MotionEvent* e);
+
 			virtual void on_preference (Event* e);
 
 			virtual void on_about (Event* e);

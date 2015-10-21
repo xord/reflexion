@@ -13,6 +13,7 @@ void Init_style_length ();
 void Init_timer ();
 
 void Init_event ();
+void Init_motion_event ();
 void Init_update_event ();
 void Init_draw_event ();
 void Init_frame_event ();
@@ -59,6 +60,7 @@ extern "C" void
 	Init_timer();
 
 	Init_event();
+	Init_motion_event();
 	Init_update_event();
 	Init_draw_event();
 	Init_frame_event();
