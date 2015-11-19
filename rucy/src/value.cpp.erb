@@ -102,6 +102,12 @@ namespace Rucy
 	}
 
 	bool
+	Value::is_num () const
+	{
+		return is_i() || is_f();
+	}
+
+	bool
 	Value::is_s () const
 	{
 		return type() == RUBY_T_STRING || is_kind_of(rb_cString);

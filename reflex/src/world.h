@@ -101,31 +101,10 @@ namespace Reflex
 			to_b2coord(v.y, scale));
 	}
 
-
 	inline coord
 	to_coord (float32 t, float scale)
 	{
 		return t * scale;
-	}
-
-	inline Coord2
-	to_coord2 (const b2Vec2& v, float scale)
-	{
-		Coord2 c;
-		c.reset(
-			to_coord(v.x, scale),
-			to_coord(v.y, scale));
-		return c;
-	}
-
-	inline Coord3
-	to_coord3 (const b2Vec2& v, float scale)
-	{
-		Coord3 c;
-		c.reset(
-			to_coord(v.x, scale),
-			to_coord(v.y, scale));
-		return c;
 	}
 
 	inline Point

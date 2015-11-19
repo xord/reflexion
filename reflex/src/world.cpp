@@ -52,9 +52,9 @@ namespace Reflex
 				painter->no_fill();
 				painter->set_stroke(color.r, color.g, color.b, color.a * 0.5);
 
-				boost::scoped_array<Coord2> points(new Coord2[vertexCount]);
+				boost::scoped_array<Point> points(new Point[vertexCount]);
 				for (int i = 0; i < vertexCount; ++i)
-					points[i] = to_coord2(vertices[i], ppm);
+					points[i] = to_point(vertices[i], ppm);
 
 				painter->polygon(&points[0], vertexCount);
 			}
@@ -67,9 +67,9 @@ namespace Reflex
 				painter->set_fill(color.r, color.g, color.b, color.a * 0.5);
 				painter->no_stroke();
 
-				boost::scoped_array<Coord2> points(new Coord2[vertexCount]);
+				boost::scoped_array<Point> points(new Point[vertexCount]);
 				for (int i = 0; i < vertexCount; ++i)
-					points[i] = to_coord2(vertices[i], ppm);
+					points[i] = to_point(vertices[i], ppm);
 
 				painter->polygon(&points[0], vertexCount);
 			}

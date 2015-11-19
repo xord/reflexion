@@ -213,18 +213,6 @@ namespace Reflex
 	}
 
 	Point&
-	WheelEvent::delta ()
-	{
-		return *(Point*) &delta_;
-	}
-
-	const Point&
-	WheelEvent::delta () const
-	{
-		return const_cast<WheelEvent*>(this)->delta();
-	}
-
-	Point&
 	WheelEvent::position ()
 	{
 		return *(Point*) &position_;
@@ -234,6 +222,18 @@ namespace Reflex
 	WheelEvent::position () const
 	{
 		return const_cast<WheelEvent*>(this)->position();
+	}
+
+	Point&
+	WheelEvent::delta ()
+	{
+		return *(Point*) &delta_;
+	}
+
+	const Point&
+	WheelEvent::delta () const
+	{
+		return const_cast<WheelEvent*>(this)->delta();
 	}
 
 

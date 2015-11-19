@@ -9,6 +9,8 @@
 *~
 wget-log*
 
+*/tmp
+
 .doc
 .yardoc
 .DS_Store

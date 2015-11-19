@@ -227,14 +227,14 @@ namespace Reflex
 
 		union
 		{
-			struct {coord dx, dy, dz;};
-			Coord3 delta_;
+			struct {coord x, y, z;};
+			Coord3 position_;
 		};
 
 		union
 		{
-			struct {coord x, y, z;};
-			Coord3 position_;
+			struct {coord dx, dy, dz;};
+			Coord3 delta_;
 		};
 
 		uint modifiers;
@@ -245,13 +245,13 @@ namespace Reflex
 			coord dx, coord dy, coord dz, coord x = 0, coord y = 0, coord z = 0,
 			uint modifiers = 0);
 
-		      Point& delta ();
-
-		const Point& delta () const;
-
 		      Point& position ();
 
 		const Point& position () const;
+
+		      Point& delta ();
+
+		const Point& delta () const;
 
 	};// WheelEvent
 

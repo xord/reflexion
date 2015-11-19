@@ -11,8 +11,6 @@ namespace Reflex
 {
 
 
-	using Rays::Coord2;
-
 	using Rays::Coord3;
 
 	using Rays::Point;
