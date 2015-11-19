@@ -90,6 +90,8 @@ namespace Reflex
 
 			void        remove_tag (const char* tag);
 
+			bool           has_tag (const char* tag) const;
+
 			      tag_iterator tag_begin ();
 
 			const_tag_iterator tag_begin () const;

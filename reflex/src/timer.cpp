@@ -134,6 +134,12 @@ namespace Reflex
 		self->pselector.remove_tag(tag);
 	}
 
+	bool
+	Timer::has_tag (const char* tag) const
+	{
+		return self->pselector.has_tag(tag);
+	}
+
 	Timer::tag_iterator
 	Timer::tag_begin ()
 	{

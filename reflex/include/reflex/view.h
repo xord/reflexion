@@ -130,6 +130,8 @@ namespace Reflex
 
 			virtual void        remove_tag (const char* tag);
 
+			virtual bool           has_tag (const char* tag) const;
+
 			virtual       tag_iterator tag_begin ();
 
 			virtual const_tag_iterator tag_begin () const;

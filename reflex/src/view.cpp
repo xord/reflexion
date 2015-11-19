@@ -1511,7 +1511,11 @@ namespace Reflex
 	void
 	View::set_name (const char* name)
 	{
+		if (name && this->name() && strcmp(name, this->name()) == 0)
+			return;
+
 		self->pselector.set_name(name);
+		self->add_flag(Data::UPDATE_STYLE);
 	}
 
 	const char*
@@ -1523,13 +1527,27 @@ namespace Reflex
 	void
 	View::add_tag (const char* tag)
 	{
+		if (has_tag(tag))
+			return;
+
 		self->pselector.add_tag(tag);
+		self->add_flag(Data::UPDATE_STYLE);
 	}
 
 	void
 	View::remove_tag (const char* tag)
 	{
+		if (!has_tag(tag))
+			return;
+
 		self->pselector.remove_tag(tag);
+		self->add_flag(Data::UPDATE_STYLE);
+	}
+
+	bool
+	View::has_tag (const char* tag) const
+	{
+		return self->pselector.has_tag(tag);
 	}
 
 	View::tag_iterator

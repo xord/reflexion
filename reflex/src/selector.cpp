@@ -96,6 +96,15 @@ namespace Reflex
 		self->tags.erase(it);
 	}
 
+	bool
+	Selector::has_tag (const char* tag) const
+	{
+		if (!tag || *tag == '\0')
+			return false;
+
+		return self->tags.find(tag) != self->tags.end();
+	}
+
 	Selector::iterator
 	Selector::begin ()
 	{
@@ -188,6 +197,13 @@ namespace Reflex
 	{
 		Selector* sel = get_selector(this);
 		if (sel) sel->remove_tag(tag);
+	}
+
+	bool
+	SelectorPtr::has_tag (const char* tag) const
+	{
+		const Selector* sel = get_selector(this);
+		return sel ? sel->has_tag(tag) : false;
 	}
 
 	static Selector::TagSet empty_tags;

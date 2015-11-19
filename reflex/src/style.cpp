@@ -546,6 +546,12 @@ namespace Reflex
 		update_owner(*this);
 	}
 
+	bool
+	Style::has_tag (const char* tag) const
+	{
+		return self->pselector.has_tag(tag);
+	}
+
 	Selector::iterator
 	Style::tag_begin ()
 	{

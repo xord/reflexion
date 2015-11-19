@@ -64,6 +64,14 @@ RUCY_DEF1(remove_tag, tag)
 RUCY_END
 
 static
+RUCY_DEF1(has_tag, tag)
+{
+	CHECK;
+	return value(THIS->has_tag(tag.c_str()));
+}
+RUCY_END
+
+static
 RUCY_DEF0(each_tag)
 {
 	CHECK;
@@ -107,6 +115,7 @@ Init_selector ()
 	cSelector.define_method("name",  get_name);
 	cSelector.define_method("add_tag",    add_tag);
 	cSelector.define_method("remove_tag", remove_tag);
+	cSelector.define_method("tagged?",    has_tag);
 	cSelector.define_method("each_tag", each_tag);
 	cSelector.define_method("contains", contains);
 	cSelector.define_method("==", equal);

@@ -25,6 +25,8 @@ namespace Reflex
 
 			void              remove_tag (const char* tag);
 
+			bool                 has_tag (const char* tag) const;
+
 			Selector::      iterator tag_begin ();
 
 			Selector::const_iterator tag_begin () const;
