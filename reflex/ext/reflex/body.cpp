@@ -123,10 +123,10 @@ RUCY_DEF0(get_angle)
 RUCY_END
 
 static
-RUCY_DEF1(set_linear_velocity, velocity)
+RUCY_DEFN(set_linear_velocity)
 {
 	CHECK;
-	THIS->set_linear_velocity(to<Rays::Point&>(velocity));
+	THIS->set_linear_velocity(to<Rays::Point>(argc, argv));
 	return self;
 }
 RUCY_END
