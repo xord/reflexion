@@ -27,8 +27,14 @@
 		template <> const native_class* value_to<const native_class*> (Value value, bool); \
 		template <>       native_class& value_to<      native_class&> (Value value, bool convert); \
 		template <> const native_class& value_to<const native_class&> (Value value, bool convert); \
-		template <>       native_class  value_to<      native_class>  (Value value, bool convert); \
-		template <>       native_class  value_to<      native_class>  (int argc, const Value* argv, bool convert); \
+	}
+
+#define RUCY_DECLARE_VALUE_OR_ARRAY_TO(native_class) \
+	RUCY_DECLARE_VALUE_TO(native_class) \
+	namespace Rucy \
+	{ \
+		template <> native_class value_to<native_class> (Value value, bool convert); \
+		template <> native_class value_to<native_class> (int argc, const Value* argv, bool convert); \
 	}
 
 #define RUCY_DECLARE_WRAPPER_VALUE_FROM(native_class) \
@@ -86,6 +92,12 @@
 		{ \
 			return (const native_class&) value_to<native_class&>(value, convert); \
 		} \
+	}
+
+#define RUCY_DEFINE_VALUE_OR_ARRAY_TO(native_class) \
+	RUCY_DEFINE_VALUE_TO(native_class) \
+	namespace Rucy \
+	{ \
 		template <> native_class \
 		value_to<native_class> (Value value, bool convert) \
 		{ \
@@ -141,6 +153,18 @@
 #define RUCY_VALUE_FROM_TO(native_class) \
 	RUCY_DECLARE_VALUE_FROM_TO(native_class) \
 	RUCY_DEFINE_VALUE_FROM_TO(native_class)
+
+#define RUCY_DECLARE_VALUE_OR_ARRAY_FROM_TO(native_class) \
+	RUCY_DECLARE_VALUE_FROM(native_class) \
+	RUCY_DECLARE_VALUE_OR_ARRAY_TO(native_class)
+
+#define RUCY_DEFINE_VALUE_OR_ARRAY_FROM_TO(native_class) \
+	RUCY_DEFINE_VALUE_FROM(native_class) \
+	RUCY_DEFINE_VALUE_OR_ARRAY_TO(native_class)
+
+#define RUCY_VALUE_OR_ARRAY_FROM_TO(native_class) \
+	RUCY_DECLARE_VALUE_OR_ARRAY_FROM_TO(native_class) \
+	RUCY_DEFINE_VALUE_OR_ARRAY_FROM_TO(native_class)
 
 #define RUCY_DECLARE_WRAPPER_VALUE_FROM_TO(native_class) \
 	RUCY_DECLARE_WRAPPER_VALUE_FROM(native_class) \

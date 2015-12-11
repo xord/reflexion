@@ -8,7 +8,7 @@
 using namespace Rucy;
 
 
-RUCY_DEFINE_VALUE_FROM_TO(Reflex::StyleLength)
+RUCY_DEFINE_VALUE_OR_ARRAY_FROM_TO(Reflex::StyleLength)
 
 #define THIS  to<Reflex::StyleLength*>(self)
 

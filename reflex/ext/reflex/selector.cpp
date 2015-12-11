@@ -8,7 +8,7 @@
 using namespace Rucy;
 
 
-RUCY_DEFINE_VALUE_FROM_TO(Reflex::Selector)
+RUCY_DEFINE_VALUE_OR_ARRAY_FROM_TO(Reflex::Selector)
 
 #define THIS  to<Reflex::Selector*>(self)
 
