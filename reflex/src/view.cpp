@@ -570,7 +570,7 @@ namespace Reflex
 		p->push_matrix();
 
 		Bounds frame = view->frame();
-		Point  pos   = frame.position() - view->scroll();
+		Point pos    = frame.position() - view->scroll();
 		p->translate(pos);
 
 		float angle = self->angle;

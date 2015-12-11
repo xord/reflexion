@@ -9,6 +9,8 @@
 
 using namespace Rucy;
 
+using Reflex::coord;
+
 
 RUCY_DEFINE_VALUE_FROM_TO(Reflex::Body)
 
@@ -30,7 +32,7 @@ static
 RUCY_DEF2(add_box, width, height)
 {
 	CHECK;
-	return value(THIS->add_box(width.as_f(true), height.as_f(true)));
+	return value(THIS->add_box(to<coord>(width), to<coord>(height)));
 }
 RUCY_END
 
@@ -38,7 +40,7 @@ static
 RUCY_DEF2(add_ellipse, width, height)
 {
 	CHECK;
-	return value(THIS->add_ellipse(width.as_f(true), height.as_f(true)));
+	return value(THIS->add_ellipse(to<coord>(width), to<coord>(height)));
 }
 RUCY_END
 
@@ -47,8 +49,40 @@ RUCY_DEF4(add_arc, width, height, angle_from, angle_to)
 {
 	CHECK;
 	return value(THIS->add_arc(
-		width.as_f(true), height.as_f(true),
-		angle_from.as_f(true), angle_to.as_f(true)));
+		to<coord>(width), to<coord>(height),
+		to<coord>(angle_from), to<coord>(angle_to)));
+}
+RUCY_END
+
+static
+RUCY_DEFN(add_edge)
+{
+	CHECK;
+	if (argc <= 0)
+		argument_error(__FILE__, __LINE__, "Body#add_edge");
+
+	std::vector<Rays::Coord3> points;
+	points.reserve(argc);
+	for (int i = 0; i < argc; ++i)
+		points.push_back(to<Rays::Point>(argv[i]));
+
+	return value(THIS->add_edge((Rays::Point*) &points[0], points.size()));
+}
+RUCY_END
+
+static
+RUCY_DEFN(add_polygon)
+{
+	CHECK;
+	if (argc <= 0)
+		argument_error(__FILE__, __LINE__, "Body#add_polygon");
+
+	std::vector<Rays::Coord3> points;
+	points.reserve(argc);
+	for (int i = 0; i < argc; ++i)
+		points.push_back(to<Rays::Point>(argv[i]));
+
+	return value(THIS->add_polygon((Rays::Point*) &points[0], points.size()));
 }
 RUCY_END
 
@@ -67,7 +101,7 @@ RUCY_DEFN(meter2pixel)
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "View#meter2pixel", argc, 0, 1);
 
-	float meter = argc >= 1 ? argv[0].as_f(true) : 1;
+	float meter = argc >= 1 ? to<float>(argv[0]) : 1;
 	return value(THIS->meter2pixel(meter));
 }
 RUCY_END
@@ -143,7 +177,7 @@ static
 RUCY_DEF1(set_angular_velocity, velocity)
 {
 	CHECK;
-	THIS->set_angular_velocity(velocity.as_f(true));
+	THIS->set_angular_velocity(to<float>(velocity));
 	return self;
 }
 RUCY_END
@@ -160,7 +194,7 @@ static
 RUCY_DEF1(apply_force, force)
 {
 	CHECK;
-	THIS->apply_force(to<Rays::Point&>(force));
+	THIS->apply_force(to<Rays::Point>(force));
 	return self;
 }
 RUCY_END
@@ -169,7 +203,7 @@ static
 RUCY_DEF1(apply_torque, torque)
 {
 	CHECK;
-	THIS->apply_torque(torque.as_f(true));
+	THIS->apply_torque(to<float>(torque));
 	return self;
 }
 RUCY_END
@@ -178,7 +212,7 @@ static
 RUCY_DEF1(apply_linear_impulse, impulse)
 {
 	CHECK;
-	THIS->apply_linear_impulse(to<Rays::Point&>(impulse));
+	THIS->apply_linear_impulse(to<Rays::Point>(impulse));
 	return self;
 }
 RUCY_END
@@ -187,7 +221,7 @@ static
 RUCY_DEF1(apply_angular_impulse, impulse)
 {
 	CHECK;
-	THIS->apply_angular_impulse(impulse.as_f(true));
+	THIS->apply_angular_impulse(to<float>(impulse));
 	return self;
 }
 RUCY_END
@@ -196,7 +230,7 @@ static
 RUCY_DEF1(set_density, density)
 {
 	CHECK;
-	THIS->set_density(density.as_f(true));
+	THIS->set_density(to<float>(density));
 	return self;
 }
 RUCY_END
@@ -213,7 +247,7 @@ static
 RUCY_DEF1(set_friction, friction)
 {
 	CHECK;
-	THIS->set_friction(friction.as_f(true));
+	THIS->set_friction(to<float>(friction));
 	return self;
 }
 RUCY_END
@@ -230,7 +264,7 @@ static
 RUCY_DEF1(set_restitution, restitution)
 {
 	CHECK;
-	THIS->set_restitution(restitution.as_f(true));
+	THIS->set_restitution(to<float>(restitution));
 	return self;
 }
 RUCY_END
@@ -298,7 +332,7 @@ static
 RUCY_DEF1(set_gravity_scale, scale)
 {
 	CHECK;
-	THIS->set_gravity_scale(scale.as_f(true));
+	THIS->set_gravity_scale(to<float>(scale));
 	return self;
 }
 RUCY_END
@@ -337,6 +371,8 @@ Init_body ()
 	cBody.define_method("add_box",     add_box);
 	cBody.define_method("add_ellipse", add_ellipse);
 	cBody.define_method("add_arc",     add_arc);
+	cBody.define_method("add_edge",    add_edge);
+	cBody.define_method("add_polygon", add_polygon);
 	cBody.define_method("clear_fixtures", clear_fixtures);
 	cBody.define_method("meter2pixel", meter2pixel);
 	cBody.define_method("static=", set_static);

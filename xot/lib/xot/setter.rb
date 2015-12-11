@@ -18,7 +18,8 @@ module Xot
     private
 
       def set_value__ (name, *values)
-        raise ArgumentError if values.empty?
+        raise ArgumentError, "set '#{values}' to '#{name}'" if
+          !name || name.empty? || values.empty?
         __send__ "#{name}=", *values
       end
 
