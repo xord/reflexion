@@ -1143,6 +1143,25 @@ namespace Reflex
 		child->on_key(&e);
 	}
 
+	static void
+	filter_pointer_event (
+		PointerEvent* to, const PointerEvent& from, const Bounds& frame)
+	{
+		assert(to);
+
+		const Point& offset = frame.position();
+
+		to->size = 0;
+		for (size_t i = 0; i < from.size; ++i) {
+			const Point& pos = from.position(i);
+			if (!frame.is_include(pos))
+				continue;
+
+			to->positions[i] = pos - offset;
+			++to->size;
+		}
+	}
+
 	void
 	call_pointer_event (View* child, const PointerEvent& event)
 	{
@@ -1154,24 +1173,11 @@ namespace Reflex
 
 		const Bounds& frame = child->frame();
 
-		if (!capturing)
-		{
-			bool include = false;
-			for (size_t i = 0; i < event.size; ++i)
-			{
-				if (frame.is_include(event[i]))
-				{
-					include = true;
-					break;
-				}
-			}
-			if (!include) return;
-		}
-
 		PointerEvent e = event;
-		Point offset = frame.position();
-		for (size_t i = 0; i < e.size; ++i)
-			e[i] -= offset;
+		filter_pointer_event(&e, event, frame);
+
+		if (!capturing && e.size == 0)
+			return;
 
 		child->on_pointer(&e);
 

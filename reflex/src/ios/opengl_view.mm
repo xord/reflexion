@@ -26,9 +26,10 @@
 			Reflex::reflex_error(__FILE__, __LINE__, "failed to create OpenGL context.");
 
 		GLKView* view = (GLKView*) self.view;
-		view.context             = context;
-		view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
-		//view.drawableMultisample = GLKViewDrawableMultisample4X;
+		view.context              = context;
+		view.multipleTouchEnabled = YES;
+		view.drawableDepthFormat  = GLKViewDrawableDepthFormat24;
+		//view.drawableMultisample  = GLKViewDrawableMultisample4X;
 
 		self.preferredFramesPerSecond = 60;
 

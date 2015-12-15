@@ -8,8 +8,12 @@
 require 'reflexion/include'
 
 
-$player = $ground = nil
-$left = $right = false
+$player   =
+$ground   = nil
+$score    = 0
+$gameover = false
+$left     =
+$right    = false
 
 class View
   def remove_self ()
@@ -42,6 +46,8 @@ setup do
   root.wall.clear_fixtures
   add_ground
   add_bricks
+  add_coins
+  add_enemies
   add_player
 end
 
@@ -53,25 +59,68 @@ def add_ground ()
   }
 
   w, h = $ground.width, $ground.height
-  $ground.body.clear_fixtures
-  $ground.body.add_edge *[0, 0, 0, h, w, h, w, 0].each_slice(2)
-end
+  edges = (0..w).step(5).map {|x|
+    [x, h + Rays.perlin(x / 100.0, 0) * 30 - 50]
+  }
+  edges = [[0, 0]] + edges + [[w, 0]]
 
-def add_bricks ()
-  range = $ground.frame.inset_by(100).tap {|f| break f.left .. f.right}
-  50.times do
-    add_brick rand(range), 100
+  $ground.body.clear_fixtures
+  $ground.body.add_edge *edges
+  $ground.on :draw do |e|
+    e.painter.push fill: nil, stroke: :white do
+      lines *edges
+    end
   end
 end
 
-def add_brick (x, y)
-  window.add RectShape.new {
-    pos x, y
-    size *(0..1).map {rand(20..100)}
-    fill rand, rand, rand
-    dynamic true
-    density 1
-  }
+def add_bricks ()
+  range = place_range
+  50.times do
+    window.add RectShape.new {
+      pos rand(range), 200
+      size *(0..1).map {rand(20..100)}
+      fill rand, rand, rand
+      dynamic true
+      density 1
+    }
+  end
+end
+
+def add_coins ()
+  range = place_range
+  50.times do
+    window.add EllipseShape.new {
+      pos rand(range), 100
+      size 30
+      fill :yellow
+      static true
+      sensor true
+      on :contact do
+        remove_self
+        $score += 1
+      end
+    }
+  end
+end
+
+def add_enemies ()
+  range = place_range
+  10.times do
+    window.add RectShape.new {
+      pos rand(range), 200
+      size 50
+      fill :red
+      static true
+      sensor true
+      on :contact do |e|
+        $gameover = true if e.view == $player
+      end
+    }
+  end
+end
+
+def place_range ()
+  $ground.frame.inset_by(100).tap {|f| break f.left .. f.right}
 end
 
 def add_player ()
@@ -123,6 +172,18 @@ end
 update do
   old_x, new_x = window.root.scroll.x, $player.center.x - window.width / 2
   window.root.scroll_to (old_x + new_x) / 2, 0
+end
+
+draw do
+  fill :white
+  font nil, 30
+  text "SCORE: #{$score}", 10, 10
+  text "#{event.fps.to_i} FPS", 10, 50
+  if $gameover
+    fill :red
+    font nil, 100
+    text "GAMEOVER!", 100, 100
+  end
 end
 
 key do
