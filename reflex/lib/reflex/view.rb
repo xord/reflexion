@@ -23,12 +23,6 @@ module Reflex
 
     extend Forwardable
 
-    alias add    add_child
-    alias remove remove_child
-    alias find   find_children
-    alias meter  meter2pixel
-    alias debug? debug
-
     def_delegators :style,
       :flow=,   :flow,
       :fill=,   :fill,
@@ -74,6 +68,10 @@ module Reflex
       timeout seconds, count: -1, &block
     end
 
+    def find_child (*args)
+      find_children(*args).first
+    end
+
     def children ()
       to_enum :each_child
     end
@@ -112,6 +110,12 @@ module Reflex
       cap = capture
       args.all? {|type| cap.include? type}
     end
+
+    alias add    add_child
+    alias remove remove_child
+    alias find   find_child
+    alias meter  meter2pixel
+    alias debug? debug
 
     universal_accessor :name, :selector, :frame, :zoom, :capture,
       :gravity, :category, :collision, :debug

@@ -597,7 +597,7 @@ Init_style ()
 	cStyle.define_method("name",  get_name);
 	cStyle.define_method("add_tag",    add_tag);
 	cStyle.define_method("remove_tag", remove_tag);
-	cStyle.define_method("tagged?",    has_tag);
+	cStyle.define_method("tag?",       has_tag);
 	cStyle.define_method("each_tag", each_tag);
 	cStyle.define_method("selector=", set_selector);
 	cStyle.define_method("selector", get_selector);

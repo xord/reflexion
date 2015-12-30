@@ -160,7 +160,7 @@ Init_timer ()
 	cTimer.define_method("name",  get_name);
 	cTimer.define_method("add_tag",    add_tag);
 	cTimer.define_method("remove_tag", remove_tag);
-	cTimer.define_method("tagged?",    has_tag);
+	cTimer.define_method("tag?",       has_tag);
 	cTimer.define_method("each_tag", each_tag);
 	cTimer.define_method("selector=", set_selector);
 	cTimer.define_method("selector", get_selector);
