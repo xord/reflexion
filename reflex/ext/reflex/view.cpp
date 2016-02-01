@@ -116,8 +116,8 @@ RUCY_DEFN(start_timer)
 	check_arg_count(__FILE__, __LINE__, "View#start_timer", argc, 1, 2);
 
 	Reflex::Timer* timer = THIS->start_timer(
-		argv[0].as_f(true),
-		argc >= 2 ? argv[1].as_i() : 1);
+		to<float>(argv[0]),
+		argc >= 2 ? to<int>(argv[1]) : 1);
 
 	return value(timer);
 }

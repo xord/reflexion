@@ -191,10 +191,10 @@ RUCY_DEF0(get_angular_velocity)
 RUCY_END
 
 static
-RUCY_DEF1(apply_force, force)
+RUCY_DEFN(apply_force)
 {
 	CHECK;
-	THIS->apply_force(to<Rays::Point>(force));
+	THIS->apply_force(to<Rays::Point>(argc, argv));
 	return self;
 }
 RUCY_END
@@ -209,10 +209,10 @@ RUCY_DEF1(apply_torque, torque)
 RUCY_END
 
 static
-RUCY_DEF1(apply_linear_impulse, impulse)
+RUCY_DEFN(apply_linear_impulse)
 {
 	CHECK;
-	THIS->apply_linear_impulse(to<Rays::Point>(impulse));
+	THIS->apply_linear_impulse(to<Rays::Point>(argc, argv));
 	return self;
 }
 RUCY_END

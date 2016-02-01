@@ -58,7 +58,7 @@ module Reflex
       @attach_block = block if block
     end
 
-    def timeout (seconds, count: 1, &block)
+    def timeout (seconds = 0, count: 1, &block)
       timer = start_timer seconds, count
       timer.block = block if block
       timer
