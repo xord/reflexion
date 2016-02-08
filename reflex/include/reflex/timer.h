@@ -37,6 +37,8 @@ namespace Reflex
 
 			virtual void fire ();
 
+			virtual void stop ();
+
 			virtual View* owner () const;
 
 			virtual int id () const;

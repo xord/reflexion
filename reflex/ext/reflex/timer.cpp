@@ -19,6 +19,14 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Timer)
 
 
 static
+RUCY_DEF0(stop)
+{
+	CHECK;
+	THIS->stop();
+}
+RUCY_END
+
+static
 RUCY_DEF0(get_owner)
 {
 	CHECK;
@@ -149,6 +157,7 @@ Init_timer ()
 
 	cTimer = mReflex.define_class("Timer");
 
+	cTimer.define_method("stop", stop);
 	cTimer.define_method("owner", get_owner);
 	cTimer.define_method("id", get_id);
 	cTimer.define_method("interval", get_interval);

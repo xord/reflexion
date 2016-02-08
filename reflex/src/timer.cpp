@@ -74,6 +74,12 @@ namespace Reflex
 		self->owner->on_timer(&e);
 	}
 
+	void
+	Timer::stop ()
+	{
+		set_count(0);
+	}
+
 	View*
 	Timer::owner () const
 	{
