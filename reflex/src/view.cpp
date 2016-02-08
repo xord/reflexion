@@ -547,9 +547,12 @@ namespace Reflex
 		update_view_style(view);
 		apply_view_style(view);
 
-		View::child_iterator end = view->child_end();
-		for (View::child_iterator it = view->child_begin(); it != end; ++it)
-			update_view_tree(it->get(), e);
+		View::ChildList* children = view->self->pchildren.get();
+		if (children)
+		{
+			for (size_t i = 0; i < children->size(); ++i)
+				update_view_tree((*children)[i], e);
+		}
 
 		update_view_layout(view);
 	}
