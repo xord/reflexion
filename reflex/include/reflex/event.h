@@ -8,6 +8,7 @@
 #include <reflex/point.h>
 #include <reflex/bounds.h>
 #include <reflex/painter.h>
+#include <reflex/timer.h>
 
 
 namespace Reflex
@@ -15,7 +16,6 @@ namespace Reflex
 
 
 	class View;
-	class Timer;
 
 
 	class Event
@@ -271,7 +271,7 @@ namespace Reflex
 	struct TimerEvent : public Event
 	{
 
-		Timer* timer;
+		Timer::Ref timer;
 
 		TimerEvent (Timer* timer = NULL);
 

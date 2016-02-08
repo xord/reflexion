@@ -217,14 +217,14 @@ namespace Reflex
 	{
 		assert(timer && *timer);
 
-		List::iterator end_ = timers.end();
-		for (List::iterator it = timers.begin(); it != end_; ++it)
+		List::iterator end = timers.end();
+		for (List::iterator it = timers.begin(); it != end; ++it)
 		{
-			if (timer->self->next_time <= (*it)->self->next_time)
-				continue;
-
-			timers.insert(it, timer);
-			return;
+			if (timer->self->next_time < (*it)->self->next_time)
+			{
+				timers.insert(it, timer);
+				return;
+			}
 		}
 
 		timers.push_back(timer);
@@ -235,9 +235,7 @@ namespace Reflex
 	{
 		assert(timer && *timer);
 
-		Timer::Data* self = timer->self.get();
-
-		self->next_time = Xot::time() + self->interval;
+		timer->self->next_time = Xot::time() + timer->self->interval;
 	}
 
 	static void
@@ -276,8 +274,8 @@ namespace Reflex
 		if (!timer)
 			argument_error(__FILE__, __LINE__);
 
-		List::iterator end_ = timers.end();
-		for (List::iterator it = timers.begin(); it != end_; ++it)
+		List::iterator end = timers.end();
+		for (List::iterator it = timers.begin(); it != end; ++it)
 		{
 			if (timer->id() == (*it)->id())
 				timers.erase(it);
@@ -295,42 +293,43 @@ namespace Reflex
 	static void
 	fire_timer (Timer* timer)
 	{
-		assert(timer && !timer->is_finished());
+		assert(timer);
+
+		if (timer->is_finished())
+			return;
 
 		if (timer->self->count > 0)
 			--timer->self->count;
 
 		timer->fire();
+
+		if (!timer->is_finished())
+			update_next_time(timer);
+	}
+
+	static bool
+	compare_timer (const Timer::Ref& lhs, const Timer::Ref& rhs)
+	{
+		return lhs->is_finished() || lhs->self->next_time < rhs->self->next_time;
 	}
 
 	void
 	Timers::fire (double now)
 	{
-		List continues;
-
-		List::iterator timers_end = timers.end();
-		for (List::iterator it = timers.begin(); it != timers_end;)
+		List::iterator end = timers.end();
+		for (List::iterator it = timers.begin(); it != end; ++it)
 		{
 			Timer* timer = it->get();
 			if (!is_time_to_fire(timer, now))
-			{
-				++it;
-				continue;
-			}
+				break;
 
 			fire_timer(timer);
-			if (!timer->is_finished())
-			{
-				update_next_time(timer);
-				continues.push_back(timer);
-			}
-
-			it = timers.erase(it);
 		}
 
-		List::iterator continues_end = continues.end();
-		for (List::iterator it = continues.begin(); it != continues_end; ++it)
-			add(it->get());
+		timers.sort(compare_timer);
+
+		while (!timers.empty() && timers.front()->is_finished())
+			timers.pop_front();
 	}
 
 	void
