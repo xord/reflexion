@@ -10,11 +10,12 @@ require 'reflexion/include'
 
 FILENAME = 'paint.png'
 
+$canvas =
+  Image.load(FILENAME) rescue nil ||
+  Image.new(512, 512).paint {background :white}
+
 
 setup do
-  $canvas =
-    Image.load(FILENAME) rescue nil ||
-    Image.new(512, 512).paint {background :white}
   size $canvas.size
 end
 
