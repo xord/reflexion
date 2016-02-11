@@ -75,9 +75,9 @@ namespace Reflex
 
 		boost::scoped_ptr<Timers>      ptimers;
 
-		boost::scoped_ptr<World>       pworld;
-
 		boost::scoped_ptr<Body>        pbody;
+
+		boost::scoped_ptr<World>       pchild_world;
 
 		Data ()
 		:	window(NULL), parent(NULL), zoom(1), angle(0),
@@ -135,41 +135,41 @@ namespace Reflex
 			return *ptimers;
 		}
 
-		World* world (View* this_)
-		{
-			assert(this_);
-
-			if (!pworld)
-			{
-				pworld.reset(new World(this_));
-				resize_world(this_);
-			}
-			return pworld.get();
-		}
-
-		World* parent_world ()
-		{
-			if (!parent) return NULL;
-			return parent->self->world(parent);
-		}
-
 		Body* body (View* this_)
 		{
 			if (!pbody)
 			{
-				World* world = parent_world();
-				if (!world) return NULL;
-				pbody.reset(world->create_body(this_, frame.position()));
+				World* w = parent_world();
+				if (!w) return NULL;
+				pbody.reset(w->create_body(this_, frame.position()));
 				this_->make_body();
 			}
 			return pbody.get();
 		}
 
-		void resize_world (View* this_)
+		World* parent_world (bool create = true)
+		{
+			if (!parent) return NULL;
+			return parent->self->child_world(parent, create);
+		}
+
+		World* child_world (View* this_, bool create = true)
 		{
 			assert(this_);
 
-			World* w = pworld.get();
+			if (!pchild_world && create)
+			{
+				pchild_world.reset(new World(this_));
+				resize_child_world(this_);
+			}
+			return pchild_world.get();
+		}
+
+		void resize_child_world (View* this_)
+		{
+			assert(this_);
+
+			World* w = pchild_world.get();
 			if (!w) return;
 
 			w->resize(frame.width, frame.height);
@@ -330,7 +330,7 @@ namespace Reflex
 
 		if (event.is_resize())
 		{
-			self->resize_world(view);
+			self->resize_child_world(view);
 			view->on_resize(&event);
 
 			apply_style_to_children_have_variable_lengths(view);
@@ -341,16 +341,16 @@ namespace Reflex
 	}
 
 	static void
-	update_view_world (View* view, float dt)
+	update_physics (View* view, float dt)
 	{
 		assert(view);
 		View::Data* self = view->self.get();
 
-		World* world = self->pworld.get();
-		if (world)
+		World* child_world = self->pchild_world.get();
+		if (child_world)
 		{
 			self->add_flag(View::Data::UPDATING_WORLD);
-			world->step(dt);
+			child_world->step(dt);
 			self->remove_flag(View::Data::UPDATING_WORLD);
 		}
 
@@ -539,7 +539,7 @@ namespace Reflex
 			return;
 
 		UpdateEvent e = event;
-		update_view_world(view, e.dt);
+		update_physics(view, e.dt);
 		view->on_update(&e);
 		fire_timers(view, e.now);
 
@@ -612,11 +612,11 @@ namespace Reflex
 		for (View::child_iterator it = view->child_begin(); it != end; ++it)
 			draw_view_tree(it->get(), e, pos, clip2);
 
-		World* world = view->self->pworld.get();
-		if (world)
+		World* child_world = view->self->pchild_world.get();
+		if (child_world)
 		{
 			p->push_attrs();
-			world->draw(p);
+			child_world->draw(p);
 			p->pop_attrs();
 		}
 
@@ -1782,11 +1782,11 @@ namespace Reflex
 		Body* body = self->pbody.get();
 		if (!body) return;
 
-		World* world = self->parent_world();
-		if (!world)
+		World* parent_world = self->parent_world();
+		if (!parent_world)
 			invalid_state_error(__FILE__, __LINE__);
 
-		world->destroy_body(body);
+		parent_world->destroy_body(body);
 		self->pbody.reset();
 	}
 
@@ -1809,27 +1809,22 @@ namespace Reflex
 		if (body)
 			return body->meter2pixel(meter);
 
-		World* world   = self->pworld.get();
-		if (world)
-			return world->meter2pixel(meter);
+		World* child_world = self->pchild_world.get();
+		if (child_world)
+			return child_world->meter2pixel(meter);
 
-		View*  parent_      = NULL;
-		World* parent_world = NULL;
-		if (
-			(parent_      = parent()) &&
-			(parent_world = parent_->self->pworld.get()))
-		{
+		World* parent_world = self->parent_world(false);
+		if (parent_world)
 			return parent_world->meter2pixel(meter);
-		}
 
 		if (!create_world)
 			invalid_state_error(__FILE__, __LINE__);
 
-		World* new_world = self->world(this);
-		if (!new_world)
+		child_world = self->child_world(this);
+		if (!child_world)
 			invalid_state_error(__FILE__, __LINE__);
 
-		return new_world->meter2pixel(meter);
+		return child_world->meter2pixel(meter);
 	}
 
 	float
@@ -1847,7 +1842,7 @@ namespace Reflex
 	void
 	View::set_gravity (const Point& vector)
 	{
-		World* w = self->world(this);
+		World* w = self->child_world(this);
 		if (!w)
 			invalid_state_error(__FILE__, __LINE__);
 
@@ -1857,14 +1852,14 @@ namespace Reflex
 	Point
 	View::gravity () const
 	{
-		World* w = self->pworld.get();
+		World* w = self->pchild_world.get();
 		return w ? w->gravity() : 0;
 	}
 
 	Body*
 	View::wall ()
 	{
-		return self->world(this)->wall();
+		return self->child_world(this)->wall();
 	}
 
 	const Body*
@@ -1876,7 +1871,7 @@ namespace Reflex
 	void
 	View::set_debug (bool state)
 	{
-		World* w = self->world(this);
+		World* w = self->child_world(this);
 		if (!w)
 			invalid_state_error(__FILE__, __LINE__);
 
@@ -1886,7 +1881,7 @@ namespace Reflex
 	bool
 	View::debugging () const
 	{
-		World* w = self->pworld.get();
+		World* w = self->pchild_world.get();
 		return w ? w->debugging() : false;
 	}
 

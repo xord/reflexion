@@ -128,7 +128,7 @@ namespace Reflex
 
 	World::~World ()
 	{
-		delete debug_draw;
+		set_debug(false);
 	}
 
 	void
@@ -233,8 +233,11 @@ namespace Reflex
 	{
 		if (state == debugging()) return;
 
-		if (!debug_draw)
+		if (state)
+		{
+			assert(!debug_draw);
 			debug_draw = new DebugDraw(ppm);
+		}
 		else
 		{
 			delete debug_draw;
