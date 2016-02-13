@@ -7,9 +7,10 @@
 #include <vector>
 #include <xot/ref.h>
 #include <xot/pimpl.h>
-#include <reflex/point.h>
-#include <reflex/bounds.h>
-#include <reflex/painter.h>
+#include <rays/point.h>
+#include <rays/bounds.h>
+#include <rays/painter.h>
+#include <reflex/defs.h>
 #include <reflex/style.h>
 #include <reflex/event.h>
 

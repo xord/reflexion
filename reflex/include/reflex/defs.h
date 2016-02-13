@@ -7,6 +7,27 @@
 #include <rays/defs.h>
 
 
+namespace Rays
+{
+
+
+	struct Bounds;
+	struct Color;
+	struct Matrix;
+	struct Point;
+
+	class Bitmap;
+	class ColorSpace;
+	class Font;
+	class Image;
+	class Painter;
+	class Shader;
+	class Texture;
+
+
+}// Rays
+
+
 namespace Reflex
 {
 
@@ -16,6 +37,18 @@ namespace Reflex
 	using Rays::String;
 
 	using Rays::coord;
+
+	using Rays::Bitmap;
+	using Rays::Bounds;
+	using Rays::Color;
+	using Rays::ColorSpace;
+	using Rays::Font;
+	using Rays::Image;
+	using Rays::Matrix;
+	using Rays::Painter;
+	using Rays::Point;
+	using Rays::Shader;
+	using Rays::Texture;
 
 
 	enum KeyCode

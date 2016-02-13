@@ -6,6 +6,7 @@
 
 #include <xot/ref.h>
 #include <xot/pimpl.h>
+#include <reflex/defs.h>
 #include <reflex/selector.h>
 
 

@@ -169,7 +169,7 @@ namespace Reflex
 		if (positions_)
 		{
 			for (size_t i = 0; i < size; ++i)
-				positions[i] = *(Coord3*) &positions_[i];
+				positions[i] = *(Rays::Coord3*) &positions_[i];
 		}
 	}
 

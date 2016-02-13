@@ -12,8 +12,8 @@
 #include <Box2D/Collision/Shapes/b2ChainShape.h>
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <xot/util.h>
+#include "rays/painter.h"
 #include "reflex/exception.h"
-#include "reflex/painter.h"
 #include "world.h"
 
 

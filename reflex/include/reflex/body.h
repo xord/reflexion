@@ -4,8 +4,8 @@
 #define __REFLEX_BODY_H__
 
 
+#include <rays/point.h>
 #include <reflex/defs.h>
-#include <reflex/point.h>
 #include <reflex/fixture.h>
 
 

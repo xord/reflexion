@@ -4,7 +4,7 @@
 
 #include <assert.h>
 #import <Cocoa/Cocoa.h>
-#include "reflex/bounds.h"
+#include "rays/bounds.h"
 #include "reflex/window.h"
 #include "reflex/exception.h"
 #include "event.h"

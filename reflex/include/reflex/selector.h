@@ -6,7 +6,6 @@
 
 #include <set>
 #include <xot/pimpl.h>
-#include <xot/string.h>
 #include <reflex/defs.h>
 
 

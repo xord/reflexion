@@ -4,10 +4,10 @@
 #define __REFLEX_EVENT_H__
 
 
+#include <rays/point.h>
+#include <rays/bounds.h>
+#include <rays/painter.h>
 #include <reflex/defs.h>
-#include <reflex/point.h>
-#include <reflex/bounds.h>
-#include <reflex/painter.h>
 #include <reflex/timer.h>
 
 
@@ -112,13 +112,13 @@ namespace Reflex
 		union
 		{
 			struct {coord x, y, z;};
-			Coord3 scroll_;
+			Rays::Coord3 scroll_;
 		};
 
 		union
 		{
 			struct {coord dx, dy, dz;};
-			Coord3 delta_;
+			Rays::Coord3 delta_;
 		};
 
 		ScrollEvent ();
@@ -197,8 +197,11 @@ namespace Reflex
 
 		union
 		{
+
 			struct {coord x, y, z;};
-			Coord3 positions[MAX];
+
+			Rays::Coord3 positions[MAX];
+
 		};
 
 		PointerEvent ();
@@ -227,14 +230,20 @@ namespace Reflex
 
 		union
 		{
+
 			struct {coord x, y, z;};
-			Coord3 position_;
+
+			Rays::Coord3 position_;
+
 		};
 
 		union
 		{
+
 			struct {coord dx, dy, dz;};
-			Coord3 delta_;
+
+			Rays::Coord3 delta_;
+
 		};
 
 		uint modifiers;

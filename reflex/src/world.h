@@ -8,9 +8,9 @@
 #include <Box2D/Dynamics/b2World.h>
 #include <Box2D/Dynamics/b2WorldCallbacks.h>
 #include <Box2D/Dynamics/Contacts/b2Contact.h>
+#include <rays/point.h>
+#include <rays/painter.h>
 #include <reflex/defs.h>
-#include <reflex/point.h>
-#include <reflex/painter.h>
 
 
 namespace Reflex

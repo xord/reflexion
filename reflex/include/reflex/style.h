@@ -5,8 +5,9 @@
 
 
 #include <xot/pimpl.h>
-#include <reflex/color.h>
-#include <reflex/image.h>
+#include <rays/color.h>
+#include <rays/image.h>
+#include <reflex/defs.h>
 #include <reflex/selector.h>
 
 
