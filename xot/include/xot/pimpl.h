@@ -12,16 +12,13 @@ namespace Xot
 {
 
 
-	template <typename T, bool SHARED = false> class PImpl;
-
-
 	template <typename T>
-	class PImpl<T, false> : public boost::scoped_ptr<T>
+	class PImpl : public boost::scoped_ptr<T>
 	{
 
 		typedef boost::scoped_ptr<T> Super;
 
-		typedef PImpl<T, false> This;
+		typedef PImpl<T> This;
 
 		public:
 
@@ -37,28 +34,24 @@ namespace Xot
 				return *this;
 			}
 
-			bool shared () const {return false;}
-
 	};// PImpl
 
 
 	template <typename T>
-	class PImpl<T, true> : public boost::shared_ptr<T>
+	class PSharedImpl : public boost::shared_ptr<T>
 	{
 
 		typedef boost::shared_ptr<T> Super;
 
-		typedef PImpl<T, true> This;
+		typedef PImpl<T> This;
 
 		public:
 
-			PImpl () : Super(new T) {}
+			PSharedImpl () : Super(new T) {}
 
-			PImpl (T* p) : Super(p) {}
+			PSharedImpl (T* p) : Super(p) {}
 
-			bool shared () const {return true;}
-
-	};// PImpl
+	};// PSharedImpl
 
 
 }// Xot

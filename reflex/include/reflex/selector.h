@@ -60,7 +60,7 @@ namespace Reflex
 
 			struct Data;
 
-			Xot::PImpl<Data, true> self;
+			Xot::PSharedImpl<Data> self;
 
 	};// Selector
 
