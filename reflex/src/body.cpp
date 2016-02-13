@@ -78,7 +78,7 @@ namespace Reflex
 	{
 		coord w = width / 2, h = height / 2;
 
-		if (nsegment == 0) nsegment = Painter::ELLIPSE_NSEGMENT;
+		if (nsegment == 0) nsegment = Painter::NSEGMENT_ELLIPSE;
 
 		std::vector<b2Vec2> vecs;
 		vecs.reserve(nsegment);
