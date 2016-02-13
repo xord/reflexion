@@ -30,7 +30,7 @@ RUCY_DEFN(initialize)
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "DrawEvent#initialize", argc, 0, 1);
 
-	THIS->dt = (argc >= 1) ? argv[0].as_f() : 0;
+	THIS->dt = (argc >= 1) ? to<float>(argv[0]) : 0;
 
 	return rb_call_super(0, NULL);
 }

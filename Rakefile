@@ -6,6 +6,11 @@
   .each {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 
 
+require 'xot/rake'
+
+include Xot::Rake
+
+
 MODULES = %w[xot rucy beeps rays reflex].map &:intern
 TASKS   = %w[erb lib ext test clean gem install uninstall upload].map &:intern
 
@@ -41,12 +46,12 @@ task :default
 
 task :run do
   raise unless name = env(:sample)
-  sh %( ruby reflex/samples/#{name}.rb )
+  sh ruby "reflex/samples/#{name}.rb"
 end
 
 TASKS.each do |name|
   task name do
-    sh_each_targets %( rake #{name} )
+    sh_each_targets rake name
   end
 end
 

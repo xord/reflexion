@@ -15,9 +15,6 @@ namespace Reflex
 {
 
 
-	class View;
-
-
 	class StyleLength
 	{
 
@@ -62,7 +59,7 @@ namespace Reflex
 	};// StyleLength
 
 
-	class Style
+	class Style : public HasSelector
 	{
 
 		typedef Style This;
@@ -75,37 +72,19 @@ namespace Reflex
 				FLOW_LAST
 			};
 
-			typedef Selector::      iterator       tag_iterator;
-
-			typedef Selector::const_iterator const_tag_iterator;
-
 			Style (const char* name = NULL);
 
 			~Style ();
 
-			void    set_name (const char* name);
+			void set_name (const char* name);
 
-			const char* name () const;
+			void    add_tag (const char* tag);
 
-			void           add_tag (const char* tag);
+			void remove_tag (const char* tag);
 
-			void        remove_tag (const char* tag);
+			void  clear_tags ();
 
-			bool           has_tag (const char* tag) const;
-
-			      tag_iterator tag_begin ();
-
-			const_tag_iterator tag_begin () const;
-
-			      tag_iterator tag_end ();
-
-			const_tag_iterator tag_end () const;
-
-			void        set_selector (const Selector& selector);
-
-			      Selector& selector ();
-
-			const Selector& selector () const;
+			void set_selector (const Selector& selector);
 
 			void set_flow (Flow main, Flow sub = FLOW_NONE);
 
@@ -210,6 +189,10 @@ namespace Reflex
 			struct Data;
 
 			Xot::PSharedImpl<Data> self;
+
+		protected:
+
+			virtual SelectorPtr* get_selector_ptr ();
 
 	};// Style
 

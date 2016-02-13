@@ -85,27 +85,53 @@ test_ref ()
 static bool
 test_util ()
 {
+	if (Xot::bit(0) != 0x1) return false;
+	if (Xot::bit(1) != 0x2) return false;
+	if (Xot::bit(2) != 0x4) return false;
+	if (Xot::bit(3) != 0x8) return false;
+
 	if (!(Xot::clip(10, 100,  50) ==  50)) return false;
 	if (!(Xot::clip(10, 100,  10) ==  10)) return false;
 	if (!(Xot::clip(10, 100, 100) == 100)) return false;
 	if (!(Xot::clip(10, 100,   0) ==  10)) return false;
 	if (!(Xot::clip(10, 100, 200) == 100)) return false;
 
+	static const int F0 = Xot::bit(0), F1 = Xot::bit(1), F2 = Xot::bit(2);
+
+	int flags = 0;
+	if (Xot::has_flag(flags, 0))  return false;
+	if (Xot::has_flag(flags, F0)) return false;
+
+	Xot::     add_flag(&flags, F0);
+	if (!Xot::has_flag(flags, F0)) return false;
+
+	Xot::     add_flag(&flags, F1);
+	if (!Xot::has_flag(flags, F0))           return false;
+	if (!Xot::has_flag(flags, F1))           return false;
+	if (!Xot::has_flag(flags, F0 | F1))      return false;
+	if ( Xot::has_flag(flags, F0 | F1 | F2)) return false;
+
+	Xot::  remove_flag(&flags, F1);
+	if (!Xot::has_flag(flags, F0))           return false;
+	if ( Xot::has_flag(flags, F1))           return false;
+	if ( Xot::has_flag(flags, F0 | F1))      return false;
+	if ( Xot::has_flag(flags, F0 | F1 | F2)) return false;
+
 	int value;
 	int* p = &value;
 	if (!(Xot::get_pointer_flag(p) == false)) return false;
 
-	p = Xot::set_pointer_flag(p);
+	p =   Xot::set_pointer_flag(p);
 	if (!(Xot::get_pointer_flag(p) == true))  return false;
 
-	p = Xot::set_pointer_flag(p, false);
+	p =   Xot::set_pointer_flag(p, false);
 	if (!(Xot::get_pointer_flag(p) == false)) return false;
 
-	p = Xot::set_pointer_flag(p, true);
+	p =   Xot::set_pointer_flag(p, true);
 	if (!(Xot::get_pointer_flag(p) == true))  return false;
 
-	if (!(                      p         != &value))  return false;
-	if (!(Xot::set_pointer_flag(p, false) == &value))  return false;
+	if (!(                      p         != &value)) return false;
+	if (!(Xot::set_pointer_flag(p, false) == &value)) return false;
 
 	return true;
 }

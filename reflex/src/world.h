@@ -4,13 +4,16 @@
 #define __REFLEX_SRC_WORLD_H__
 
 
-#include <Box2D/Dynamics/b2World.h>
+#include <Box2D/Common/b2Math.h>
 #include <Box2D/Dynamics/b2WorldCallbacks.h>
-#include <Box2D/Dynamics/Contacts/b2Contact.h>
 #include <xot/noncopyable.h>
+#include <xot/pimpl.h>
 #include <rays/point.h>
 #include <rays/painter.h>
 #include <reflex/defs.h>
+
+
+class b2World;
 
 
 namespace Reflex
@@ -18,10 +21,7 @@ namespace Reflex
 
 
 	class View;
-
 	class Body;
-
-	class DebugDraw;
 
 
 	class World : public Xot::NonCopyable, private b2ContactListener
@@ -29,19 +29,16 @@ namespace Reflex
 
 		public:
 
-			World (View* owner, float pixels_per_meter = 100);
+			enum
+			{
+				DEFAULT_PIXELS_PER_METER = 100
+			};
 
-			~World ();
+			World (float pixels_per_meter = DEFAULT_PIXELS_PER_METER);
 
-			void step (float dt);
+			virtual ~World ();
 
-			Body* create_body (View* owner, const Point& position = 0, float degree = 0);
-
-			void destroy_body (Body* body);
-
-			void resize (coord width, coord height);
-
-			void draw (Painter* painter);
+			Body* create_body (const Point& position = 0, float angle = 0);
 
 			float meter2pixel (float meter = 1) const;
 
@@ -53,25 +50,19 @@ namespace Reflex
 
 			bool     debugging () const;
 
-			      Body* wall ();
+			virtual void on_update (float dt);
 
-			const Body* wall () const;
+			virtual void on_draw (Painter* painter);
+
+			struct Data;
+
+			Xot::PImpl<Data> self;
 
 		protected:
 
-			void BeginContact (b2Contact* contact);
+			virtual void BeginContact (b2Contact* contact);
 
-			void EndContact   (b2Contact* contact);
-
-		private:
-
-			b2World world;
-
-			float ppm, last_step;
-
-			Body* wall_;
-
-			DebugDraw* debug_draw;
+			virtual void   EndContact (b2Contact* contact);
 
 	};// World
 
@@ -114,6 +105,13 @@ namespace Reflex
 			to_coord(v.x, scale),
 			to_coord(v.y, scale));
 	}
+
+
+	World* World_get_temporary ();
+
+	      b2World* World_get_b2ptr (      World* world);
+
+	const b2World* World_get_b2ptr (const World* world);
 
 
 }// Reflex

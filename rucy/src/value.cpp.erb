@@ -597,15 +597,6 @@ namespace Rucy
 	{
 		return Value(size, array);
 	}
-
-	Value
-	value (void* ptr)
-	{
-		if (ptr)
-			argument_error(__FILE__, __LINE__, "Rucy::value(void*) can take only (void*) NULL.");
-
-		return nil();
-	}
 %	(1..10).each do |n|
 
 	Value

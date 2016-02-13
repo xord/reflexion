@@ -66,15 +66,6 @@ namespace Reflex
 					return Super::content_size();
 			}
 
-			virtual void make_body ()
-			{
-				RUCY_SYM(make_body);
-				if (RUCY_IS_OVERRIDABLE())
-					this->value.call(make_body);
-				else
-					Super::make_body();
-			}
-
 			virtual void on_attach (Event* e)
 			{
 				RUCY_SYM(on_attach);

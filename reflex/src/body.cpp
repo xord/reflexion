@@ -1,317 +1,78 @@
-#include "reflex/body.h"
+#include "body.h"
 
 
-#include <math.h>
 #include <assert.h>
-#include <vector>
-#include <Box2D/Common/b2Math.h>
 #include <Box2D/Dynamics/b2Body.h>
-#include <Box2D/Dynamics/b2Fixture.h>
-#include <Box2D/Collision/Shapes/b2CircleShape.h>
-#include <Box2D/Collision/Shapes/b2EdgeShape.h>
-#include <Box2D/Collision/Shapes/b2ChainShape.h>
-#include <Box2D/Collision/Shapes/b2PolygonShape.h>
+#include <Box2D/Dynamics/b2World.h>
 #include <xot/util.h>
-#include "rays/painter.h"
 #include "reflex/exception.h"
 #include "world.h"
-
-
-#define PTR ((b2Body*) handle)
 
 
 namespace Reflex
 {
 
 
-	static const float PI   = M_PI;
-
-	static const float PI_2 = PI * 2;
-
-
-	Body::Body (Handle h, float pixels_per_meter)
-	:	handle(h), ppm(pixels_per_meter)
+	struct Body::Data
 	{
-		assert(h);
-	}
 
-	Fixture
-	Body::add_box (coord width, coord height)
-	{
-		assert(PTR && PTR->GetWorld());
+		b2Body* b2body;
 
-		if (PTR->GetWorld()->IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
+		float ppm;
 
-		b2Vec2 size(width / ppm / 2, height / ppm / 2);
-
-		b2PolygonShape shape;
-		shape.SetAsBox(size.x, size.y);
-		for (int i = 0; i < 4; ++i)
-			shape.m_vertices[i] += size;
-
-		b2FixtureDef fixture;
-		fixture.shape = &shape;
-
-		return PTR->CreateFixture(&fixture);
-	}
-
-	Fixture
-	add_circle (b2Body* handle, coord size, float ppm)
-	{
-		coord radius = size / ppm / 2.f;
-
-		b2CircleShape shape;
-		shape.m_radius = radius;
-		shape.m_p.Set(radius, radius);
-
-		b2FixtureDef fixture;
-		fixture.shape = &shape;
-
-		return PTR->CreateFixture(&fixture);
-	}
-
-	Fixture
-	add_ellipse (
-		b2Body* handle, coord width, coord height, float from, float to,
-		coord radius_min, uint nsegment, float ppm)
-	{
-		coord w = width / 2, h = height / 2;
-
-		if (nsegment == 0) nsegment = Painter::NSEGMENT_ELLIPSE;
-
-		std::vector<b2Vec2> vecs;
-		vecs.reserve(nsegment);
-		for (uint seg = 0; seg < nsegment; ++seg)
+		Data ()
+		:	b2body(NULL), ppm(0)
 		{
-			float pos    = (float) seg / (float) nsegment;
-			float radian = (from + (to - from) * pos) * PI_2;
-			float x      = cos(radian);
-			float y      = -sin(radian);
-			vecs.push_back(b2Vec2(to_b2coord(w + w * x, ppm), to_b2coord(h + h * y, ppm)));
 		}
 
-		b2PolygonShape shape;
-		shape.Set(&vecs[0], (int32) nsegment);
+		bool is_valid () const
+		{
+			return b2body && ppm > 0;
+		}
 
-		b2FixtureDef fixture;
-		fixture.shape = &shape;
+	};// Body::Data
 
-		return PTR->CreateFixture(&fixture);
-	}
 
-	Fixture
-	Body::add_ellipse (coord width, coord height, coord radius_min, uint nsegment)
+	static void
+	validate (const Body* body, bool check_world_lock = false)
 	{
-		assert(PTR && PTR->GetWorld());
+		assert(body);
 
-		if (PTR->GetWorld()->IsLocked())
+		if (!body->self->is_valid())
 			invalid_state_error(__FILE__, __LINE__);
 
-		if (width == height && radius_min == 0)
-			return add_circle(PTR, width, ppm);
-		else
+		if (check_world_lock)
 		{
-			return Reflex::add_ellipse(
-				PTR, width, height, 0, 360, radius_min, nsegment, ppm);
+			assert(body->self->b2body->GetWorld());
+
+			if (body->self->b2body->GetWorld()->IsLocked())
+				physics_error(__FILE__, __LINE__);
 		}
 	}
 
-	Fixture
-	Body::add_arc (
-		coord width, coord height, float angle_from, float angle_to,
-		coord radius_min, uint nsegment)
+
+	Body::Body (b2Body* b2body, float pixels_per_meter)
 	{
-		assert(PTR && PTR->GetWorld());
+		assert(b2body && pixels_per_meter > 0);
 
-		if (PTR->GetWorld()->IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
-
-		if (width == height && angle_from == 0 && angle_to == 360 && radius_min == 0)
-			return add_circle(PTR, width, ppm);
-		else
-		{
-			return Reflex::add_ellipse(
-				PTR, width, height, angle_from, angle_to, radius_min, nsegment, ppm);
-		}
+		self->b2body = b2body;
+		self->ppm    = pixels_per_meter;
 	}
 
-	Fixture
-	Body::add_edge (const Point& begin, const Point& end)
+	Body::~Body ()
 	{
-		assert(PTR && PTR->GetWorld());
-
-		if (PTR->GetWorld()->IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
-
-		b2EdgeShape shape;
-		shape.Set(to_b2vec2(begin, ppm), to_b2vec2(end, ppm));
-
-		b2FixtureDef fixture;
-		fixture.shape = &shape;
-
-		return PTR->CreateFixture(&fixture);
-	}
-
-	Fixture
-	Body::add_edge (const Point* points, size_t size, bool loop)
-	{
-		assert(PTR && PTR->GetWorld());
-
-		if (PTR->GetWorld()->IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
-
-		if (size == 2)
-			return add_edge(points[0], points[1]);
-
-		std::vector<b2Vec2> vecs;
-		vecs.reserve(size);
-		for (size_t i = 0; i < size; ++i)
-			vecs.push_back(to_b2vec2(points[i], ppm));
-
-		b2ChainShape shape;
-		if (loop)
-			shape.CreateLoop(&vecs[0], (int32) size);
-		else
-			shape.CreateChain(&vecs[0], (int32) size);
-
-		b2FixtureDef fixture;
-		fixture.shape = &shape;
-
-		return PTR->CreateFixture(&fixture);
-	}
-
-	Fixture
-	Body::add_polygon (const Point* points, size_t size)
-	{
-		assert(PTR && PTR->GetWorld());
-
-		if (PTR->GetWorld()->IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
-
-		std::vector<b2Vec2> vecs;
-		vecs.reserve(size);
-		for (size_t i = 0; i < size; ++i)
-			vecs.push_back(to_b2vec2(points[i], ppm));
-
-		b2PolygonShape shape;
-		shape.Set(&vecs[0], (int32) size);
-
-		b2FixtureDef fixture;
-		fixture.shape = &shape;
-
-		return PTR->CreateFixture(&fixture);
+		remove_self();
 	}
 
 	void
-	Body::clear_fixtures ()
+	Body::remove_self ()
 	{
-		assert(PTR && PTR->GetWorld());
+		validate(this, true);
 
-		if (PTR->GetWorld()->IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
+		self->b2body->GetWorld()->DestroyBody(self->b2body);
 
-		b2Fixture* f;
-		while ((f = PTR->GetFixtureList()))
-			PTR->DestroyFixture(f);
-	}
-
-	float
-	Body::meter2pixel (float meter) const
-	{
-		return meter * ppm;
-	}
-
-	void
-	Body::set_static (bool state)
-	{
-		assert(PTR && PTR->GetWorld());
-
-		if (PTR->GetWorld()->IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
-
-		PTR->SetType(state ? b2_staticBody : b2_dynamicBody);
-	}
-
-	bool
-	Body::is_static () const
-	{
-		assert(PTR);
-
-		return PTR->GetType() == b2_staticBody;
-	}
-
-	void
-	Body::set_dynamic (bool state)
-	{
-		assert(PTR && PTR->GetWorld());
-
-		if (PTR->GetWorld()->IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
-
-		PTR->SetType(state ? b2_dynamicBody : b2_staticBody);
-	}
-
-	bool
-	Body::is_dynamic () const
-	{
-		assert(PTR);
-
-		return PTR->GetType() == b2_dynamicBody;
-	}
-
-	Point
-	Body::position () const
-	{
-		assert(PTR);
-
-		return to_point(PTR->GetPosition(), ppm);
-	}
-
-	float
-	Body::angle () const
-	{
-		assert(PTR);
-
-		return Xot::rad2deg(PTR->GetAngle());
-	}
-
-	void
-	Body::set_linear_velocity (coord x, coord y)
-	{
-		set_linear_velocity(Point(x, y));
-	}
-
-	void
-	Body::set_linear_velocity (const Point& velocity)
-	{
-		assert(PTR);
-
-		PTR->SetLinearVelocity(to_b2vec2(velocity, ppm));
-	}
-
-	Point
-	Body::linear_velocity () const
-	{
-		assert(PTR);
-
-		return to_point(PTR->GetLinearVelocity(), ppm);
-	}
-
-	void
-	Body::set_angular_velocity (float velocity)
-	{
-		assert(PTR);
-
-		PTR->SetAngularVelocity(Xot::deg2rad(velocity));
-	}
-
-	float
-	Body::angular_velocity () const
-	{
-		assert(PTR);
-
-		return Xot::rad2deg(PTR->GetAngularVelocity());
+		self->b2body = NULL;
+		self->ppm    = 0;
 	}
 
 	void
@@ -323,17 +84,17 @@ namespace Reflex
 	void
 	Body::apply_force (const Point& force)
 	{
-		assert(PTR);
+		validate(this);
 
-		PTR->ApplyForceToCenter(to_b2vec2(force, ppm), true);
+		self->b2body->ApplyForceToCenter(to_b2vec2(force, self->ppm), true);
 	}
 
 	void
 	Body::apply_torque (float torque)
 	{
-		assert(PTR);
+		validate(this);
 
-		PTR->ApplyTorque(torque, true);
+		self->b2body->ApplyTorque(torque, true);
 	}
 
 	void
@@ -345,245 +106,195 @@ namespace Reflex
 	void
 	Body::apply_linear_impulse (const Point& impulse)
 	{
-		assert(PTR);
+		validate(this);
 
-		PTR->ApplyLinearImpulse(
-			to_b2vec2(impulse, ppm), PTR->GetWorldCenter(), true);
+		self->b2body->ApplyLinearImpulse(
+			to_b2vec2(impulse, self->ppm), self->b2body->GetWorldCenter(), true);
 	}
 
 	void
 	Body::apply_angular_impulse (float impulse)
 	{
-		assert(PTR);
+		validate(this);
 
-		PTR->ApplyAngularImpulse(impulse, true);
-	}
-
-	void
-	Body::set_density (float density)
-	{
-		iterator end_ = end();
-		for (iterator it = begin(); it != end_; ++it)
-			it->set_density(density);
+		self->b2body->ApplyAngularImpulse(impulse, true);
 	}
 
 	float
-	Body::density () const
+	Body::meter2pixel (float meter) const
 	{
-		const_iterator it = begin(), end_ = end();
-		if (it == end_)
-			invalid_state_error(__FILE__, __LINE__, "no fixture.");
-
-		float val = it->density();
-		for (; it != end_; ++it)
-		{
-			if (val != it->density())
-			{
-				invalid_state_error(
-					__FILE__, __LINE__,
-					"each fixture have different values.");
-			}
-		}
-		return val;
-	}
-
-	void
-	Body::set_friction (float friction)
-	{
-		iterator end_ = end();
-		for (iterator it = begin(); it != end_; ++it)
-			it->set_friction(friction);
-	}
-
-	float
-	Body::friction () const
-	{
-		const_iterator it = begin(), end_ = end();
-		if (it == end_)
-			invalid_state_error(__FILE__, __LINE__, "no fixture.");
-
-		float val = it->friction();
-		for (; it != end_; ++it)
-		{
-			if (val != it->friction())
-			{
-				invalid_state_error(
-					__FILE__, __LINE__,
-					"each fixture have different values.");
-			}
-		}
-		return val;
-	}
-
-	void
-	Body::set_restitution (float restitution)
-	{
-		iterator end_ = end();
-		for (iterator it = begin(); it != end_; ++it)
-			it->set_restitution(restitution);
-	}
-
-	float
-	Body::restitution () const
-	{
-		const_iterator it = begin(), end_ = end();
-		if (it == end_)
-			invalid_state_error(__FILE__, __LINE__, "no fixture.");
-
-		float val = it->restitution();
-		for (; it != end_; ++it)
-		{
-			if (val != it->restitution())
-			{
-				invalid_state_error(
-					__FILE__, __LINE__,
-					"each fixture have different values.");
-			}
-		}
-		return val;
-	}
-
-	void
-	Body::set_sensor (bool sensor)
-	{
-		iterator end_ = end();
-		for (iterator it = begin(); it != end_; ++it)
-			it->set_sensor(sensor);
-	}
-
-	bool
-	Body::is_sensor () const
-	{
-		const_iterator it = begin(), end_ = end();
-		if (it == end_)
-			invalid_state_error(__FILE__, __LINE__, "no fixture.");
-
-		bool val = it->is_sensor();
-		for (; it != end_; ++it)
-		{
-			if (val != it->is_sensor())
-			{
-				invalid_state_error(
-					__FILE__, __LINE__,
-					"each fixture have different values.");
-			}
-		}
-		return val;
-	}
-
-	void
-	Body::set_category (uint bits)
-	{
-		iterator end_ = end();
-		for (iterator it = begin(); it != end_; ++it)
-			it->set_category(bits);
-	}
-
-	uint
-	Body::category () const
-	{
-		const_iterator it = begin(), end_ = end();
-		if (it == end_)
-			invalid_state_error(__FILE__, __LINE__, "no fixture.");
-
-		uint val = it->category();
-		for (; it != end_; ++it)
-		{
-			if (val != it->category())
-			{
-				invalid_state_error(
-					__FILE__, __LINE__,
-					"each fixture have different values.");
-			}
-		}
-		return val;
-	}
-
-	void
-	Body::set_collision (uint category_mask)
-	{
-		iterator end_ = end();
-		for (iterator it = begin(); it != end_; ++it)
-			it->set_collision(category_mask);
-	}
-
-	uint
-	Body::collision () const
-	{
-		const_iterator it = begin(), end_ = end();
-		if (it == end_)
-			invalid_state_error(__FILE__, __LINE__, "no fixture.");
-
-		uint val = it->collision();
-		for (; it != end_; ++it)
-		{
-			if (val != it->collision())
-			{
-				invalid_state_error(
-					__FILE__, __LINE__,
-					"each fixture have different values.");
-			}
-		}
-		return val;
-	}
-
-	void
-	Body::set_gravity_scale (float scale)
-	{
-		assert(PTR);
-
-		return PTR->SetGravityScale(scale);
-	}
-
-	float
-	Body::gravity_scale () const
-	{
-		assert(PTR);
-
-		return PTR->GetGravityScale();
-	}
-
-	Body::iterator
-	Body::begin ()
-	{
-		assert(PTR);
-
-		return Fixture(PTR->GetFixtureList());
-	}
-
-	Body::const_iterator
-	Body::begin () const
-	{
-		assert(PTR);
-
-		return Fixture(PTR->GetFixtureList());
-	}
-
-	Body::iterator
-	Body::end ()
-	{
-		assert(PTR);
-
-		return Fixture(NULL);
-	}
-
-	Body::const_iterator
-	Body::end () const
-	{
-		assert(PTR);
-
-		return Fixture(NULL);
+		return meter * self->ppm;
 	}
 
 	void
 	Body::set_transform (coord x, coord y, float degree)
 	{
-		assert(PTR && PTR->GetWorld());
+		validate(this, true);
 
-		if (PTR->GetWorld()->IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
+		self->b2body->SetTransform(
+			to_b2vec2(x, y, self->ppm), Xot::deg2rad(degree));
+	}
 
-		PTR->SetTransform(to_b2vec2(x, y, ppm), Xot::deg2rad(degree));
+	Point
+	Body::position () const
+	{
+		validate(this);
+
+		return to_point(self->b2body->GetPosition(), self->ppm);
+	}
+
+	float
+	Body::angle () const
+	{
+		validate(this);
+
+		return Xot::rad2deg(self->b2body->GetAngle());
+	}
+
+	static bool
+	is_body_dynamic (const Body* body)
+	{
+		assert(body);
+
+		return body->self->b2body->GetType() == b2_dynamicBody;
+	}
+
+	void
+	Body::set_dynamic (bool dynamic)
+	{
+		if (dynamic == is_body_dynamic(this))
+			return;
+
+		validate(this, true);
+
+		self->b2body->SetType(dynamic ? b2_dynamicBody : b2_staticBody);
+	}
+
+	bool
+	Body::is_dynamic () const
+	{
+		validate(this);
+
+		return is_body_dynamic(this);
+	}
+
+	static void
+	make_body_kinematic (Body* body)
+	{
+		if (body->self->b2body->GetType() == b2_staticBody)
+			body->self->b2body->SetType(b2_kinematicBody);
+	}
+
+	void
+	Body::set_linear_velocity (coord x, coord y)
+	{
+		set_linear_velocity(Point(x, y));
+	}
+
+	void
+	Body::set_linear_velocity (const Point& velocity)
+	{
+		validate(this);
+
+		make_body_kinematic(this);
+
+		self->b2body->SetLinearVelocity(to_b2vec2(velocity, self->ppm));
+	}
+
+	Point
+	Body::linear_velocity () const
+	{
+		validate(this);
+
+		return to_point(self->b2body->GetLinearVelocity(), self->ppm);
+	}
+
+	void
+	Body::set_angular_velocity (float velocity)
+	{
+		validate(this);
+
+		make_body_kinematic(this);
+
+		self->b2body->SetAngularVelocity(Xot::deg2rad(velocity));
+	}
+
+	float
+	Body::angular_velocity () const
+	{
+		validate(this);
+
+		return Xot::rad2deg(self->b2body->GetAngularVelocity());
+	}
+
+	void
+	Body::set_gravity_scale (float scale)
+	{
+		validate(this);
+
+		if (scale == self->b2body->GetGravityScale())
+			return;
+
+		return self->b2body->SetGravityScale(scale);
+	}
+
+	float
+	Body::gravity_scale () const
+	{
+		validate(this);
+
+		return self->b2body->GetGravityScale();
+	}
+
+
+	void
+	Body_copy_attributes (const Body* from, Body* to)
+	{
+		if (!from || !to)
+			return;
+
+		if (from->self->ppm != to->self->ppm)
+			physics_error(__FILE__, __LINE__);
+
+		const b2Body* b2from = Body_get_b2ptr(from);
+		      b2Body* b2to   = Body_get_b2ptr(to);
+		assert(b2from && b2to);
+
+		b2to->SetType(           b2from->GetType());
+		b2to->SetTransform(      b2from->GetPosition(), b2from->GetAngle());
+		b2to->SetLinearVelocity( b2from->GetLinearVelocity());
+		b2to->SetAngularVelocity(b2from->GetAngularVelocity());
+		b2to->SetLinearDamping(  b2from->GetLinearDamping());
+		b2to->SetAngularDamping( b2from->GetAngularDamping());
+		b2to->SetGravityScale(   b2from->GetGravityScale());
+		b2to->SetBullet(         b2from->IsBullet());
+	}
+
+	Body*
+	Body_create_temporary ()
+	{
+		return World_get_temporary()->create_body();
+	}
+
+	bool
+	Body_is_temporary (const Body* body)
+	{
+		const b2Body* b2body = Body_get_b2ptr(body);
+		if (!b2body) return false;
+
+		return b2body->GetWorld() == World_get_b2ptr(World_get_temporary());
+	}
+
+	b2Body*
+	Body_get_b2ptr (Body* body)
+	{
+		return body ? body->self->b2body : NULL;
+	}
+
+	const b2Body*
+	Body_get_b2ptr (const Body* body)
+	{
+		return Body_get_b2ptr(const_cast<Body*>(body));
 	}
 
 

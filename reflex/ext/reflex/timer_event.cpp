@@ -80,7 +80,7 @@ static
 RUCY_DEF1(set_count, count)
 {
 	CHECK;
-	THIS->set_count(count.as_i());
+	THIS->set_count(to<int>(count));
 	return count;
 }
 RUCY_END

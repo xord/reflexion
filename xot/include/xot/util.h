@@ -26,46 +26,102 @@ namespace Xot
 	double random (double min_, double max_);
 
 
-	template <typename T>
-	inline T deg2rad (T degree)
+	template <typename T = uint>
+	inline constexpr T
+	bit (int nth)
 	{
-		return degree / (T) 180 * M_PI;
+		return (T) (0x1 << nth);
 	}
 
 	template <typename T>
-	inline T rad2deg (T radian)
-	{
-		return radian / M_PI * (T) 180;
-	}
-
-
-	template <typename T>
-	inline T clip (T minval, T maxval, T value)
+	inline constexpr T
+	clip (T minval, T maxval, T value)
 	{
 		return value > maxval ? maxval : (value < minval ? minval : value);
 	}
 
 
 	template <typename T>
-	inline T* set_pointer_flag (T* pointer, bool flag = true)
+	inline constexpr T
+	deg2rad (T degree)
+	{
+		return degree / (T) 180 * M_PI;
+	}
+
+	template <typename T>
+	inline constexpr T
+	rad2deg (T radian)
+	{
+		return radian / M_PI * (T) 180;
+	}
+
+
+	template <typename T>
+	inline void
+	add_flag (T* pvalue, uint flag)
+	{
+		assert(pvalue);
+
+		*pvalue |= flag;
+	}
+
+	template <typename T>
+	inline void
+	remove_flag (T* pvalue, uint flag)
+	{
+		assert(pvalue);
+
+		*pvalue &= ~flag;
+	}
+
+	template <typename T>
+	inline bool
+	has_flag (T value, uint flag)
+	{
+		if (flag == 0) return false;
+		return (value & flag) == flag;
+	}
+
+	template <typename T>
+	inline bool
+	check_and_remove_flag (T* pvalue, uint flag)
+	{
+		assert(pvalue);
+
+		bool has = has_flag(*pvalue, flag);
+		remove_flag(pvalue, flag);
+		return has;
+	}
+
+
+	static const uintptr_t POINTER_FLAG = 0x1;
+
+	template <typename T>
+	inline T*
+	set_pointer_flag (T* pointer, bool flag = true)
 	{
 		uintptr_t intval = *(uintptr_t*) &pointer;
-		if (flag) intval |=  0x1;
-		else      intval &= ~0x1;
+		if (flag)
+			intval |= POINTER_FLAG;
+		else
+			intval &= ~POINTER_FLAG;
+
 		return *(T**) &intval;
 	}
 
 	template <typename T>
-	inline const T* set_pointer_flag (const T* pointer, bool flag = true)
+	inline const T*
+	set_pointer_flag (const T* pointer, bool flag = true)
 	{
 		return set_pointer_flag(const_cast<T*>(pointer), flag);
 	}
 
 	template <typename T>
-	inline bool get_pointer_flag (const T* pointer)
+	inline bool
+	get_pointer_flag (const T* pointer)
 	{
-		uintptr_t intval = *(uintptr_t*) &pointer;
-		return intval & 0x1;
+		const uintptr_t& intval = *(uintptr_t*) &pointer;
+		return intval & POINTER_FLAG;
 	}
 
 

@@ -3,13 +3,15 @@
 
 #include <assert.h>
 #include <memory>
-#include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Common/b2Draw.h>
+#include <Box2D/Dynamics/b2World.h>
+#include <Box2D/Dynamics/Contacts/b2Contact.h>
 #include <xot/util.h>
-#include "reflex/body.h"
-#include "reflex/view.h"
 #include "reflex/event.h"
 #include "reflex/exception.h"
+#include "shape.h"
+#include "view.h"
+#include "body.h"
 
 
 namespace Reflex
@@ -118,114 +120,74 @@ namespace Reflex
 	};// DebugDraw
 
 
-	World::World (View* owner, float pixels_per_meter)
-	:	world(b2Vec2(0, 0)), ppm(pixels_per_meter), last_step(0), wall_(NULL),
-		debug_draw(NULL)
+	struct World::Data
 	{
-		world.SetContactListener(this);
-		wall_ = create_body(owner);
+
+		b2World b2world;
+
+		float ppm, carried_time;
+
+		std::unique_ptr<DebugDraw> debug_draw;
+
+		Data ()
+		:	b2world(b2Vec2(0, 0)), ppm(0), carried_time(0)
+		{
+		}
+
+	};// World::Data
+
+
+	World::World (float pixels_per_meter)
+	{
+		assert(pixels_per_meter > 0);
+
+		self->ppm = pixels_per_meter;
+
+		self->b2world.SetContactListener(this);
 	}
 
 	World::~World ()
 	{
-		set_debug(false);
-	}
-
-	void
-	World::step (float dt)
-	{
-		static const double DT = 1. / 60.;
-
-		dt       += last_step;
-		last_step = fmod(dt, DT);
-
-		int count = (int) (dt / DT);
-		for (int i = 0; i < count; ++i)
-			world.Step(DT, 8, 4);
+		self->b2world.SetContactListener(NULL);
 	}
 
 	Body*
-	World::create_body (View* owner, const Point& position, float degree)
+	World::create_body (const Point& position, float angle)
 	{
-		if (!owner)
-			argument_error(__FILE__, __LINE__);
-
-		if (world.IsLocked())
+		if (self->b2world.IsLocked())
 			invalid_state_error(__FILE__, __LINE__);
 
 		b2BodyDef def;
-		def.position = to_b2vec2(position, ppm);
-		def.angle    = Xot::deg2rad(degree);
-		b2Body* body = world.CreateBody(&def);
-		body->SetUserData(owner);
-		return new Body(body, ppm);
-	}
+		def.position = to_b2vec2(position, self->ppm);
+		def.angle    = Xot::deg2rad(angle);
 
-	void
-	World::destroy_body (Body* body)
-	{
-		if (!body)
-			argument_error(__FILE__, __LINE__);
+		b2Body* b2body = self->b2world.CreateBody(&def);
+		if (!b2body)
+			physics_error(__FILE__, __LINE__);
 
-		b2Body* b = (b2Body*) body->handle;
-		if (!b || world.IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
-
-		world.DestroyBody(b);
-	}
-
-	void
-	World::resize (coord width, coord height)
-	{
-		wall_->clear_fixtures();
-
-		const Point points[] = {
-			Point(0,     0),
-			Point(0,     height),
-			Point(width, height),
-			Point(width, 0),
-		};
-		wall_->add_edge(points, 4, true);
-	}
-
-	void
-	World::draw (Painter* painter)
-	{
-		if (!debug_draw) return;
-
-		debug_draw->begin(painter);
-		world.DrawDebugData();
-		debug_draw->end();
+		return new Body(b2body, self->ppm);
 	}
 
 	float
 	World::meter2pixel (float meter) const
 	{
-		return meter * ppm;
+		return meter == 1 ? self->ppm : meter * self->ppm;
 	}
 
 	void
 	World::set_gravity (const Point& gravity)
 	{
-		world.SetGravity(to_b2vec2(gravity, ppm));
+		b2Vec2 b2gravity = to_b2vec2(gravity, self->ppm);
+		if (b2gravity == self->b2world.GetGravity())
+			return;
+
+		self->b2world.SetGravity(b2gravity);
 	}
 
 	Point
 	World::gravity () const
 	{
-		return to_point(world.GetGravity(), ppm);
-	}
-
-	Body*
-	World::wall ()
-	{
-		return wall_;
-	}
-
-	const Body*
-	World::wall () const
-	{
-		return const_cast<World*>(this)->wall();
+		return to_point(self->b2world.GetGravity(), self->ppm);
 	}
 
 	void
@@ -235,62 +197,101 @@ namespace Reflex
 
 		if (state)
 		{
-			assert(!debug_draw);
-			debug_draw = new DebugDraw(ppm);
+			assert(!self->debug_draw);
+			self->debug_draw.reset(new DebugDraw(self->ppm));
 		}
 		else
-		{
-			delete debug_draw;
-			debug_draw = NULL;
-		}
+			self->debug_draw.reset();
 
-		world.SetDebugDraw(debug_draw);
+		self->b2world.SetDebugDraw(self->debug_draw.get());
 	}
 
 	bool
 	World::debugging () const
 	{
-		return debug_draw;
+		return !!self->debug_draw;
 	}
 
-	bool is_view_active (View* view);
+	void
+	World::on_update (float dt)
+	{
+		static const double DT     = 1. / 60.;
+		static const int COUNT_MAX = 8;
+
+		dt                += self->carried_time;
+		self->carried_time = fmod(dt, DT);
+
+		int count = (int) (dt / DT);
+		if (count > COUNT_MAX)
+		{
+			count              = COUNT_MAX;
+			self->carried_time = 0;
+		}
+
+		for (int i = 0; i < count; ++i)
+			self->b2world.Step(DT, 8, 4);
+	}
+
+	void
+	World::on_draw (Painter* painter)
+	{
+		if (!self->debug_draw) return;
+
+		self->debug_draw->begin(painter);
+		self->b2world.DrawDebugData();
+		self->debug_draw->end();
+	}
 
 	void
 	World::BeginContact (b2Contact* contact)
 	{
-		View* v1 = (View*) contact->GetFixtureA()->GetBody()->GetUserData();
-		if (!v1) return;
+		Shape* s1 = (Shape*) contact->GetFixtureA()->GetUserData();
+		if (!s1) return;
 
-		View* v2 = (View*) contact->GetFixtureB()->GetBody()->GetUserData();
-		if (!v2) return;
+		Shape* s2 = (Shape*) contact->GetFixtureB()->GetUserData();
+		if (!s2) return;
 
-		if (!is_view_active(v1) || !is_view_active(v2))
+		if (!View_is_active(*s1->owner()) || !View_is_active(*s2->owner()))
 			return;
 
-		ContactEvent e1(ContactEvent::BEGIN, v2);
-		v1->on_contact(&e1);
-
-		ContactEvent e2(ContactEvent::BEGIN, v1);
-		v2->on_contact(&e2);
+		Shape_call_contact_event(s1, ContactEvent(ContactEvent::BEGIN, s2));
+		Shape_call_contact_event(s2, ContactEvent(ContactEvent::BEGIN, s1));
 	}
 
 	void
 	World::EndContact (b2Contact* contact)
 	{
-		View* v1 = (View*) contact->GetFixtureA()->GetBody()->GetUserData();
-		if (!v1) return;
+		Shape* s1 = (Shape*) contact->GetFixtureA()->GetUserData();
+		if (!s1) return;
 
-		View* v2 = (View*) contact->GetFixtureB()->GetBody()->GetUserData();
-		if (!v2) return;
+		Shape* s2 = (Shape*) contact->GetFixtureB()->GetUserData();
+		if (!s2) return;
 
-		if (!is_view_active(v1) || !is_view_active(v2))
+		if (!View_is_active(*s1->owner()) || !View_is_active(*s2->owner()))
 			return;
 
-		ContactEvent e1(ContactEvent::END, v2);
-		v1->on_contact(&e1);
+		Shape_call_contact_event(s1, ContactEvent(ContactEvent::END, s2));
+		Shape_call_contact_event(s2, ContactEvent(ContactEvent::END, s1));
+	}
 
-		ContactEvent e2(ContactEvent::END, v1);
-		v2->on_contact(&e2);
+
+	World*
+	World_get_temporary ()
+	{
+		static World world;
+		return &world;
+	}
+
+	b2World*
+	World_get_b2ptr (World* world)
+	{
+		return world ? &world->self->b2world : NULL;
+	}
+
+	const b2World*
+	World_get_b2ptr (const World* world)
+	{
+		return World_get_b2ptr(const_cast<World*>(world));
 	}
 
 

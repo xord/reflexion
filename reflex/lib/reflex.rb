@@ -18,9 +18,10 @@ require 'reflex/reflex'
 require 'reflex/helper'
 
 require 'reflex/selector'
+require 'reflex/timer'
 require 'reflex/style'
 require 'reflex/style_length'
-require 'reflex/timer'
+require 'reflex/shape'
 
 require 'reflex/update_event'
 require 'reflex/draw_event'
@@ -33,9 +34,6 @@ require 'reflex/wheel_event'
 require 'reflex/capture_event'
 require 'reflex/timer_event'
 require 'reflex/contact_event'
-
-require 'reflex/body'
-require 'reflex/fixture'
 
 require 'reflex/model'
 require 'reflex/model_owner'

@@ -15,6 +15,7 @@ namespace Reflex
 {
 
 
+	class Shape;
 	class View;
 
 
@@ -84,6 +85,7 @@ namespace Reflex
 		union
 		{
 			struct {coord dwidth, dheight;};
+
 			struct {coord dw,     dh;};
 		};
 
@@ -112,12 +114,14 @@ namespace Reflex
 		union
 		{
 			struct {coord x, y, z;};
+
 			Rays::Coord3 scroll_;
 		};
 
 		union
 		{
 			struct {coord dx, dy, dz;};
+
 			Rays::Coord3 delta_;
 		};
 
@@ -197,11 +201,9 @@ namespace Reflex
 
 		union
 		{
-
 			struct {coord x, y, z;};
 
 			Rays::Coord3 positions[MAX];
-
 		};
 
 		PointerEvent ();
@@ -230,20 +232,16 @@ namespace Reflex
 
 		union
 		{
+			struct {coord dx, dy, dz;};
 
-			struct {coord x, y, z;};
-
-			Rays::Coord3 position_;
-
+			Rays::Coord3 delta_;
 		};
 
 		union
 		{
+			struct {coord x, y, z;};
 
-			struct {coord dx, dy, dz;};
-
-			Rays::Coord3 delta_;
-
+			Rays::Coord3 position_;
 		};
 
 		uint modifiers;
@@ -306,11 +304,13 @@ namespace Reflex
 
 		Type type;
 
+		Shape* shape;
+
 		View* view;
 
 		ContactEvent ();
 
-		ContactEvent (Type type, View* view);
+		ContactEvent (Type type, Shape* shape);
 
 	};// ContactEvent
 

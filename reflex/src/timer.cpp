@@ -1,32 +1,15 @@
 #include "reflex/timer.h"
+#include "timer.h"
 
 
 #include "reflex/view.h"
 #include "reflex/event.h"
 #include "reflex/exception.h"
-#include "timer.h"
 #include "selector.h"
 
 
 namespace Reflex
 {
-
-
-	typedef Timer* (*CreateTimerFun) ();
-
-	static CreateTimerFun create_timer_fun = NULL;
-
-	void
-	set_create_timer_fun (CreateTimerFun fun)
-	{
-		create_timer_fun = fun;
-	}
-
-	static Timer*
-	create_timer ()
-	{
-		return create_timer_fun ? create_timer_fun() : new Timer();
-	}
 
 
 	struct Timer::Data
@@ -54,6 +37,21 @@ namespace Reflex
 		}
 
 	};// Data
+
+
+	static CreateTimerFun create_timer_fun = NULL;
+
+	void
+	Timer_set_create_fun (CreateTimerFun fun)
+	{
+		create_timer_fun = fun;
+	}
+
+	static Timer*
+	create_timer ()
+	{
+		return create_timer_fun ? create_timer_fun() : new Timer();
+	}
 
 
 	Timer::Timer ()
@@ -116,78 +114,6 @@ namespace Reflex
 		return self->count == 0;
 	}
 
-	void
-	Timer::set_name (const char* name)
-	{
-		self->pselector.set_name(name);
-	}
-
-	const char*
-	Timer::name () const
-	{
-		return self->pselector.name();
-	}
-
-	void
-	Timer::add_tag (const char* tag)
-	{
-		self->pselector.add_tag(tag);
-	}
-
-	void
-	Timer::remove_tag (const char* tag)
-	{
-		self->pselector.remove_tag(tag);
-	}
-
-	bool
-	Timer::has_tag (const char* tag) const
-	{
-		return self->pselector.has_tag(tag);
-	}
-
-	Timer::tag_iterator
-	Timer::tag_begin ()
-	{
-		return self->pselector.tag_begin();
-	}
-
-	Timer::const_tag_iterator
-	Timer::tag_begin () const
-	{
-		return self->pselector.tag_begin();
-	}
-
-	Timer::tag_iterator
-	Timer::tag_end ()
-	{
-		return self->pselector.tag_end();
-	}
-
-	Timer::const_tag_iterator
-	Timer::tag_end () const
-	{
-		return self->pselector.tag_end();
-	}
-
-	void
-	Timer::set_selector (const Selector& selector)
-	{
-		self->pselector.set_selector(selector);
-	}
-
-	Selector&
-	Timer::selector ()
-	{
-		return self->pselector.selector();
-	}
-
-	const Selector&
-	Timer::selector () const
-	{
-		return self->pselector.selector();
-	}
-
 	Timer::operator bool () const
 	{
 		const Data* p = self.get();
@@ -210,6 +136,12 @@ namespace Reflex
 	operator != (const Timer& lhs, const Timer& rhs)
 	{
 		return !operator==(lhs, rhs);
+	}
+
+	SelectorPtr*
+	Timer::get_selector_ptr ()
+	{
+		return &self->pselector;
 	}
 
 

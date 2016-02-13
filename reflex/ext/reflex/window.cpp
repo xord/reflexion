@@ -4,12 +4,11 @@
 #include <rucy.h>
 #include <rays/ruby/bounds.h>
 #include <rays/ruby/painter.h>
+#include "defs.h"
 #include "reflex/ruby/view.h"
 
 
 using namespace Rucy;
-
-using Reflex::coord;
 
 
 RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Window)

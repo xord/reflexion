@@ -23,10 +23,9 @@ class TestStyle < Test::Unit::TestCase
 
   def test_flow ()
     s = style
-
-    assert_equal [:right, :down], s.flow
-    s.flow = :up
-    assert_equal [:up, :none],   s.flow
+    assert_equal [:none, :none], s.flow
+    s.flow = :down
+    assert_equal [:down, :none], s.flow
     s.flow = [:left, :down]
     assert_equal [:left, :down], s.flow
     s.flow = :none

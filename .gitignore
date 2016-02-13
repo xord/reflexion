@@ -17,6 +17,10 @@ wget-log*
 Makefile
 depend.mf
 Gemfile.lock
+GPATH
+GRTAGS
+GTAGS
+.vscode
 
 rucy/include/rucy/extension.h
 rucy/include/rucy/function.h

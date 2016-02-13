@@ -5,6 +5,7 @@
 #include "reflex/ruby/view.h"
 #include "reflex/ruby/selector.h"
 #include "defs.h"
+#include "selector.h"
 
 
 using namespace Rucy;
@@ -12,10 +13,11 @@ using namespace Rucy;
 
 RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Timer)
 
-#define   THIS to<      Reflex::Timer*>(self)
-#define C_THIS to<const Reflex::Timer*>(self)
+#define THIS      to<Reflex::Timer*>(self)
 
-#define CHECK  RUCY_CHECK_OBJ(Reflex::Timer, self)
+#define CHECK     RUCY_CHECK_OBJ(Reflex::Timer, self)
+
+#define CALL(fun) RUCY_WRAPPER_CALL(Reflex::Timer, THIS, fun)
 
 
 static
@@ -54,7 +56,7 @@ static
 RUCY_DEF1(set_count, count)
 {
 	CHECK;
-	THIS->set_count(count.as_i(true));
+	THIS->set_count(to<int>(count));
 	return count;
 }
 RUCY_END
@@ -72,75 +74,6 @@ RUCY_DEF0(is_finished)
 {
 	CHECK;
 	return value(THIS->is_finished());
-}
-RUCY_END
-
-static
-RUCY_DEF1(set_name, name)
-{
-	CHECK;
-	THIS->set_name(name.is_nil() ? NULL : name.c_str());
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_name)
-{
-	CHECK;
-	return C_THIS->name() ? value(C_THIS->name()) : nil();
-}
-RUCY_END
-
-static
-RUCY_DEF1(add_tag, tag)
-{
-	CHECK;
-	THIS->add_tag(tag.c_str());
-}
-RUCY_END
-
-static
-RUCY_DEF1(remove_tag, tag)
-{
-	CHECK;
-	THIS->remove_tag(tag.c_str());
-}
-RUCY_END
-
-static
-RUCY_DEF1(has_tag, tag)
-{
-	CHECK;
-	return value(THIS->has_tag(tag.c_str()));
-}
-RUCY_END
-
-static
-RUCY_DEF0(each_tag)
-{
-	CHECK;
-
-	Value ret;
-	Reflex::Timer::const_tag_iterator end = C_THIS->tag_end();
-	for (Reflex::Timer::const_tag_iterator it = C_THIS->tag_begin(); it != end; ++it)
-		ret = rb_yield(value(*it));
-	return ret;
-}
-RUCY_END
-
-static
-RUCY_DEF1(set_selector, selector)
-{
-	CHECK;
-	THIS->set_selector(to<Reflex::Selector>(selector));
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_selector)
-{
-	CHECK;
-	return value(C_THIS->selector());
 }
 RUCY_END
 
@@ -164,17 +97,9 @@ Init_timer ()
 	cTimer.define_method("count=", set_count);
 	cTimer.define_method("count",  get_count);
 	cTimer.define_method("finish?", is_finished);
-
-	cTimer.define_method("name=", set_name);
-	cTimer.define_method("name",  get_name);
-	cTimer.define_method("add_tag",    add_tag);
-	cTimer.define_method("remove_tag", remove_tag);
-	cTimer.define_method("tag?",       has_tag);
-	cTimer.define_method("each_tag", each_tag);
-	cTimer.define_method("selector=", set_selector);
-	cTimer.define_method("selector", get_selector);
-
 	cTimer.define_clear_override_flags(cof);
+
+	define_selector_methods<Reflex::Timer>(cTimer);
 }
 
 

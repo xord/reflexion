@@ -17,6 +17,12 @@ namespace Reflex
 	}
 
 
+	PhysicsError::PhysicsError (const char* str)
+	:	Super(str)
+	{
+	}
+
+
 	namespace ErrorFunctions
 	{
 
@@ -32,6 +38,13 @@ namespace Reflex
 		{
 			XOT_STRINGF(format, s);
 			throw LayoutError(Xot::error_text(file, line, s));
+		}
+
+		void
+		physics_error (const char* file, int line, const char* format, ...)
+		{
+			XOT_STRINGF(format, s);
+			throw PhysicsError(Xot::error_text(file, line, s));
 		}
 
 	}// ErrorFunctions

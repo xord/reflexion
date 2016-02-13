@@ -26,19 +26,15 @@ void Init_capture_event ();
 void Init_timer_event ();
 void Init_contact_event ();
 
-void Init_body ();
-void Init_fixture ();
-
 void Init_application ();
 void Init_window ();
 void Init_view ();
 
-void Init_image_view ();
-
-void Init_shape_view ();
+void Init_shape ();
 void Init_rect_shape ();
 void Init_ellipse_shape ();
-void Init_arc_shape ();
+
+void Init_image_view ();
 
 
 extern "C" void
@@ -73,19 +69,15 @@ extern "C" void
 	Init_timer_event();
 	Init_contact_event();
 
-	Init_body();
-	Init_fixture();
-
 	Init_application();
 	Init_window();
 	Init_view();
 
-	Init_image_view();
-
-	Init_shape_view();
+	Init_shape();
 	Init_rect_shape();
 	Init_ellipse_shape();
-	Init_arc_shape();
+
+	Init_image_view();
 
 	RUCY_CATCH
 }

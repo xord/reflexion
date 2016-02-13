@@ -8,25 +8,25 @@
 require 'reflexion/include'
 
 
+count = 0
+
 setup do
-  flow    :none
   size    600, 400
   gravity 0, 9.8 * meter
-  #debug   true
 end
 
 draw do
-  text "#{event.fps.to_i} FPS", 10, 10
+  text "#{event.fps.to_i} FPS | #{count} BLOCKS", 10, 10
 end
 
 pointer do
   if down? || drag?
-    window.add [RectShape, EllipseShape].sample.new {
+    count += 1 if window.add View.new {
       pos     event.pos
       size    rand 20..40
       fill    event.right? ? :gray : [:red, :green, :blue].sample
       dynamic event.left?
-      density 1
+      shape   [RectShape, EllipseShape].sample.new(density: 1)
       interval(1) {fill rand, rand, rand}
     }
   end

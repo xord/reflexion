@@ -29,23 +29,6 @@ module Reflex
       :stroke=, :stroke,
       :image=,  :image
 
-    def_delegators :body,
-      :static=,           :static,  :static?,
-      :dynamic=,          :dynamic, :dynamic?,
-      :density=,          :density,
-      :friction=,         :friction,
-      :restitution=,      :restitution,
-      :sensor=,           :sensor,
-      :velocity=,         :velocity,
-      :linear_velocity=,  :linear_velocity,
-      :angular_velocity=, :angular_velocity,
-      :gravity_scale=,    :gravity_scale,
-      :apply_force,
-      :apply_torque,
-      :apply_impulse,
-      :apply_linear_impulse,
-      :apply_angular_impulse
-
     bit_flag_accessor :capture do
       flag :key,     CAPTURE_KEY
       flag :pointer, CAPTURE_POINTER
@@ -55,7 +38,7 @@ module Reflex
     def initialize (options = nil, &block)
       super()
       set options if options
-      @attach_block = block if block
+      Xot::BlockUtil.instance_eval_or_block_call self, &block if block
     end
 
     def timeout (seconds = 0, count: 1, &block)
@@ -64,7 +47,7 @@ module Reflex
       timer
     end
 
-    def interval (seconds, &block)
+    def interval (seconds = 0, &block)
       timeout seconds, count: -1, &block
     end
 
@@ -86,24 +69,28 @@ module Reflex
       s
     end
 
+    def shapes ()
+      to_enum :each_shape
+    end
+
     def categories ()
       @categories ||= Xot::BitFlag.new(auto: true, all: 1)
     end
 
     def category= (*symbols)
-      body.category = parent_categories.symbols2bits *symbols
+      set_category_bits parent_categories.symbols2bits *symbols
     end
 
     def category ()
-      parent_categories.bits2symbols body.category
+      parent_categories.bits2symbols get_category_bits
     end
 
     def collision= (*categories)
-      body.collision = parent_categories.symbols2bits *categories
+      set_collision_mask parent_categories.symbols2bits *categories
     end
 
     def collision ()
-      parent_categories.bits2symbols body.collision
+      parent_categories.bits2symbols get_collision_mask
     end
 
     def capturing? (*args)
@@ -114,11 +101,22 @@ module Reflex
     alias add    add_child
     alias remove remove_child
     alias find   find_child
+
+    alias apply_impulse apply_linear_impulse
+    alias static?       static
+    alias dynamic?      dynamic
+    alias sensor?       sensor
+    alias velocity=     linear_velocity=
+    alias velocity      linear_velocity
+
     alias meter  meter2pixel
     alias debug? debug
 
-    universal_accessor :name, :selector, :frame, :zoom, :capture,
-      :gravity, :category, :collision, :debug
+    universal_accessor :shape, :name, :selector, :frame, :zoom, :capture,
+      :static, :dynamic, :density, :friction, :restitution,
+      :sensor, :category, :collision,
+      :linear_velocity, :angular_velocity, :gravity_scale,
+      :gravity, :debug
 
     def self.has_model ()
       include ModelView
@@ -129,14 +127,6 @@ module Reflex
       def parent_categories ()
         raise InvalidStateError unless parent
         parent.categories
-      end
-
-    private
-
-      def call_attach_block ()
-        return unless @attach_block
-        Xot::BlockUtil.instance_eval_or_block_call self, &@attach_block
-        @attach_block = nil
       end
 
   end# View

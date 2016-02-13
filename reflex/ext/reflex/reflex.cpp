@@ -2,19 +2,13 @@
 #include "reflex/reflex.h"
 #include "reflex/ruby/view.h"
 #include "reflex/ruby/timer.h"
+#include "../../src/window.h"
+#include "../../src/timer.h"
 #include "defs.h"
 
 
 using namespace Rucy;
 
-
-namespace Reflex
-{
-	typedef View*  (*CreateRootViewFun) ();
-	typedef Timer* (*CreateTimerFun)    ();
-	void set_create_root_view_fun (CreateRootViewFun);
-	void set_create_timer_fun     (CreateTimerFun);
-}
 
 static Reflex::View*
 create_root_view ()
@@ -33,8 +27,8 @@ static
 RUCY_DEF0(init)
 {
 	Reflex::init();
-	Reflex::set_create_root_view_fun(create_root_view);
-	Reflex::set_create_timer_fun(create_timer);
+	Reflex::Window_set_create_root_view_fun(create_root_view);
+	Reflex::Timer_set_create_fun(create_timer);
 
 	return self;
 }
@@ -43,7 +37,10 @@ RUCY_END
 static
 RUCY_DEF0(fin)
 {
+	Reflex::Window_set_create_root_view_fun(NULL);
+	Reflex::Timer_set_create_fun(NULL);
 	Reflex::fin();
+
 	return self;
 }
 RUCY_END

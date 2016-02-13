@@ -1,167 +1,245 @@
-#include "reflex/fixture.h"
+#include "fixture.h"
 
 
 #include <assert.h>
-#include <limits.h>
 #include <Box2D/Dynamics/b2Fixture.h>
+#include <Box2D/Collision/Shapes/b2CircleShape.h>
 #include "reflex/exception.h"
-
-
-#define PTR ((b2Fixture*) handle)
+#include "reflex/debug.h"
+#include "view.h"
+#include "world.h"
+#include "body.h"
 
 
 namespace Reflex
 {
 
 
-	Fixture::Fixture (Handle h)
-	:	handle(h)
+	Fixture::Fixture (b2Fixture* b2fixture)
+	:	b2fixture(b2fixture)
 	{
+		assert(b2fixture);
 	}
 
-	Fixture&
-	Fixture::operator = (Handle h)
+	Fixture::~Fixture ()
 	{
-		handle = h;
-		return *this;
+		b2fixture->GetBody()->DestroyFixture(b2fixture);
 	}
+
+#if 0
+	void
+	Fixture::remove_self ()
+	{
+		validate();
+
+		b2fixture->GetBody()->DestroyFixture(b2fixture);
+		b2fixture = NULL;
+	}
+#endif
 
 	void
 	Fixture::set_density (float density)
 	{
-		assert(PTR && PTR->GetBody());
+		if (density == this->density())
+			return;
 
-		PTR->SetDensity(density);
-		PTR->GetBody()->ResetMassData();
+		for (Fixture* p = this; p; p = p->pnext.get())
+			p->b2fixture->SetDensity(density);
+
+		b2fixture->GetBody()->ResetMassData();
 	}
 
 	float
 	Fixture::density () const
 	{
-		assert(PTR);
-
-		return PTR->GetDensity();
+		return b2fixture->GetDensity();
 	}
 
 	void
 	Fixture::set_friction (float friction)
 	{
-		assert(PTR);
+		if (friction == this->friction())
+			return;
 
-		PTR->SetFriction(friction);
+		for (Fixture* p = this; p; p = p->pnext.get())
+			p->b2fixture->SetFriction(friction);
 	}
 
 	float
 	Fixture::friction () const
 	{
-		assert(PTR);
-
-		return PTR->GetFriction();
+		return b2fixture->GetFriction();
 	}
 
 	void
 	Fixture::set_restitution (float restitution)
 	{
-		assert(PTR);
+		if (restitution == this->restitution())
+			return;
 
-		PTR->SetRestitution(restitution);
+		for (Fixture* p = this; p; p = p->pnext.get())
+			p->b2fixture->SetRestitution(restitution);
 	}
 
 	float
 	Fixture::restitution () const
 	{
-		assert(PTR);
-
-		return PTR->GetRestitution();
+		return b2fixture->GetRestitution();
 	}
 
 	void
-	Fixture::set_sensor (bool sensor)
+	Fixture::set_sensor (bool state)
 	{
-		assert(PTR);
+		if (state == is_sensor())
+			return;
 
-		PTR->SetSensor(sensor);
+		for (Fixture* p = this; p; p = p->pnext.get())
+			p->b2fixture->SetSensor(state);
 	}
 
 	bool
 	Fixture::is_sensor () const
 	{
-		assert(PTR);
-
-		return PTR->IsSensor();
+		return b2fixture->IsSensor();
 	}
 
 	void
-	Fixture::set_category (uint bits)
+	Fixture::set_category_bits (uint bits)
 	{
-		assert(PTR);
-
 		if (bits > USHRT_MAX)
-			argument_error(__FILE__, __LINE__, "category value must be less then USHRT_MAX.");
+		{
+			argument_error(
+				__FILE__, __LINE__, "category_bits must be less then USHRT_MAX.");
+		}
 
-		b2Filter f = PTR->GetFilterData();
-		f.categoryBits = bits;
-		PTR->SetFilterData(f);
+		if (bits == category_bits())
+			return;
+
+		for (Fixture* p = this; p; p = p->pnext.get())
+		{
+			b2Filter f = p->b2fixture->GetFilterData();
+			f.categoryBits = bits;
+			p->b2fixture->SetFilterData(f);
+		}
 	}
 
 	uint
-	Fixture::category () const
+	Fixture::category_bits () const
 	{
-		assert(PTR);
-
-		return PTR->GetFilterData().categoryBits;
+		return b2fixture->GetFilterData().categoryBits;
 	}
 
 	void
-	Fixture::set_collision (uint category_mask)
+	Fixture::set_collision_mask (uint mask)
 	{
-		assert(PTR);
+		if (mask > USHRT_MAX)
+		{
+			argument_error(
+				__FILE__, __LINE__, "collision_mask must be less then USHRT_MAX.");
+		}
 
-		if (category_mask > USHRT_MAX)
-			argument_error(__FILE__, __LINE__, "category mask value must be less then USHRT_MAX.");
+		if (mask == collision_mask())
+			return;
 
-		b2Filter f = PTR->GetFilterData();
-		f.maskBits = category_mask;
-		PTR->SetFilterData(f);
+		for (Fixture* p = this; p; p = p->pnext.get())
+		{
+			b2Filter f = b2fixture->GetFilterData();
+			f.maskBits = mask;
+			b2fixture->SetFilterData(f);
+		}
 	}
 
 	uint
-	Fixture::collision () const
+	Fixture::collision_mask () const
 	{
-		assert(PTR);
-
-		return PTR->GetFilterData().maskBits;
+		return b2fixture->GetFilterData().maskBits;
 	}
 
-	Fixture::Handle
+	b2Fixture*
+	Fixture::b2ptr ()
+	{
+		return b2fixture;
+	}
+
+	const b2Fixture*
+	Fixture::b2ptr () const
+	{
+		return const_cast<Fixture*>(this)->b2ptr();
+	}
+
+	void
+	Fixture::set_next (Fixture* fixture)
+	{
+		if (fixture)
+			Fixture_copy_attributes(this, fixture);
+
+		pnext.reset(fixture);
+	}
+
+	Fixture*
+	Fixture::next ()
+	{
+		return pnext.get();
+	}
+
+	const Fixture*
 	Fixture::next () const
 	{
-		assert(PTR);
-
-		return PTR->GetNext();
+		return const_cast<Fixture*>(this)->next();
 	}
 
-	Fixture::operator bool () const
+
+	void
+	Fixture_copy_attributes (const Fixture* from, Fixture* to)
 	{
-		return PTR;
+		if (!from || !to)
+			return;
+
+		to->set_density(       from->density());
+		to->set_friction(      from->friction());
+		to->set_restitution(   from->restitution());
+		to->set_sensor(        from->is_sensor());
+		to->set_category_bits( from->category_bits());
+		to->set_collision_mask(from->collision_mask());
+	}
+
+	static Body*
+	get_temporary_body ()
+	{
+		static Body* body = NULL;
+		if (!body) body = Body_create_temporary();
+		return body;
+	}
+
+	Fixture*
+	Fixture_create_temporary ()
+	{
+		Body* body = get_temporary_body();
+		if (!body)
+			invalid_state_error(__FILE__, __LINE__);
+
+		b2Body* b2body = Body_get_b2ptr(body);
+		if (!b2body)
+			invalid_state_error(__FILE__, __LINE__);
+
+		b2CircleShape shape;
+		shape.m_radius = 1;
+
+		b2FixtureDef def;
+		def.shape = &shape;
+
+		b2Fixture* b2fix = b2body->CreateFixture(&def);
+		if (!b2fix)
+			system_error(__FILE__, __LINE__);
+
+		return new Fixture(b2fix);
 	}
 
 	bool
-	Fixture::operator ! () const
+	Fixture_is_temporary (const Fixture* fixture)
 	{
-		return !operator bool();
-	}
-
-	bool
-	operator == (const Fixture& lhs, const Fixture& rhs)
-	{
-		return lhs.handle == rhs.handle;
-	}
-
-	bool
-	operator != (const Fixture& lhs, const Fixture& rhs)
-	{
-		return !(lhs == rhs);
+		if (!fixture) return false;
+		return fixture->b2ptr()->GetBody() == Body_get_b2ptr(get_temporary_body());
 	}
 
 

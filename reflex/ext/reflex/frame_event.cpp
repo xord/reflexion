@@ -9,8 +9,6 @@
 
 using namespace Rucy;
 
-using Reflex::coord;
-
 
 RUCY_DEFINE_VALUE_FROM_TO(Reflex::FrameEvent)
 

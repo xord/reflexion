@@ -1,27 +1,16 @@
 // -*- objc -*-
-#include "reflex/window.h"
+#include "../window.h"
 
 
 #import <Cocoa/Cocoa.h>
-#include "reflex/event.h"
 #include "reflex/exception.h"
+#include "../view.h"
 #include "window_data.h"
 #import "native_window.h"
 
 
 namespace Reflex
 {
-
-
-	void set_window (View* view, Window* window);
-
-	View* create_root_view ();
-
-	void call_key_event (View* v, const KeyEvent& e);
-
-	void call_pointer_event (View* v, const PointerEvent& e);
-
-	void call_wheel_event (View* v, const WheelEvent& e);
 
 
 	void
@@ -95,9 +84,9 @@ namespace Reflex
 	{
 		[[[NativeWindow alloc] init] bind: this];
 
-		self->root.reset(create_root_view());
+		self->root.reset(Window_create_root_view());
 		self->root->set_name("ROOT");
-		set_window(self->root.get(), this);
+		View_set_window(self->root.get(), this);
 
 		self->painter.canvas(0, 0, 1, 1);
 	}
@@ -106,7 +95,7 @@ namespace Reflex
 	{
 		//close();
 
-		set_window(self->root.get(), NULL);
+		View_set_window(self->root.get(), NULL);
 	}
 
 	void
@@ -277,11 +266,11 @@ namespace Reflex
 		{
 			KeyEvent event = *e;
 			event.capture = true;
-			call_key_event(const_cast<View*>(it->first.get()), event);
+			View_call_key_event(const_cast<View*>(it->first.get()), event);
 		}
 
 		if (self->focus)
-			call_key_event(self->focus.get(), *e);
+			View_call_key_event(self->focus.get(), *e);
 
 		cleanup_capturing_views(this);
 	}
@@ -307,10 +296,10 @@ namespace Reflex
 			event.capture = true;
 			for (size_t i = 0; i < event.size; ++i)
 				event[i] = it->first.get()->from_window(event[i]);
-			call_pointer_event(const_cast<View*>(it->first.get()), event);
+			View_call_pointer_event(const_cast<View*>(it->first.get()), event);
 		}
 
-		call_pointer_event(root(), *e);
+		View_call_pointer_event(root(), *e);
 
 		cleanup_capturing_views(this);
 	}
@@ -321,7 +310,7 @@ namespace Reflex
 		if (!e)
 			argument_error(__FILE__, __LINE__);
 
-		call_wheel_event(root(), *e);
+		View_call_wheel_event(root(), *e);
 	}
 
 	Window::operator bool () const

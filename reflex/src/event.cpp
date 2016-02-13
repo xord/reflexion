@@ -2,6 +2,7 @@
 
 
 #include "reflex/timer.h"
+#include "reflex/shape.h"
 #include "reflex/exception.h"
 
 
@@ -291,12 +292,12 @@ namespace Reflex
 
 
 	ContactEvent::ContactEvent ()
-	:	type(NONE), view(NULL)
+	:	type(NONE), shape(NULL), view(NULL)
 	{
 	}
 
-	ContactEvent::ContactEvent (Type type, View* view)
-	:	type(type), view(view)
+	ContactEvent::ContactEvent (Type type, Shape* shape)
+	:	type(type), shape(shape), view(shape ? shape->owner() : NULL)
 	{
 	}
 

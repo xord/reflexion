@@ -197,7 +197,7 @@
 
 
 #define RUCY_TRY \
-	RubyValue RUCY__rubyexception__ = nil(); \
+	Rucy::RubyValue RUCY__rubyexception__ = Rucy::nil(); \
 	int RUCY__rubyjumptag__ = 0; \
 	 \
 	goto RUCY__ruby_try_start__; \
@@ -258,18 +258,18 @@
 
 
 #define RUCY_DEF_ALLOC(name, klass) \
-	RubyValue name (Value klass) \
+	Rucy::RubyValue name (Rucy::Value klass) \
 	{ \
 		RUCY_TRY
 
 #define RUCY_DEFN(name) \
-	RubyValue name (int argc, const Value* argv, Value self) \
+	Rucy::RubyValue name (int argc, const Rucy::Value* argv, Rucy::Value self) \
 	{ \
 		RUCY_TRY
 
 %	NTIMES.each do |n|
 #define RUCY_DEF<%= n %>(name<%= params(n) {|i| ", v#{i}"} %>) \
-	RubyValue name (Value self<%= params(n) {|i| ", Value v#{i}"} %>) \
+	Rucy::RubyValue name (Rucy::Value self<%= params(n) {|i| ", Rucy::Value v#{i}"} %>) \
 	{ \
 		RUCY_TRY
 %	end
@@ -278,15 +278,15 @@
 	RUCY_DEF0(name) \
 	{ \
 		RUCY_CHECK_OBJ(native_class, self); \
-		ClassWrapper<native_class>* obj = \
-			dynamic_cast<ClassWrapper<native_class>*>(to<native_class*>(self)); \
+		Rucy::ClassWrapper<native_class>* obj = \
+			dynamic_cast<Rucy::ClassWrapper<native_class>*>(Rucy::to<native_class*>(self)); \
 		if (obj) obj->clear_override_flags(); \
 	} \
 	RUCY_END
 
 #define RUCY_END \
 		RUCY_CATCH \
-		return nil(); \
+		return Rucy::nil(); \
 	}
 
 
@@ -302,7 +302,8 @@
 #define RUCY_CHECK_OBJECT(native_class, obj) \
 	do \
 	{ \
-		native_class* p = Rucy::get_type_ptr<native_class>(obj, get_ruby_class<native_class>()); \
+		native_class* p = \
+			Rucy::get_type_ptr<native_class>(obj, Rucy::get_ruby_class<native_class>()); \
 		if (!p || !*p) Rucy::invalid_object_error(__FILE__, __LINE__); \
 	} \
 	while(0)

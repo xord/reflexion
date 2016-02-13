@@ -26,6 +26,13 @@ namespace Reflex
 	};
 
 
+	class PhysicsError : public ReflexError
+	{
+		typedef ReflexError Super;
+		public: PhysicsError (const char* str = NULL);
+	};
+
+
 	namespace ErrorFunctions
 	{
 
@@ -34,6 +41,8 @@ namespace Reflex
 		void reflex_error (const char* file, int line, const char* format = NULL, ...);
 
 		void layout_error (const char* file, int line, const char* format = NULL, ...);
+
+		void physics_error (const char* file, int line, const char* format = NULL, ...);
 
 	}// ErrorFunctions
 

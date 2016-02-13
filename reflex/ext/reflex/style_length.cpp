@@ -32,7 +32,7 @@ RUCY_DEF2(setup_num, value, unit)
 	     if (strcasecmp(str, "px") == 0) u = Reflex::StyleLength::PIXEL;
 	else if (strcasecmp(str, "%")  == 0) u = Reflex::StyleLength::PERCENT;
 	else argument_error(__FILE__, __LINE__);
-	THIS->reset(value.as_f(true), u);
+	THIS->reset(to<coord>(value), u);
 }
 RUCY_END
 

@@ -6,6 +6,7 @@
 #include "rays/ruby/image.h"
 #include "reflex/ruby/selector.h"
 #include "defs.h"
+#include "selector.h"
 
 
 using namespace Rucy;
@@ -36,83 +37,14 @@ RUCY_DEF1(initialize_copy, obj)
 RUCY_END
 
 static
-RUCY_DEF1(set_name, name)
-{
-	CHECK;
-	THIS->set_name(name.is_nil() ? NULL : name.c_str());
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_name)
-{
-	CHECK;
-	return C_THIS->name() ? value(C_THIS->name()) : nil();
-}
-RUCY_END
-
-static
-RUCY_DEF1(add_tag, tag)
-{
-	CHECK;
-	THIS->add_tag(tag.c_str());
-}
-RUCY_END
-
-static
-RUCY_DEF1(remove_tag, tag)
-{
-	CHECK;
-	THIS->remove_tag(tag.c_str());
-}
-RUCY_END
-
-static
-RUCY_DEF1(has_tag, tag)
-{
-	CHECK;
-	return value(THIS->has_tag(tag.c_str()));
-}
-RUCY_END
-
-static
-RUCY_DEF0(each_tag)
-{
-	CHECK;
-
-	Value ret;
-	Reflex::Style::const_tag_iterator end = C_THIS->tag_end();
-	for (Reflex::Style::const_tag_iterator it = C_THIS->tag_begin(); it != end; ++it)
-		ret = rb_yield(value(*it));
-	return ret;
-}
-RUCY_END
-
-static
-RUCY_DEF1(set_selector, selector)
-{
-	CHECK;
-	THIS->set_selector(to<Reflex::Selector>(selector));
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_selector)
-{
-	CHECK;
-	return value(C_THIS->selector());
-}
-RUCY_END
-
-static
 RUCY_DEFN(set_flow)
 {
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "Style#set_flow", argc, 1, 2);
 
 	THIS->set_flow(
-		(Reflex::Style::Flow) argv[0].as_i(),
-		argc >= 2 ? (Reflex::Style::Flow) argv[1].as_i() : Reflex::Style::FLOW_NONE);
+		(Reflex::Style::Flow) to<int>(argv[0]),
+		argc >= 2 ? (Reflex::Style::Flow) to<int>(argv[1]) : Reflex::Style::FLOW_NONE);
 }
 RUCY_END
 
@@ -593,15 +525,6 @@ Init_style ()
 	cStyle.define_alloc_func(alloc);
 	cStyle.define_private_method("initialize_copy", initialize_copy);
 
-	cStyle.define_method("name=", set_name);
-	cStyle.define_method("name",  get_name);
-	cStyle.define_method("add_tag",    add_tag);
-	cStyle.define_method("remove_tag", remove_tag);
-	cStyle.define_method("tag?",       has_tag);
-	cStyle.define_method("each_tag", each_tag);
-	cStyle.define_method("selector=", set_selector);
-	cStyle.define_method("selector", get_selector);
-
 	cStyle.define_method("set_flow", set_flow);
 	cStyle.define_method("get_flow", get_flow);
 
@@ -671,6 +594,8 @@ Init_style ()
 	cStyle.define_const("FLOW_RIGHT", Reflex::Style::FLOW_RIGHT);
 	cStyle.define_const("FLOW_UP",    Reflex::Style::FLOW_UP);
 	cStyle.define_const("FLOW_LEFT",  Reflex::Style::FLOW_LEFT);
+
+	define_selector_methods<Reflex::Style>(cStyle);
 }
 
 

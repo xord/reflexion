@@ -2,6 +2,7 @@
 
 
 #include <rucy.h>
+#include "reflex/ruby/shape.h"
 #include "reflex/ruby/view.h"
 #include "defs.h"
 
@@ -29,8 +30,10 @@ RUCY_DEFN(initialize)
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "ContactEvent#initialize", argc, 0, 2);
 
-	THIS->type = (argc >= 1) ? (Reflex::ContactEvent::Type) to<int>(argv[0]) : Reflex::ContactEvent::NONE;
-	THIS->view = (argc >= 2) ? to<Reflex::View*>(argv[1]) : NULL;
+	THIS->type  = (argc >= 1)
+		? (Reflex::ContactEvent::Type) to<int>(argv[0])
+		: Reflex::ContactEvent::NONE;
+	THIS->shape = (argc >= 2) ? to<Reflex::Shape*>(argv[1]) : NULL;
 
 	return rb_call_super(0, NULL);
 }
@@ -54,6 +57,14 @@ RUCY_DEF0(type)
 RUCY_END
 
 static
+RUCY_DEF0(shape)
+{
+	CHECK;
+	return value(THIS->shape);
+}
+RUCY_END
+
+static
 RUCY_DEF0(view)
 {
 	CHECK;
@@ -73,8 +84,9 @@ Init_contact_event ()
 	cContactEvent.define_alloc_func(alloc);
 	cContactEvent.define_private_method("initialize",      initialize);
 	cContactEvent.define_private_method("initialize_copy", initialize_copy);
-	cContactEvent.define_method("type", type);
-	cContactEvent.define_method("view", view);
+	cContactEvent.define_method("type",  type);
+	cContactEvent.define_method("shape", shape);
+	cContactEvent.define_method("view",  view);
 	cContactEvent.define_const("TYPE_NONE",  Reflex::ContactEvent::NONE);
 	cContactEvent.define_const("TYPE_BEGIN", Reflex::ContactEvent::BEGIN);
 	cContactEvent.define_const("TYPE_END",   Reflex::ContactEvent::END);

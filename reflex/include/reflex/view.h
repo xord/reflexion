@@ -11,7 +11,9 @@
 #include <rays/bounds.h>
 #include <rays/painter.h>
 #include <reflex/defs.h>
+#include <reflex/selector.h>
 #include <reflex/style.h>
+#include <reflex/shape.h>
 #include <reflex/event.h>
 
 
@@ -24,10 +26,8 @@ namespace Reflex
 
 	class Window;
 
-	class Body;
 
-
-	class View : public Xot::RefCountable<>
+	class View : public Xot::RefCountable<>, public HasSelector
 	{
 
 		typedef View This;
@@ -36,9 +36,11 @@ namespace Reflex
 
 			typedef Xot::Ref<This> Ref;
 
-			typedef std::vector<Ref>   ChildList;
+			typedef std::vector<Ref>        ChildList;
 
-			typedef std::vector<Style> StyleList;
+			typedef std::vector<Style>      StyleList;
+
+			typedef std::vector<Shape::Ref> ShapeList;
 
 			typedef ChildList::      iterator       child_iterator;
 
@@ -48,9 +50,9 @@ namespace Reflex
 
 			typedef StyleList::const_iterator const_style_iterator;
 
-			typedef Selector::       iterator         tag_iterator;
+			typedef ShapeList::      iterator       shape_iterator;
 
-			typedef Selector:: const_iterator   const_tag_iterator;
+			typedef ShapeList::const_iterator const_shape_iterator;
 
 			enum Capture
 			{
@@ -85,12 +87,26 @@ namespace Reflex
 
 			virtual Timer* start_interval (float seconds);
 
+			virtual Point from_parent (const Point& point) const;
+
+			virtual Point   to_parent (const Point& point) const;
+
+			virtual Point from_window (const Point& point) const;
+
+			virtual Point   to_window (const Point& point) const;
+
+			virtual Point from_screen (const Point& point) const;
+
+			virtual Point   to_screen (const Point& point) const;
+
 			virtual void             add_child (View* child);
 
 			virtual void          remove_child (View* child);
 
-			virtual void            find_children (
-				ChildList* result, const Selector& selector, bool recursive = false) const;
+			virtual void           clear_children ();
+
+			virtual ChildList       find_children (
+				const Selector& selector, bool recursive = false) const;
 
 			virtual       child_iterator child_begin ();
 
@@ -100,7 +116,7 @@ namespace Reflex
 
 			virtual const_child_iterator child_end () const;
 
-			virtual       Style*         style (bool create = false);
+			virtual       Style*         style (bool create = true);
 
 			virtual const Style*         style () const;
 
@@ -108,12 +124,15 @@ namespace Reflex
 
 			virtual void          remove_style (const Style& style);
 
-			virtual       Style*     get_style (const Selector& selector, bool create = false);
+			virtual void           clear_styles ();
+
+			virtual       Style*     get_style (
+				const Selector& selector, bool create = true);
 
 			virtual const Style*     get_style (const Selector& selector) const;
 
-			virtual void            find_styles (
-				StyleList* result, const Selector& selector, bool recursive = false) const;
+			virtual StyleList       find_styles (
+				const Selector& selector, bool recursive = false) const;
 
 			virtual       style_iterator style_begin ();
 
@@ -123,29 +142,37 @@ namespace Reflex
 
 			virtual const_style_iterator style_end () const;
 
-			virtual void    set_name (const char* name);
+			virtual void             set_shape (Shape* shape);
 
-			virtual const char* name () const;
+			virtual       Shape*         shape (bool create = true);
 
-			virtual void           add_tag (const char* tag);
+			virtual const Shape*         shape () const;
 
-			virtual void        remove_tag (const char* tag);
+			virtual void             add_shape (Shape* shape);
 
-			virtual bool           has_tag (const char* tag) const;
+			virtual void          remove_shape (Shape* shape);
 
-			virtual       tag_iterator tag_begin ();
+			virtual void           clear_shapes ();
 
-			virtual const_tag_iterator tag_begin () const;
+			virtual ShapeList       find_shapes (const Selector& selector) const;
 
-			virtual       tag_iterator tag_end ();
+			virtual       shape_iterator shape_begin ();
 
-			virtual const_tag_iterator tag_end () const;
+			virtual const_shape_iterator shape_begin () const;
 
-			virtual void        set_selector (const Selector& selector);
+			virtual       shape_iterator shape_end ();
 
-			virtual       Selector& selector ();
+			virtual const_shape_iterator shape_end () const;
 
-			virtual const Selector& selector () const;
+			virtual void set_name (const char* name);
+
+			virtual void    add_tag (const char* tag);
+
+			virtual void remove_tag (const char* tag);
+
+			virtual void  clear_tags ();
+
+			virtual void set_selector (const Selector& selector);
 
 			virtual void      set_frame (coord x, coord y, coord width, coord height);
 
@@ -156,10 +183,6 @@ namespace Reflex
 			virtual Point content_size () const;
 
 			virtual void resize_to_fit ();
-
-			virtual void set_zoom (float zoom);
-
-			virtual float    zoom () const;
 
 			virtual float angle () const;
 
@@ -173,6 +196,10 @@ namespace Reflex
 
 			virtual const Point& scroll () const;
 
+			virtual void set_zoom (float zoom);
+
+			virtual float    zoom () const;
+
 			virtual void set_capture (uint types);
 
 			virtual uint     capture () const;
@@ -185,14 +212,70 @@ namespace Reflex
 
 			virtual const Window* window () const;
 
-			virtual void   make_body ();
+			//
+			// for physics body
+			//
+			virtual void apply_force (coord x, coord y);
 
-			virtual void  clear_body ();
+			virtual void apply_force (const Point& force);
 
-			virtual       Body* body ();
+			virtual void apply_torque (float torque);
 
-			virtual const Body* body () const;
+			virtual void apply_linear_impulse (coord x, coord y);
 
+			virtual void apply_linear_impulse (const Point& impulse);
+
+			virtual void apply_angular_impulse (float impulse);
+
+			virtual void set_static (bool state = true);
+
+			virtual bool  is_static () const;
+
+			virtual void set_dynamic (bool state = true);
+
+			virtual bool  is_dynamic () const;
+
+			virtual void set_density (float density);
+
+			virtual float    density () const;
+
+			virtual void set_friction (float friction);
+
+			virtual float    friction () const;
+
+			virtual void set_restitution (float restitution);
+
+			virtual float    restitution () const;
+
+			virtual void set_sensor (bool state);
+
+			virtual bool  is_sensor () const;
+
+			virtual void set_category_bits (uint bits);
+
+			virtual uint     category_bits () const;
+
+			virtual void set_collision_mask (uint mask);
+
+			virtual uint     collision_mask () const;
+
+			virtual void set_linear_velocity (coord x, coord y);
+
+			virtual void set_linear_velocity (const Point& velocity);
+
+			virtual Point    linear_velocity () const;
+
+			virtual void set_angular_velocity (float velocity);
+
+			virtual float    angular_velocity () const;
+
+			virtual void set_gravity_scale (float scale);
+
+			virtual float    gravity_scale () const;
+
+			//
+			// for physics child world
+			//
 			virtual float meter2pixel (float meter = 1, bool create_world = true);
 
 			virtual float meter2pixel (float meter = 1) const;
@@ -203,26 +286,17 @@ namespace Reflex
 
 			virtual Point    gravity () const;
 
-			virtual       Body* wall ();
+			virtual       View* wall ();
 
-			virtual const Body* wall () const;
+			virtual const View* wall () const;
 
-			virtual void set_debug (bool state);
+			virtual void set_debug (bool debug = true);
 
 			virtual bool     debugging () const;
 
-			virtual Point from_parent (const Point& point) const;
-
-			virtual Point   to_parent (const Point& point) const;
-
-			virtual Point from_window (const Point& point) const;
-
-			virtual Point   to_window (const Point& point) const;
-
-			virtual Point from_screen (const Point& point) const;
-
-			virtual Point   to_screen (const Point& point) const;
-
+			//
+			// event handlers
+			//
 			virtual void on_attach (Event* e);
 
 			virtual void on_detach (Event* e);
@@ -302,6 +376,8 @@ namespace Reflex
 		protected:
 
 			virtual ~View ();
+
+			virtual SelectorPtr* get_selector_ptr ();
 
 	};// View
 

@@ -1,4 +1,4 @@
-#include "reflex/window.h"
+#include "window.h"
 
 
 #include "reflex/view.h"
@@ -9,18 +9,16 @@ namespace Reflex
 {
 
 
-	typedef View* (*CreateRootViewFun) ();
-
 	static CreateRootViewFun create_root_view_fun = NULL;
 
 	void
-	set_create_root_view_fun (CreateRootViewFun fun)
+	Window_set_create_root_view_fun (CreateRootViewFun fun)
 	{
 		create_root_view_fun = fun;
 	}
 
 	View*
-	create_root_view ()
+	Window_create_root_view ()
 	{
 		return create_root_view_fun ? create_root_view_fun() : new View();
 	}
@@ -61,85 +59,61 @@ namespace Reflex
 	void
 	Window::on_show (Event* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_hide (Event* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_close (Event* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_update (UpdateEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_draw (DrawEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_move (FrameEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_resize (FrameEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_key_down (KeyEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_key_up (KeyEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_pointer_down (PointerEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_pointer_up (PointerEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	void
 	Window::on_pointer_move (PointerEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
 	}
 
 	bool

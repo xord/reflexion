@@ -7,22 +7,13 @@
 #include "rays/bounds.h"
 #include "reflex/window.h"
 #include "reflex/exception.h"
+#include "../view.h"
 #include "event.h"
 #include "window_data.h"
 #import "opengl_view.h"
 
 
 #define REF (*pref)
-
-
-namespace Reflex
-{
-
-	void update_view_tree (View* v, const UpdateEvent& e);
-
-	void draw_view_tree (View* v, const DrawEvent& e, const Point& offset, const Bounds& clip);
-
-}// Reflex
 
 
 static const NSUInteger WINDOW_STYLE_MASK =
@@ -142,7 +133,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 		REF->on_update(&e);
 		if (!e.is_blocked())
-			Reflex::update_view_tree(REF->root(), e);
+			Reflex::View_update_tree(REF->root(), e);
 
 		if (REF->self->redraw)
 		{
@@ -179,7 +170,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 		REF->on_draw(&e);
 		if (!e.is_blocked())
-			draw_view_tree(REF->root(), e, 0, REF->frame().dup().move_to(0));
+			Reflex::View_draw_tree(REF->root(), e, 0, REF->frame().dup().move_to(0));
 
 		e.painter->end();
 	}

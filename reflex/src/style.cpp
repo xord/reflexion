@@ -1,9 +1,8 @@
-#include "reflex/style.h"
+#include "style.h"
 
 
-#include <memory>
-#include "reflex/view.h"
 #include "reflex/exception.h"
+#include "view.h"
 #include "selector.h"
 
 
@@ -318,52 +317,42 @@ namespace Reflex
 	}
 
 
-	void
-	get_default_flow (Style::Flow* main, Style::Flow* sub)
-	{
-		assert(main || sub);
-
-		if (main) *main = Style::FLOW_RIGHT;
-		if (sub)  *sub  = Style::FLOW_DOWN;
-	}
-
-
 	struct Style::Data
 	{
 
-		typedef StyleValue<bool>        Bool;
+		typedef StyleValue<bool>        StyleBool;
 
-		typedef StyleValue<int>         Int;
+		typedef StyleValue<int>         StyleInt;
 
-		typedef StyleValue<double>      Float;
+		typedef StyleValue<double>      StyleFloat;
 
-		typedef StyleValue<Color>       Color;
+		typedef StyleValue<Color>       StyleColor;
 
-		typedef StyleValue<Image>       Image;
+		typedef StyleValue<Image>       StyleImage;
 
-		typedef StyleValue<StyleLength> Length;
+		typedef StyleValue<StyleLength> StyleLength;
 
 		View* owner;
 
 		SelectorPtr pselector;
 
-		Int flow;
+		StyleInt flow;
 
-		Length width, height;
+		StyleLength width, height;
 
-		Length         left,         top,         right,         bottom;
+		StyleLength         left,         top,         right,         bottom;
 
-		Length  offset_left,  offset_top,  offset_right,  offset_bottom;
+		StyleLength  offset_left,  offset_top,  offset_right,  offset_bottom;
 
-		Length  margin_left,  margin_top,  margin_right,  margin_bottom;
+		StyleLength  margin_left,  margin_top,  margin_right,  margin_bottom;
 
-		Length padding_left, padding_top, padding_right, padding_bottom;
+		StyleLength padding_left, padding_top, padding_right, padding_bottom;
 
-		Length center_x, center_y;
+		StyleLength center_x, center_y;
 
-		Color fill, stroke;
+		StyleColor fill, stroke;
 
-		Image image;
+		StyleImage image;
 
 		Data ()
 		:	owner(NULL)
@@ -386,14 +375,14 @@ namespace Reflex
 		Flow flow_main () const
 		{
 			Flow defval = FLOW_NONE;
-			get_default_flow(&defval, NULL);
+			Style_get_default_flow(&defval, NULL);
 			return (Flow) (flow.get(defval) & FLOW_MASK);
 		}
 
 		Flow flow_sub () const
 		{
 			Flow defval = FLOW_NONE;
-			get_default_flow(NULL, &defval);
+			Style_get_default_flow(NULL, &defval);
 			return (Flow) ((flow.get(defval << FLOW_SHIFT) >> FLOW_SHIFT) & FLOW_MASK);
 		}
 
@@ -401,25 +390,55 @@ namespace Reflex
 
 
 	bool
-	set_style_owner (Style* style, View* owner)
+	Style_set_owner (Style* style, View* owner)
 	{
 		assert(style);
 
-		if (style->self->owner)
+		if (!!style->self->owner == !!owner)
 			return false;
 
 		style->self->owner = owner;
 		return true;
 	}
 
-	static void
-	update_owner (const Style& style)
+	static bool
+	is_variable (const StyleValue<StyleLength>& length)
 	{
-		View* owner = style.self->owner;
-		if (!owner) return;
+		return length && length.get().self->is_variable();
+	}
 
-		void update_styles_for_selector (View*, const Selector&);
-		update_styles_for_selector(owner, style.selector());
+	bool
+	Style_has_variable_lengths (const Style& style)
+	{
+		Style::Data* s = style.self.get();
+		if (!s) return false;
+
+		return
+			is_variable(s->width)  ||
+			is_variable(s->height) ||
+
+			is_variable(s->left)   ||
+			is_variable(s->top)    ||
+			is_variable(s->right)  ||
+			is_variable(s->bottom) ||
+
+			is_variable(s->offset_left)   ||
+			is_variable(s->offset_top)    ||
+			is_variable(s->offset_right)  ||
+			is_variable(s->offset_bottom) ||
+
+			is_variable(s->margin_left)   ||
+			is_variable(s->margin_top)    ||
+			is_variable(s->margin_right)  ||
+			is_variable(s->margin_bottom) ||
+
+			is_variable(s->padding_left)   ||
+			is_variable(s->padding_top)    ||
+			is_variable(s->padding_right)  ||
+			is_variable(s->padding_bottom) ||
+
+			is_variable(s->center_x)  ||
+			is_variable(s->center_y);
 	}
 
 	template <typename T>
@@ -433,7 +452,7 @@ namespace Reflex
 	}
 
 	void
-	clear_inherited_values (Style* style)
+	Style_clear_inherited_values (Style* style)
 	{
 		assert(style);
 
@@ -466,7 +485,7 @@ namespace Reflex
 	}
 
 	void
-	override_style (Style* overridden, const Style& overrides)
+	Style_override (Style* overridden, const Style& overrides)
 	{
 		assert(overridden);
 
@@ -500,6 +519,103 @@ namespace Reflex
 		to->image         .override(from->image);
 	}
 
+	bool
+	get_pixel_length (
+		coord* pixel_length,
+		const StyleLength& style_length, const coord* parent_size)
+	{
+		assert(pixel_length);
+
+		if (!style_length)
+			return false;
+
+		coord length = 0;
+		StyleLength::Value value = style_length.value();
+		switch (style_length.unit())
+		{
+			case StyleLength::PIXEL:
+				length = value;
+				break;
+
+			case StyleLength::PERCENT:
+			{
+				if (!parent_size)
+					argument_error(__FILE__, __LINE__);
+
+				length = (value == 100) ?
+					*parent_size : floor(*parent_size * value / 100);
+				break;
+			}
+
+			default:
+				invalid_state_error(__FILE__, __LINE__);
+		}
+
+		if (length == *pixel_length)
+			return false;
+
+		*pixel_length = length;
+		return true;
+	}
+
+	static void
+	update_frame (View* view, const Style& style)
+	{
+		assert(view);
+		Style::Data* s = style.self.get();
+
+		Bounds frame         = view->frame();
+		View* parent_view    = view->parent();
+		const Bounds* parent = parent_view ? &parent_view->frame() : NULL;
+		bool update          = false;
+
+		if (s->width)
+		{
+			update |= get_pixel_length(
+				&frame.width, s->width.value(), parent ? &parent->width  : NULL);
+		}
+
+		if (s->height) {
+			update |= get_pixel_length(
+				&frame.height, s->height.value(), parent ? &parent->height : NULL);
+		}
+
+		if (update)
+			view->set_frame(frame);
+	}
+
+	void
+	Style_apply_to (const Style* style, View* view)
+	{
+		assert(style);
+
+		if (!view)
+			argument_error(__FILE__, __LINE__);
+
+		//update_margin(view, values);
+		//update_padding(view, values);
+		update_frame(view, *style);
+		//update_background(view, values);
+	}
+
+	void
+	Style_get_default_flow (Style::Flow* main, Style::Flow* sub)
+	{
+		assert(main || sub);
+
+		if (main) *main = Style::FLOW_NONE;
+		if (sub)  *sub  = Style::FLOW_NONE;
+	}
+
+	static void
+	update_owner (const Style& style)
+	{
+		View* owner = style.self->owner;
+		if (!owner) return;
+
+		View_update_styles(owner, style.selector());
+	}
+
 
 	Style::Style (const char* name)
 	{
@@ -514,25 +630,15 @@ namespace Reflex
 	Style::set_name (const char* name)
 	{
 		update_owner(*this);
-
-		self->pselector.set_name(name);
-
+		HasSelector::set_name(name);
 		update_owner(*this);
-	}
-
-	const char*
-	Style::name () const
-	{
-		return self->pselector.name();
 	}
 
 	void
 	Style::add_tag (const char* tag)
 	{
 		update_owner(*this);
-
-		self->pselector.add_tag(tag);
-
+		HasSelector::add_tag(tag);
 		update_owner(*this);
 	}
 
@@ -540,62 +646,24 @@ namespace Reflex
 	Style::remove_tag (const char* tag)
 	{
 		update_owner(*this);
-
-		self->pselector.remove_tag(tag);
-
+		HasSelector::remove_tag(tag);
 		update_owner(*this);
 	}
 
-	bool
-	Style::has_tag (const char* tag) const
+	void
+	Style::clear_tags ()
 	{
-		return self->pselector.has_tag(tag);
-	}
-
-	Selector::iterator
-	Style::tag_begin ()
-	{
-		return self->pselector.tag_begin();
-	}
-
-	Selector::const_iterator
-	Style::tag_begin () const
-	{
-		return self->pselector.tag_begin();
-	}
-
-	Selector::iterator
-	Style::tag_end ()
-	{
-		return self->pselector.tag_end();
-	}
-
-	Selector::const_iterator
-	Style::tag_end () const
-	{
-		return self->pselector.tag_end();
+		update_owner(*this);
+		HasSelector::clear_tags();
+		update_owner(*this);
 	}
 
 	void
 	Style::set_selector (const Selector& selector)
 	{
 		update_owner(*this);
-
-		self->pselector.set_selector(selector);
-
+		HasSelector::set_selector(selector);
 		update_owner(*this);
-	}
-
-	Selector&
-	Style::selector ()
-	{
-		return self->pselector.selector();
-	}
-
-	const Selector&
-	Style::selector () const
-	{
-		return self->pselector.selector();
 	}
 
 	enum FlowDir {FLOW_INVALID = 0, FLOW_H, FLOW_V};
@@ -951,122 +1019,10 @@ namespace Reflex
 		return !operator==(lhs, rhs);
 	}
 
-
-	static bool
-	is_variable (const StyleValue<StyleLength>& length)
+	SelectorPtr*
+	Style::get_selector_ptr ()
 	{
-		return length && length.get().self->is_variable();
-	}
-
-	bool
-	has_variable_lengths (const Style& style)
-	{
-		Style::Data* s = style.self.get();
-		if (!s) return false;
-
-		return
-			is_variable(s->width)  ||
-			is_variable(s->height) ||
-
-			is_variable(s->left)   ||
-			is_variable(s->top)    ||
-			is_variable(s->right)  ||
-			is_variable(s->bottom) ||
-
-			is_variable(s->offset_left)   ||
-			is_variable(s->offset_top)    ||
-			is_variable(s->offset_right)  ||
-			is_variable(s->offset_bottom) ||
-
-			is_variable(s->margin_left)   ||
-			is_variable(s->margin_top)    ||
-			is_variable(s->margin_right)  ||
-			is_variable(s->margin_bottom) ||
-
-			is_variable(s->padding_left)   ||
-			is_variable(s->padding_top)    ||
-			is_variable(s->padding_right)  ||
-			is_variable(s->padding_bottom) ||
-
-			is_variable(s->center_x)  ||
-			is_variable(s->center_y);
-	}
-
-	bool
-	get_pixel_length (
-		coord* pixel_length,
-		const StyleLength& style_length, const coord* parent_size)
-	{
-		assert(pixel_length);
-
-		if (!style_length)
-			return false;
-
-		coord length = 0;
-		StyleLength::Value value = style_length.value();
-		switch (style_length.unit())
-		{
-			case StyleLength::PIXEL:
-				length = value;
-				break;
-
-			case StyleLength::PERCENT:
-			{
-				if (!parent_size)
-					argument_error(__FILE__, __LINE__);
-
-				length = (value == 100) ?
-					*parent_size : floor(*parent_size * value / 100);
-				break;
-			}
-
-			default:
-				invalid_state_error(__FILE__, __LINE__);
-		}
-
-		if (length == *pixel_length)
-			return false;
-
-		*pixel_length = length;
-		return true;
-	}
-
-	static void
-	update_frame (View* view, const Style& style)
-	{
-		assert(view);
-		Style::Data* s = style.self.get();
-
-		Bounds frame         = view->frame();
-		View* parent_view    = view->parent();
-		const Bounds* parent = parent_view ? &parent_view->frame() : NULL;
-		bool update          = false;
-
-		if (s->width)
-		{
-			update |= get_pixel_length(
-				&frame.width, s->width.value(), parent ? &parent->width  : NULL);
-		}
-
-		if (s->height) {
-			update |= get_pixel_length(
-				&frame.height, s->height.value(), parent ? &parent->height : NULL);
-		}
-
-		if (update)
-			view->set_frame(frame);
-	}
-
-	void
-	apply_style (View* view, const Style& style)
-	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
-
-		//update_margin(view, values);
-		//update_padding(view, values);
-		update_frame(view, style);
-		//update_background(view, values);
+		return &self->pselector;
 	}
 
 

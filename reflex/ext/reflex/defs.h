@@ -7,6 +7,8 @@
 #include <reflex/exception.h>
 
 
+using Reflex::coord;
+
 using Reflex::reflex_error;
 
 

@@ -17,7 +17,7 @@ namespace Reflex
 	class View;
 
 
-	class Timer : public Xot::RefCountable<>
+	class Timer : public Xot::RefCountable<>, public HasSelector
 	{
 
 		typedef Timer This;
@@ -25,10 +25,6 @@ namespace Reflex
 		public:
 
 			typedef Xot::Ref<This> Ref;
-
-			typedef Selector::      iterator       tag_iterator;
-
-			typedef Selector::const_iterator const_tag_iterator;
 
 			enum {ID_INVALID = 0, ID_FIRST};
 
@@ -52,30 +48,6 @@ namespace Reflex
 
 			virtual bool is_finished () const;
 
-			virtual void    set_name (const char* name);
-
-			virtual const char* name () const;
-
-			virtual void           add_tag (const char* tag);
-
-			virtual void        remove_tag (const char* tag);
-
-			virtual bool           has_tag (const char* tag) const;
-
-			virtual       tag_iterator tag_begin ();
-
-			virtual const_tag_iterator tag_begin () const;
-
-			virtual       tag_iterator tag_end ();
-
-			virtual const_tag_iterator tag_end () const;
-
-			virtual void        set_selector (const Selector& selector);
-
-			virtual       Selector& selector ();
-
-			virtual const Selector& selector () const;
-
 			virtual operator bool () const;
 
 			virtual bool operator ! () const;
@@ -87,6 +59,10 @@ namespace Reflex
 			struct Data;
 
 			Xot::PImpl<Data> self;
+
+		protected:
+
+			virtual SelectorPtr* get_selector_ptr ();
 
 	};// Timer
 

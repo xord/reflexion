@@ -80,7 +80,8 @@ namespace Reflex
 			argument_error(__FILE__, __LINE__);
 
 		iterator it = self->tags.find(tag);
-		if (it != self->tags.end()) return;
+		if (it != self->tags.end())
+			return;
 
 		self->tags.insert(tag);
 	}
@@ -88,13 +89,20 @@ namespace Reflex
 	void
 	Selector::remove_tag (const char* tag)
 	{
-		if (!tag || *tag == '\0')
+		if (!tag)
 			argument_error(__FILE__, __LINE__);
 
 		iterator it = self->tags.find(tag);
-		if (it == self->tags.end()) return;
+		if (it == self->tags.end())
+			return;
 
 		self->tags.erase(it);
+	}
+
+	void
+	Selector::clear_tags ()
+	{
+		self->tags.clear();
 	}
 
 	bool
@@ -200,6 +208,13 @@ namespace Reflex
 		if (sel) sel->remove_tag(tag);
 	}
 
+	void
+	SelectorPtr::clear_tags ()
+	{
+		Selector* sel = get_selector(this);
+		if (sel) sel->clear_tags();
+	}
+
 	bool
 	SelectorPtr::has_tag (const char* tag) const
 	{
@@ -258,6 +273,95 @@ namespace Reflex
 
 		const Selector* sel = get_selector(this);
 		return sel ? *sel : EMPTY;
+	}
+
+
+	HasSelector::~HasSelector ()
+	{
+	}
+
+	void
+	HasSelector::set_name (const char* name)
+	{
+		get_selector_ptr()->set_name(name);
+	}
+
+	const char*
+	HasSelector::name () const
+	{
+		return get_selector_ptr()->name();
+	}
+
+	void
+	HasSelector::add_tag (const char* tag)
+	{
+		get_selector_ptr()->add_tag(tag);
+	}
+
+	void
+	HasSelector::remove_tag (const char* tag)
+	{
+		get_selector_ptr()->remove_tag(tag);
+	}
+
+	void
+	HasSelector::clear_tags ()
+	{
+		get_selector_ptr()->clear_tags();
+	}
+
+	bool
+	HasSelector::has_tag (const char* tag) const
+	{
+		return get_selector_ptr()->has_tag(tag);
+	}
+
+	Selector::iterator
+	HasSelector::tag_begin ()
+	{
+		return get_selector_ptr()->tag_begin();
+	}
+
+	Selector::const_iterator
+	HasSelector::tag_begin () const
+	{
+		return get_selector_ptr()->tag_begin();
+	}
+
+	Selector::iterator
+	HasSelector::tag_end ()
+	{
+		return get_selector_ptr()->tag_end();
+	}
+
+	Selector::const_iterator
+	HasSelector::tag_end () const
+	{
+		return get_selector_ptr()->tag_end();
+	}
+
+	void
+	HasSelector::set_selector (const Selector& selector)
+	{
+		get_selector_ptr()->set_selector(selector);
+	}
+
+	Selector&
+	HasSelector::selector ()
+	{
+		return get_selector_ptr()->selector();
+	}
+
+	const Selector&
+	HasSelector::selector () const
+	{
+		return get_selector_ptr()->selector();
+	}
+
+	const SelectorPtr*
+	HasSelector::get_selector_ptr () const
+	{
+		return const_cast<HasSelector*>(this)->get_selector_ptr();
 	}
 
 

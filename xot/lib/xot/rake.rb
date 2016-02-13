@@ -39,6 +39,16 @@ module Xot
     #rescue
     end
 
+    def ruby (*args)
+      bin = ENV['RUBY'] || 'ruby'
+      "#{bin} #{args.join ' '}"
+    end
+
+    def rake (*args)
+      bin = ENV['RAKE'] || 'rake'
+      "#{bin} #{args.join ' '}"
+    end
+
     def params (max, sep = '', &block)
       raise 'block not given.' unless block
       return '' if max == 0
@@ -102,6 +112,7 @@ module Xot
       s = flags.dup
       s << ' -Wno-unknown-pragmas'
       s << ' ' << RbConfig::CONFIG['debugflags'] if debug?
+      s << ' -std=c++11' if gcc?
       s << ' -std=c++11 -stdlib=libc++ -mmacosx-version-min=10.7' if clang?
       s.gsub! /-O\d?/, '-O0' if debug?
       s
@@ -146,6 +157,10 @@ module Xot
       false
     end
 
+    def gcc? ()
+      RbConfig::CONFIG['CXX'] =~ /g\+\+/
+    end
+
     def clang? ()
       RbConfig::CONFIG['CXX'] =~ /clang/
     end
@@ -174,7 +189,7 @@ if Kernel.const_defined? :Rake
 
       def escalate_tasks ()
         Dir.chdir '..' do
-          cmd = "rake #{ARGV.join ' '}"
+          cmd = Xot::Rake.rake *ARGV
           $stderr.puts "(in #{Dir.pwd}) #{cmd}"
           system cmd
         end

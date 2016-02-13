@@ -21,10 +21,11 @@ module Reflex
     extend Forwardable
 
     def_delegators :root,
+      :timeout, :interval,
       :add_child, :remove_child, :find_children,
-      :style, :styles, :meter2pixel, :meter, :wall,
-      :gravity=, :gravity,
-      :debug=,   :debug, :debug?
+      :style, :styles,
+      :meter2pixel, :meter, :gravity=, :gravity, :wall,
+      :debug=, :debug, :debug?
 
     def_delegators :wall,
       :friction=,    :friction,

@@ -28,8 +28,8 @@ RUCY_DEFN(initialize)
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "UpdateEvent#initialize", argc, 0, 1, 2);
 
-	THIS->now = (argc >= 1) ? argv[0].as_f() : 0;
-	THIS->dt  = (argc >= 2) ? argv[1].as_f() : 0;
+	THIS->now = (argc >= 1) ? to<double>(argv[0]) : 0;
+	THIS->dt  = (argc >= 2) ? to<float>(argv[1])  : 0;
 
 	return rb_call_super(0, NULL);
 }

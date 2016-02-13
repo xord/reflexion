@@ -16,6 +16,10 @@ class TestView < Test::Unit::TestCase
     Reflex::Style.new *args, &block
   end
 
+  def shape (*args, &block)
+    Reflex::RectShape.new *args, &block
+  end
+
   def selector (*args, &block)
     Reflex::Selector.new *args, &block
   end
@@ -90,12 +94,57 @@ class TestView < Test::Unit::TestCase
   end
 
   def test_add_remove_style ()
-    v = view
-    s = style(name: :N)
+    v, s = view, style(name: :N)
+    assert_equal 0,     v.styles.to_a.size
+
     v.add_style s
+    assert_equal 1,     v.styles.to_a.size
     assert_includes     v.find_styles(selector name: :N), s
+
     v.remove_style s
+    assert_equal 0,     v.styles.to_a.size
     assert_not_includes v.find_styles(selector name: :N), s
+  end
+
+  def test_shape ()
+    s = shape
+    assert_equal 0, s.density
+    s.density = 1
+    assert_equal 1, s.density
+
+    v = view
+    assert_not_equal s, v.shape
+
+    v.shape = s
+    assert_equal s, v.shape
+    assert_equal 1, v.shape.density
+    s.density = 2
+    assert_equal 2, s.density
+    assert_equal 2, v.shape.density
+
+    v.shape = nil
+    assert_equal nil, v.shape
+    assert_equal 2, s.density
+    assert_equal 0, v.density
+    assert_raise(Rucy::NativeError) {v.density = 3}
+  end
+
+  def test_add_remove_shape ()
+    s = shape name: :S
+    s.density = 1
+    assert_equal 1, s.density
+
+    v = view
+    assert_equal 0, v.shapes.to_a.size
+
+    v.add_shape s
+    assert_equal 1,     v.shapes.to_a.size
+    assert_includes     v.find_shapes(selector name: :S), s
+    assert_equal 1,     v.find_shapes(selector name: :S).first.density
+
+    v.remove_shape s
+    assert_equal 0,     v.shapes.to_a.size
+    assert_not_includes v.find_shapes(selector name: :S), s
   end
 
   def test_name ()
@@ -142,6 +191,54 @@ class TestView < Test::Unit::TestCase
     parent.add_child child
     assert_nil parent.parent
     assert_equal parent, child.parent
+  end
+
+  def test_density ()
+    v = view
+    assert_equal 0, v.density
+    v.density = 1
+    assert_equal 1, v.density
+    v.density 2
+    assert_equal 2, v.density
+  end
+
+  def test_friction ()
+    v = view
+    assert_equal 0, v.friction
+    v.friction = 1
+    assert_equal 1, v.friction
+    v.friction 2
+    assert_equal 2, v.friction
+  end
+
+  def test_restitution ()
+    v = view
+    assert_equal 0, v.restitution
+    v.restitution = 1
+    assert_equal 1, v.restitution
+    v.restitution 2
+    assert_equal 2, v.restitution
+  end
+
+  def test_sensor ()
+    v = view
+    assert_equal false, v.sensor?
+    v.sensor = true
+    assert_equal true,  v.sensor?
+    v.sensor false
+    assert_equal false, v.sensor?
+  end
+
+  def test_category ()
+    p, v = view, view
+    p.add v
+    assert_equal [:all], v.category
+  end
+
+  def test_collision ()
+    p, v = view, view
+    p.add v
+    #assert_equal [:all], v.collision
   end
 
 end# TestView

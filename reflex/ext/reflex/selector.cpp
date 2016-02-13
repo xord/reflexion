@@ -10,7 +10,8 @@ using namespace Rucy;
 
 RUCY_DEFINE_VALUE_OR_ARRAY_FROM_TO(Reflex::Selector)
 
-#define THIS  to<Reflex::Selector*>(self)
+#define   THIS to<      Reflex::Selector*>(self)
+#define C_THIS to<const Reflex::Selector*>(self)
 
 #define CHECK RUCY_CHECK_OBJ(Reflex::Selector, self)
 
@@ -43,7 +44,8 @@ static
 RUCY_DEF0(get_name)
 {
 	CHECK;
-	return THIS->name() ? value(THIS->name()) : nil();
+	const char* name = C_THIS->name();
+	return name ? value(name) : nil();
 }
 RUCY_END
 
@@ -64,10 +66,18 @@ RUCY_DEF1(remove_tag, tag)
 RUCY_END
 
 static
+RUCY_DEF0(clear_tags)
+{
+	CHECK;
+	THIS->clear_tags();
+}
+RUCY_END
+
+static
 RUCY_DEF1(has_tag, tag)
 {
 	CHECK;
-	return value(THIS->has_tag(tag.c_str()));
+	return value(C_THIS->has_tag(tag.c_str()));
 }
 RUCY_END
 
@@ -77,8 +87,8 @@ RUCY_DEF0(each_tag)
 	CHECK;
 
 	Value ret;
-	Reflex::Selector::iterator end = THIS->end();
-	for (Reflex::Selector::iterator it = THIS->begin(); it != end; ++it)
+	Reflex::Selector::const_iterator end = C_THIS->end();
+	for (Reflex::Selector::const_iterator it = C_THIS->begin(); it != end; ++it)
 		ret = rb_yield(value(*it));
 	return ret;
 }
@@ -88,7 +98,7 @@ static
 RUCY_DEF1(contains, selector)
 {
 	CHECK;
-	return value(THIS->contains(to<Reflex::Selector&>(selector)));
+	return value(C_THIS->contains(to<Reflex::Selector&>(selector)));
 }
 RUCY_END
 
@@ -96,7 +106,7 @@ static
 RUCY_DEF1(equal, selector)
 {
 	CHECK;
-	return value(*THIS == to<Reflex::Selector&>(selector));
+	return value(*C_THIS == to<const Reflex::Selector&>(selector));
 }
 RUCY_END
 
@@ -115,8 +125,9 @@ Init_selector ()
 	cSelector.define_method("name",  get_name);
 	cSelector.define_method("add_tag",    add_tag);
 	cSelector.define_method("remove_tag", remove_tag);
+	cSelector.define_method("clear_tags", clear_tags);
 	cSelector.define_method("tag?",       has_tag);
-	cSelector.define_method("each_tag", each_tag);
+	cSelector.define_method("each_tag",   each_tag);
 	cSelector.define_method("contains", contains);
 	cSelector.define_method("==", equal);
 }
