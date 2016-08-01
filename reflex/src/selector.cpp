@@ -1,6 +1,7 @@
 #include "reflex/selector.h"
 
 
+#include <assert.h>
 #include "reflex/exception.h"
 #include "selector.h"
 

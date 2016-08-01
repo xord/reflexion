@@ -4,7 +4,7 @@
 #define __REFLEX_SRC_SELECTOR_H__
 
 
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 #include <reflex/selector.h>
 
 
@@ -12,7 +12,7 @@ namespace Reflex
 {
 
 
-	class SelectorPtr : public boost::scoped_ptr<Selector>
+	class SelectorPtr : public std::unique_ptr<Selector>
 	{
 
 		public:

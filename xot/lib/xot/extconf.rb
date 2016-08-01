@@ -37,7 +37,8 @@ module Xot
       local_libs << (clang? ? 'c++' : 'stdc++')
 
       $CPPFLAGS = cppflags $CPPFLAGS, defs, include_dirs
-      $CFLAGS   = cflags   $CFLAGS + ' -x c++'
+      $CFLAGS   = cflags   $CFLAGS   + ' -x c++'
+      $CXXFLAGS = cflags   $CXXFLAGS + ' -x c++' if $CXXFLAGS
       $LDFLAGS  = ldflags  $LDFLAGS, lib_dirs, frameworks
       $LOCAL_LIBS << local_libs.map {|s| " -l#{s}"}.join
     end

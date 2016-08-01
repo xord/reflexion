@@ -1,10 +1,9 @@
 #include "reflex/window.h"
 
 
+#include <memory>
 #define NOMINMAX
 #include <windows.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_array.hpp>
 #include <rays/painter.h>
 #include "reflex/reflex.h"
 #include "reflex/view.h"
@@ -74,7 +73,7 @@ namespace Reflex
 
 	};// Window::Data
 
-	typedef boost::shared_ptr<Window::Data> WindowData;
+	typedef std::shared_ptr<Window::Data> WindowData;
 
 
 	static const char* WINDOWCLASS   = "Reflex:WindowClass";
@@ -440,7 +439,7 @@ namespace Reflex
 		int size = GetWindowTextLength(self->hwnd);
 		if (size <= 0) return "";
 
-		boost::scoped_array<char> buf(new char[size + 1]);
+		std::unique_ptr<char[]> buf(new char[size + 1]);
 		if (GetWindowText(self->hwnd, &buf[0], size + 1) != size)
 			return "";
 

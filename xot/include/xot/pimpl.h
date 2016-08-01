@@ -4,8 +4,7 @@
 #define __XOT_PIMPL_H__
 
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace Xot
@@ -13,10 +12,10 @@ namespace Xot
 
 
 	template <typename T>
-	class PImpl : public boost::scoped_ptr<T>
+	class PImpl : public std::unique_ptr<T>
 	{
 
-		typedef boost::scoped_ptr<T> Super;
+		typedef std::unique_ptr<T> Super;
 
 		typedef PImpl<T> This;
 
@@ -38,10 +37,10 @@ namespace Xot
 
 
 	template <typename T>
-	class PSharedImpl : public boost::shared_ptr<T>
+	class PSharedImpl : public std::shared_ptr<T>
 	{
 
-		typedef boost::shared_ptr<T> Super;
+		typedef std::shared_ptr<T> Super;
 
 		typedef PImpl<T> This;
 

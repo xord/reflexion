@@ -1,6 +1,7 @@
 #include "class.h"
 
 
+#include <vector>
 #include "rucy.h"
 
 
@@ -204,7 +205,7 @@ RUCY_DEF1(simpleobj_initialize, name)
 }
 RUCY_END
 
-static std::vector<Xot::Ref<SimpleObj> > simpleobj_refs;
+static std::vector<Xot::Ref<SimpleObj>> simpleobj_refs;
 
 static
 RUCY_DEF1(simpleobj_set_refs, objs)

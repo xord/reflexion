@@ -11,11 +11,10 @@
 #include <limits.h>
 #include <assert.h>
 #include <typeinfo>
-#include <boost/noncopyable.hpp>
-#include <boost/type_traits.hpp>
-#include <boost/utility/enable_if.hpp>
+#include <type_traits>
 #include <xot/defs.h>
 #include <xot/exception.h>
+#include <xot/noncopyable.h>
 #include <xot/debug.h>
 
 
@@ -30,7 +29,7 @@ namespace Xot
 
 
 	template <typename SuperClass = EmptyClass>
-	class RefCountable : public SuperClass, public boost::noncopyable
+	class RefCountable : public SuperClass, public NonCopyable
 	{
 
 		public:
@@ -232,14 +231,14 @@ namespace Xot
 
 
 	template <typename T>
-	class Ref<T, typename boost::enable_if<boost::is_const<T> >::type>
+	class Ref<T, typename std::enable_if<std::is_const<T>::value>::type>
 	{
 
 		typedef Ref<T> This;
 
-		typedef typename boost::remove_const<T>::type Value;
+		typedef typename std::remove_const<T>::type Value;
 
-		typedef                              T   ConstValue;
+		typedef                            T   ConstValue;
 
 		typedef       Value&      Reference;
 

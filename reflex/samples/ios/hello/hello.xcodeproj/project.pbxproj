@@ -915,7 +915,6 @@
 					../../../../reflex/include,
 					../../../../rays/include,
 					../../../../xot/include,
-					/usr/local/Cellar/boost/1.53.0/include,
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
@@ -940,7 +939,6 @@
 					../../../../reflex/include,
 					../../../../rays/include,
 					../../../../xot/include,
-					/usr/local/Cellar/boost/1.53.0/include,
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);

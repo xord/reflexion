@@ -4,10 +4,10 @@
 #define __REFLEX_SRC_WORLD_H__
 
 
-#include <boost/noncopyable.hpp>
 #include <Box2D/Dynamics/b2World.h>
 #include <Box2D/Dynamics/b2WorldCallbacks.h>
 #include <Box2D/Dynamics/Contacts/b2Contact.h>
+#include <xot/noncopyable.h>
 #include <rays/point.h>
 #include <rays/painter.h>
 #include <reflex/defs.h>
@@ -24,7 +24,7 @@ namespace Reflex
 	class DebugDraw;
 
 
-	class World : public boost::noncopyable, private b2ContactListener
+	class World : public Xot::NonCopyable, private b2ContactListener
 	{
 
 		public:

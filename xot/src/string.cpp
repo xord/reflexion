@@ -2,8 +2,8 @@
 
 
 #include <stdio.h>
-#include <boost/algorithm/string.hpp>
-#include <boost/scoped_array.hpp>
+#include <algorithm>
+#include <memory>
 
 
 namespace Xot
@@ -22,19 +22,31 @@ namespace Xot
 	String
 	String::upcase () const
 	{
-		return boost::to_upper_copy(*this);
+		String s = c_str();
+		std::transform(
+			s.begin(), s.end(), s.begin(),
+			[](int c) {return toupper(c);});
+		return s;
 	}
 
 	String
 	String::downcase () const
 	{
-		return boost::to_lower_copy(*this);
+		String s = c_str();
+		std::transform(
+			s.begin(), s.end(), s.begin(),
+			[](int c) {return tolower(c);});
+		return s;
 	}
 
 	String
 	String::strip () const
 	{
-		return boost::trim_copy(*this);
+		String s = c_str();
+		auto isspace = [](int c) {return std::isspace(c);};
+		auto head = std::find_if_not(s.begin(), s.end(), isspace);
+		auto tail = std::find_if(    head,      s.end(), isspace);
+		return String(head, tail);
 	}
 
 	String::operator const char* () const
@@ -86,7 +98,7 @@ namespace Xot
 			return &stack[0];
 
 		int bufsize = BUFSIZE;// vscprintf(format, args);
-		boost::scoped_array<char> heap;
+		std::unique_ptr<char[]> heap;
 		while (true)
 		{
 			bufsize *= 2;

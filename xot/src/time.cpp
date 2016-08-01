@@ -1,9 +1,11 @@
 #include "xot/time.h"
 
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
+#include <thread>
 
-namespace pt = boost::posix_time;
+
+namespace Ch = std::chrono;
 
 
 namespace Xot
@@ -11,13 +13,19 @@ namespace Xot
 
 
 	double
-	time (bool local)
+	time ()
 	{
-		static pt::ptime zero = pt::from_time_t(0);
-		pt::ptime now = local ?
-			pt::microsec_clock::local_time() :
-			pt::microsec_clock::universal_time();
-		return (now - zero).total_milliseconds() / 1000.0;
+		auto now = Ch::system_clock::now().time_since_epoch();
+		return Ch::duration_cast<Ch::milliseconds>(now).count() / 1000.0;
+	}
+
+	void
+	sleep (double seconds)
+	{
+		if (seconds <= 0) return;
+
+		long long millisecs = seconds * 1000;
+		std::this_thread::sleep_for(Ch::milliseconds(millisecs));
 	}
 
 

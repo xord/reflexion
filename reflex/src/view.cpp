@@ -2,8 +2,8 @@
 
 
 #include <assert.h>
+#include <memory>
 #include <algorithm>
-#include <boost/scoped_ptr.hpp>
 #include <xot/util.h>
 #include "reflex/window.h"
 #include "reflex/timer.h"
@@ -61,23 +61,23 @@ namespace Reflex
 
 		uint flags;
 
-		SelectorPtr                    pselector;
+		SelectorPtr                  pselector;
 
-		boost::scoped_ptr<SelectorSet> pselectors_for_update;
+		std::unique_ptr<SelectorSet> pselectors_for_update;
 
-		boost::scoped_ptr<Point>       pscroll;
+		std::unique_ptr<Point>       pscroll;
 
-		boost::scoped_ptr<ChildList>   pchildren;
+		std::unique_ptr<ChildList>   pchildren;
 
-		boost::scoped_ptr<Style>       pstyle;
+		std::unique_ptr<Style>       pstyle;
 
-		boost::scoped_ptr<StyleList>   pstyles;
+		std::unique_ptr<StyleList>   pstyles;
 
-		boost::scoped_ptr<Timers>      ptimers;
+		std::unique_ptr<Timers>      ptimers;
 
-		boost::scoped_ptr<Body>        pbody;
+		std::unique_ptr<Body>        pbody;
 
-		boost::scoped_ptr<World>       pchild_world;
+		std::unique_ptr<World>       pchild_world;
 
 		Data ()
 		:	window(NULL), parent(NULL), zoom(1), angle(0),

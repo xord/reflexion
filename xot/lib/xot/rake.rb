@@ -102,7 +102,7 @@ module Xot
       s = flags.dup
       s << ' -Wno-unknown-pragmas'
       s << ' ' << RbConfig::CONFIG['debugflags'] if debug?
-      s << ' -stdlib=libc++ -mmacosx-version-min=10.7' if clang?
+      s << ' -std=c++11 -stdlib=libc++ -mmacosx-version-min=10.7' if clang?
       s.gsub! /-O\d?/, '-O0' if debug?
       s
     end

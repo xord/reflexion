@@ -2,7 +2,7 @@
 
 
 #include <assert.h>
-#include <boost/scoped_array.hpp>
+#include <memory>
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Common/b2Draw.h>
 #include <xot/util.h>
@@ -52,7 +52,7 @@ namespace Reflex
 				painter->no_fill();
 				painter->set_stroke(color.r, color.g, color.b, color.a * 0.5);
 
-				boost::scoped_array<Point> points(new Point[vertexCount]);
+				std::unique_ptr<Point[]> points(new Point[vertexCount]);
 				for (int i = 0; i < vertexCount; ++i)
 					points[i] = to_point(vertices[i], ppm);
 
@@ -67,7 +67,7 @@ namespace Reflex
 				painter->set_fill(color.r, color.g, color.b, color.a * 0.5);
 				painter->no_stroke();
 
-				boost::scoped_array<Point> points(new Point[vertexCount]);
+				std::unique_ptr<Point[]> points(new Point[vertexCount]);
 				for (int i = 0; i < vertexCount; ++i)
 					points[i] = to_point(vertices[i], ppm);
 

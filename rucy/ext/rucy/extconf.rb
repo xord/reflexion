@@ -13,10 +13,9 @@ require 'rucy/module'
 
 Xot::ExtConf.new Xot, Rucy do
   setup do
-    headers    << 'boost/noncopyable.hpp' << 'ruby.h'
+    headers    << 'ruby.h'
     local_libs << 'rucy'
   end
 
-  dir_config 'boost'
   create_makefile 'rucy/tester'
 end

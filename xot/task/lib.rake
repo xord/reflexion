@@ -61,7 +61,10 @@ namespace :lib do
   task :erb => erbs.values
 
   file out => objs.values do
-    sh %( #{ar} #{arflags} #{out} #{objs.values.join " "} ) unless objs.values.empty?
+    unless objs.values.empty?
+      sh %( rm -f #{out} )
+      sh %( #{ar} #{arflags} #{out} #{objs.values.join " "} )
+    end
   end
 
   file depend => erbs.values do

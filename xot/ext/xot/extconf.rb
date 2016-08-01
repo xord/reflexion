@@ -12,9 +12,8 @@ require 'xot/module'
 
 Xot::ExtConf.new Xot do
   setup do
-    headers << 'boost/noncopyable.hpp' << 'ruby.h'
+    headers << 'ruby.h'
   end
 
-  dir_config 'boost'
   create_makefile 'xot/tester'
 end

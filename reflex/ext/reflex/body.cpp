@@ -1,6 +1,7 @@
 #include "reflex/ruby/body.h"
 
 
+#include <vector>
 #include <rucy.h>
 #include "rays/ruby/point.h"
 #include "reflex/ruby/fixture.h"

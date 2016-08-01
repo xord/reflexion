@@ -1,7 +1,7 @@
 #include "reflex/style.h"
 
 
-#include <boost/noncopyable.hpp>
+#include <memory>
 #include "reflex/view.h"
 #include "reflex/exception.h"
 #include "selector.h"

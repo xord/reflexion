@@ -20,12 +20,14 @@ namespace Reflex
 
 
 	template <typename T>
-	class RubyWindow : public Rucy::ClassWrapper<T>
+	class RubyWindow : public Rucy::ClassWrapper<T, 16>
 	{
+
+		typedef Rucy::ClassWrapper<T, 16> Wrapper;
 
 		public:
 
-			RUCY_OVERRIDE_BEGIN(Rucy::ClassWrapper<T>)
+			RUCY_OVERRIDE_BEGIN(Wrapper)
 
 			RUCY_OVERRIDE_ID(on_update)
 			RUCY_OVERRIDE_ID(on_draw)

@@ -5,7 +5,7 @@
 
 
 #include <typeinfo>
-#include <boost/dynamic_bitset.hpp>
+#include <bitset>
 #include <xot/ref.h>
 #include <xot/string.h>
 #include <rucy/rucy.h>
@@ -327,7 +327,7 @@ namespace Rucy
 	template <typename T> Class get_ruby_class ();
 
 
-	template <typename T>
+	template <typename T, int N = 8>
 	class ClassWrapper : public T
 	{
 
@@ -424,7 +424,7 @@ namespace Rucy
 
 				OVERRIDE_ID_LAST,
 
-				OVERRIDE_ID_MAX = 256
+				OVERRIDE_ID_MAX = N
 
 			};
 
@@ -440,7 +440,19 @@ namespace Rucy
 
 		private:
 
-			mutable boost::dynamic_bitset<> override_flags;
+			class OverrideFlags : public std::bitset<OVERRIDE_ID_MAX * 2>
+			{
+
+				public:
+
+					void resize (size_t size)
+					{
+						rucy_error(__FILE__, __LINE__, "override flags overflow.");
+					}
+
+			};// OverrideFlags
+
+			mutable OverrideFlags override_flags;
 
 			mutable bool overridable;
 

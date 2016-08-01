@@ -14,7 +14,7 @@ namespace Xot
 {
 
 
-#ifdef _DEBUG
+#ifdef XOT_USE_DOUT
 
 	void
 	dout (const char* format, ...)

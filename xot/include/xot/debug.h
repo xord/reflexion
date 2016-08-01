@@ -4,11 +4,16 @@
 #define __XOT_DEBUG_H__
 
 
+#if 1//def _DEBUG
+#define XOT_USE_DOUT
+#endif
+
+
 namespace Xot
 {
 
 
-#ifdef _DEBUG
+#ifdef XOT_USE_DOUT
 
 	void dout (const char* format, ...);
 

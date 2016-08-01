@@ -15,7 +15,7 @@ require 'reflex/module'
 
 Xot::ExtConf.new Xot, Rucy, Rays, Reflex do
   setup do
-    headers    << 'boost/scoped_array.hpp' << 'boost/shared_ptr.hpp' << 'ruby.h'
+    headers    << 'ruby.h'
     local_libs << 'rucy'
     libs.unshift 'gdi21', 'opengl32' if win32?
     frameworks << 'Cocoa' if osx?
@@ -27,6 +27,5 @@ Xot::ExtConf.new Xot, Rucy, Rays, Reflex do
     end
   end
 
-  dir_config 'boost'
   create_makefile 'reflex/native'
 end

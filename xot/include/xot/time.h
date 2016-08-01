@@ -8,7 +8,9 @@ namespace Xot
 {
 
 
-	double time (bool local = true);
+	double time ();
+
+	void sleep (double seconds);
 
 
 }// Xot

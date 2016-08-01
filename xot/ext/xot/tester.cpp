@@ -4,6 +4,26 @@
 #include "xot.h"
 
 
+static bool
+test_string ()
+{
+	if (Xot::String("aBc")            .upcase()   != "ABC") return false;
+	if (Xot::String("aBc")            .downcase() != "abc") return false;
+	if (Xot::String(" \taBc \r\n\f\v").strip()    != "aBc") return false;
+	if (Xot::String(" \t\r\n\f\v")    .strip()    != "") return false;
+	if (Xot::String("")               .strip()    != "") return false;
+	return true;
+}
+
+static bool
+test_time ()
+{
+	double t = Xot::time();
+	Xot::sleep(0.001);
+	if (Xot::time() <= t) return false;
+	return true;
+}
+
 template <typename EXCEPTION>
 static bool
 test_exception (bool should_catch = true)
@@ -94,9 +114,11 @@ test_util ()
 static VALUE
 test_native (VALUE self)
 {
+	if (!test_string())    return false;
+	if (!test_time())      return false;
 	if (!test_exception()) return false;
-	if (!test_ref()) return false;
-	if (!test_util()) return false;
+	if (!test_ref())       return false;
+	if (!test_util())      return false;
 	return true;
 }
 
