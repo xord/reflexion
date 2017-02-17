@@ -3,7 +3,6 @@
 
 require 'erb'
 require 'rbconfig'
-require 'pp'
 
 
 module Xot
@@ -37,16 +36,6 @@ module Xot
         end
       end
     #rescue
-    end
-
-    def ruby (*args)
-      bin = ENV['RUBY'] || 'ruby'
-      "#{bin} #{args.join ' '}"
-    end
-
-    def rake (*args)
-      bin = ENV['RAKE'] || 'rake'
-      "#{bin} #{args.join ' '}"
     end
 
     def params (max, sep = '', &block)
@@ -129,6 +118,10 @@ module Xot
       puts "-- #{mod.to_s.capitalize} " + '-' * 50
     end
 
+    def debug (state)
+      ENV['DEBUG'] = state.to_s
+    end
+
     def debug? ()
       env :DEBUG, false
     end
@@ -163,6 +156,16 @@ module Xot
 
     def clang? ()
       RbConfig::CONFIG['CXX'] =~ /clang/
+    end
+
+    def ruby (*args)
+      bin = ENV['RUBY'] || 'ruby'
+      "#{bin} #{args.join ' '}"
+    end
+
+    def rake (*args)
+      bin = ENV['RAKE'] || 'rake'
+      "#{bin} #{args.join ' '}"
     end
 
 

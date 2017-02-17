@@ -42,9 +42,21 @@ RUCY_DEFN(set_flow)
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "Style#set_flow", argc, 1, 2);
 
-	THIS->set_flow(
-		(Reflex::Style::Flow) to<int>(argv[0]),
-		argc >= 2 ? (Reflex::Style::Flow) to<int>(argv[1]) : Reflex::Style::FLOW_NONE);
+	if (argv[0].is_nil())
+	{
+		if (argc >= 2 && !argv[1].is_nil())
+			argument_error(__FILE__, __LINE__);
+
+		THIS->clear_flow();
+	}
+	else
+	{
+		THIS->set_flow(
+			(Reflex::Style::Flow) to<int>(argv[0]),
+			argc >= 2 ? (Reflex::Style::Flow) to<int>(argv[1]) : Reflex::Style::FLOW_NONE);
+	}
+
+	return value(argc, argv);
 }
 RUCY_END
 
@@ -52,6 +64,7 @@ static
 RUCY_DEF0(get_flow)
 {
 	CHECK;
+
 	Reflex::Style::Flow main, sub;
 	THIS->get_flow(&main, &sub);
 	return array(main, sub);
@@ -62,7 +75,13 @@ static
 RUCY_DEF1(set_width, width)
 {
 	CHECK;
-	THIS->set_width(to<Reflex::StyleLength>(width));
+
+	if (width.is_nil())
+		THIS->clear_width();
+	else
+		THIS->set_width(to<Reflex::StyleLength>(width));
+
+	return width;
 }
 RUCY_END
 
@@ -78,7 +97,13 @@ static
 RUCY_DEF1(set_height, height)
 {
 	CHECK;
-	THIS->set_height(to<Reflex::StyleLength>(height));
+
+	if (height.is_nil())
+		THIS->clear_height();
+	else
+		THIS->set_height(to<Reflex::StyleLength>(height));
+
+	return height;
 }
 RUCY_END
 
@@ -96,8 +121,10 @@ RUCY_DEFN(set_size)
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "Style#set_size", argc, 1, 2);
 
-	set_width (self, argv[0]);
+	set_width( self, argv[0]);
 	set_height(self, argc >= 2 ? argv[1] : argv[0]);
+
+	return value(argc, argv);
 }
 RUCY_END
 
@@ -105,7 +132,9 @@ static
 RUCY_DEF0(get_size)
 {
 	CHECK;
-	return array(get_width(self), get_height(self));
+	return array(
+		get_width(self),
+		get_height(self));
 }
 RUCY_END
 
@@ -113,7 +142,13 @@ static
 RUCY_DEF1(set_left, left)
 {
 	CHECK;
-	THIS->set_left(to<Reflex::StyleLength>(left));
+
+	if (left.is_nil())
+		THIS->clear_left();
+	else
+		THIS->set_left(to<Reflex::StyleLength>(left));
+
+	return left;
 }
 RUCY_END
 
@@ -129,7 +164,13 @@ static
 RUCY_DEF1(set_top, top)
 {
 	CHECK;
-	THIS->set_top(to<Reflex::StyleLength>(top));
+
+	if (top.is_nil())
+		THIS->clear_top();
+	else
+		THIS->set_top(to<Reflex::StyleLength>(top));
+
+	return top;
 }
 RUCY_END
 
@@ -145,7 +186,13 @@ static
 RUCY_DEF1(set_right, right)
 {
 	CHECK;
-	THIS->set_right(to<Reflex::StyleLength>(right));
+
+	if (right.is_nil())
+		THIS->clear_right();
+	else
+		THIS->set_right(to<Reflex::StyleLength>(right));
+
+	return right;
 }
 RUCY_END
 
@@ -161,7 +208,13 @@ static
 RUCY_DEF1(set_bottom, bottom)
 {
 	CHECK;
-	THIS->set_bottom(to<Reflex::StyleLength>(bottom));
+
+	if (bottom.is_nil())
+		THIS->clear_bottom();
+	else
+		THIS->set_bottom(to<Reflex::StyleLength>(bottom));
+
+	return bottom;
 }
 RUCY_END
 
@@ -177,10 +230,13 @@ static
 RUCY_DEF4(set_position, left, top, right, bottom)
 {
 	CHECK;
-	set_left  (self, left);
-	set_top   (self, top);
-	set_right (self, right);
+
+	set_left(  self, left);
+	set_top(   self, top);
+	set_right( self, right);
 	set_bottom(self, bottom);
+
+	return array(left, top, right, bottom);
 }
 RUCY_END
 
@@ -197,97 +253,16 @@ RUCY_DEF0(get_position)
 RUCY_END
 
 static
-RUCY_DEF1(set_offset_left, left)
-{
-	CHECK;
-	THIS->set_offset_left(to<Reflex::StyleLength>(left));
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_offset_left)
-{
-	CHECK;
-	return value(THIS->offset_left());
-}
-RUCY_END
-
-static
-RUCY_DEF1(set_offset_top, top)
-{
-	CHECK;
-	THIS->set_offset_top(to<Reflex::StyleLength>(top));
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_offset_top)
-{
-	CHECK;
-	return value(THIS->offset_top());
-}
-RUCY_END
-
-static
-RUCY_DEF1(set_offset_right, right)
-{
-	CHECK;
-	THIS->set_offset_right(to<Reflex::StyleLength>(right));
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_offset_right)
-{
-	CHECK;
-	return value(THIS->offset_right());
-}
-RUCY_END
-
-static
-RUCY_DEF1(set_offset_bottom, bottom)
-{
-	CHECK;
-	THIS->set_offset_bottom(to<Reflex::StyleLength>(bottom));
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_offset_bottom)
-{
-	CHECK;
-	return value(THIS->offset_bottom());
-}
-RUCY_END
-
-static
-RUCY_DEF4(set_offset, left, top, right, bottom)
-{
-	CHECK;
-	set_offset_left  (self, left);
-	set_offset_top   (self, top);
-	set_offset_right (self, right);
-	set_offset_bottom(self, bottom);
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_offset)
-{
-	CHECK;
-	return array(
-		get_offset_left(self),
-		get_offset_top(self),
-		get_offset_right(self),
-		get_offset_bottom(self));
-}
-RUCY_END
-
-static
 RUCY_DEF1(set_margin_left, left)
 {
 	CHECK;
-	THIS->set_margin_left(to<Reflex::StyleLength>(left));
+
+	if (left.is_nil())
+		THIS->clear_margin_left();
+	else
+		THIS->set_margin_left(to<Reflex::StyleLength>(left));
+
+	return left;
 }
 RUCY_END
 
@@ -303,7 +278,13 @@ static
 RUCY_DEF1(set_margin_top, top)
 {
 	CHECK;
-	THIS->set_margin_top(to<Reflex::StyleLength>(top));
+
+	if (top.is_nil())
+		THIS->clear_margin_top();
+	else
+		THIS->set_margin_top(to<Reflex::StyleLength>(top));
+
+	return top;
 }
 RUCY_END
 
@@ -319,7 +300,13 @@ static
 RUCY_DEF1(set_margin_right, right)
 {
 	CHECK;
-	THIS->set_margin_right(to<Reflex::StyleLength>(right));
+
+	if (right.is_nil())
+		THIS->clear_margin_right();
+	else
+		THIS->set_margin_right(to<Reflex::StyleLength>(right));
+
+	return right;
 }
 RUCY_END
 
@@ -335,7 +322,13 @@ static
 RUCY_DEF1(set_margin_bottom, bottom)
 {
 	CHECK;
-	THIS->set_margin_bottom(to<Reflex::StyleLength>(bottom));
+
+	if (bottom.is_nil())
+		THIS->clear_margin_bottom();
+	else
+		THIS->set_margin_bottom(to<Reflex::StyleLength>(bottom));
+
+	return bottom;
 }
 RUCY_END
 
@@ -351,10 +344,13 @@ static
 RUCY_DEF4(set_margin, left, top, right, bottom)
 {
 	CHECK;
-	set_margin_left  (self, left);
-	set_margin_top   (self, top);
-	set_margin_right (self, right);
+
+	set_margin_left(  self, left);
+	set_margin_top(   self, top);
+	set_margin_right( self, right);
 	set_margin_bottom(self, bottom);
+
+	return array(left, top, right, bottom);
 }
 RUCY_END
 
@@ -374,7 +370,13 @@ static
 RUCY_DEF1(set_padding_left, left)
 {
 	CHECK;
-	THIS->set_padding_left(to<Reflex::StyleLength>(left));
+
+	if (left.is_nil())
+		THIS->clear_padding_left();
+	else
+		THIS->set_padding_left(to<Reflex::StyleLength>(left));
+
+	return left;
 }
 RUCY_END
 
@@ -390,7 +392,13 @@ static
 RUCY_DEF1(set_padding_top, top)
 {
 	CHECK;
-	THIS->set_padding_top(to<Reflex::StyleLength>(top));
+
+	if (top.is_nil())
+		THIS->clear_padding_top();
+	else
+		THIS->set_padding_top(to<Reflex::StyleLength>(top));
+
+	return top;
 }
 RUCY_END
 
@@ -406,7 +414,13 @@ static
 RUCY_DEF1(set_padding_right, right)
 {
 	CHECK;
-	THIS->set_padding_right(to<Reflex::StyleLength>(right));
+
+	if (right.is_nil())
+		THIS->clear_padding_right();
+	else
+		THIS->set_padding_right(to<Reflex::StyleLength>(right));
+
+	return right;
 }
 RUCY_END
 
@@ -422,7 +436,13 @@ static
 RUCY_DEF1(set_padding_bottom, bottom)
 {
 	CHECK;
-	THIS->set_padding_bottom(to<Reflex::StyleLength>(bottom));
+
+	if (bottom.is_nil())
+		THIS->clear_padding_bottom();
+	else
+		THIS->set_padding_bottom(to<Reflex::StyleLength>(bottom));
+
+	return bottom;
 }
 RUCY_END
 
@@ -438,10 +458,13 @@ static
 RUCY_DEF4(set_padding, left, top, right, bottom)
 {
 	CHECK;
-	set_padding_left  (self, left);
-	set_padding_top   (self, top);
-	set_padding_right (self, right);
+
+	set_padding_left(  self, left);
+	set_padding_top(   self, top);
+	set_padding_right( self, right);
 	set_padding_bottom(self, bottom);
+
+	return array(left, top, right, bottom);
 }
 RUCY_END
 
@@ -458,34 +481,196 @@ RUCY_DEF0(get_padding)
 RUCY_END
 
 static
-RUCY_DEFN(set_fill)
+RUCY_DEF1(set_center_x, x)
 {
 	CHECK;
-	THIS->set_fill(to<Reflex::Color>(argc, argv));
+
+	if (x.is_nil())
+		THIS->clear_center_x();
+	else
+		THIS->set_center_x(to<Reflex::StyleLength>(x));
+
+	return x;
 }
 RUCY_END
 
 static
-RUCY_DEF0(get_fill)
+RUCY_DEF0(get_center_x)
 {
 	CHECK;
-	return value(THIS->fill());
+	return value(THIS->center_x());
 }
 RUCY_END
 
 static
-RUCY_DEFN(set_stroke)
+RUCY_DEF1(set_center_y, y)
 {
 	CHECK;
-	THIS->set_stroke(to<Reflex::Color>(argc, argv));
+
+	if (y.is_nil())
+		THIS->clear_center_y();
+	else
+		THIS->set_center_y(to<Reflex::StyleLength>(y));
+
+	return y;
 }
 RUCY_END
 
 static
-RUCY_DEF0(get_stroke)
+RUCY_DEF0(get_center_y)
 {
 	CHECK;
-	return value(THIS->stroke());
+	return value(THIS->center_y());
+}
+RUCY_END
+
+static
+RUCY_DEF2(set_center, x, y)
+{
+	CHECK;
+
+	set_center_x(self, x);
+	set_center_y(self, y);
+
+	return array(x, y);
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_center)
+{
+	CHECK;
+	return array(
+		get_center_x(self),
+		get_center_y(self));
+}
+RUCY_END
+
+static
+RUCY_DEFN(set_foreground_fill)
+{
+	CHECK;
+	check_arg_count(
+		__FILE__, __LINE__, "Style#set_foreground_fill", argc, 1, 2, 3, 4);
+
+	if (argv[0].is_nil())
+	{
+		if (argc != 1)
+			argument_error(__FILE__, __LINE__);
+
+		THIS->clear_foreground_fill();
+		return argv[0];
+	}
+	else
+	{
+		Reflex::Color color = to<Reflex::Color>(argc, argv);
+		THIS->set_foreground_fill(color);
+		return value(color);
+	}
+}
+RUCY_END
+
+static
+RUCY_DEFN(set_foreground_stroke)
+{
+	CHECK;
+	check_arg_count(
+		__FILE__, __LINE__, "Style#set_foreground_stroke", argc, 1, 2, 3, 4);
+
+	if (argv[0].is_nil())
+	{
+		if (argc != 1)
+			argument_error(__FILE__, __LINE__);
+
+		THIS->clear_foreground_stroke();
+		return argv[0];
+	}
+	else
+	{
+		Reflex::Color color = to<Reflex::Color>(argc, argv);
+		THIS->set_foreground_stroke(color);
+		return value(color);
+	}
+}
+RUCY_END
+
+static
+RUCY_DEFN(set_background_fill)
+{
+	CHECK;
+	check_arg_count(
+		__FILE__, __LINE__, "Style#set_background_fill", argc, 1, 2, 3, 4);
+
+	if (argv[0].is_nil())
+	{
+		if (argc != 1)
+			argument_error(__FILE__, __LINE__);
+
+		THIS->clear_background_fill();
+		return argv[0];
+	}
+	else
+	{
+		Reflex::Color color = to<Reflex::Color>(argc, argv);
+		THIS->set_background_fill(color);
+		return value(color);
+	}
+}
+RUCY_END
+
+static
+RUCY_DEFN(set_background_stroke)
+{
+	CHECK;
+	check_arg_count(
+		__FILE__, __LINE__, "Style#set_background_stroke", argc, 1, 2, 3, 4);
+
+	if (argv[0].is_nil())
+	{
+		if (argc != 1)
+			argument_error(__FILE__, __LINE__);
+
+		THIS->clear_background_stroke();
+		return argv[0];
+	}
+	else
+	{
+		Reflex::Color color = to<Reflex::Color>(argc, argv);
+		THIS->set_background_stroke(color);
+		return value(color);
+	}
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_foreground_fill)
+{
+	CHECK;
+	return value(THIS->foreground_fill());
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_foreground_stroke)
+{
+	CHECK;
+	return value(THIS->foreground_stroke());
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_background_fill)
+{
+	CHECK;
+	return value(THIS->background_fill());
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_background_stroke)
+{
+	CHECK;
+	return value(THIS->background_stroke());
 }
 RUCY_END
 
@@ -493,7 +678,13 @@ static
 RUCY_DEF1(set_image, image)
 {
 	CHECK;
-	THIS->set_image(to<Reflex::Image&>(image));
+
+	if (image.is_nil())
+		THIS->clear_image();
+	else
+		THIS->set_image(to<Reflex::Image&>(image));
+
+	return image;
 }
 RUCY_END
 
@@ -546,17 +737,6 @@ Init_style ()
 	cStyle.define_method("position=", set_position);
 	cStyle.define_method("position",  get_position);
 
-	cStyle.define_method("offset_left=",   set_offset_left);
-	cStyle.define_method("offset_left",    get_offset_left);
-	cStyle.define_method("offset_top=",    set_offset_top);
-	cStyle.define_method("offset_top",     get_offset_top);
-	cStyle.define_method("offset_right=",  set_offset_right);
-	cStyle.define_method("offset_right",   get_offset_right);
-	cStyle.define_method("offset_bottom=", set_offset_bottom);
-	cStyle.define_method("offset_bottom",  get_offset_bottom);
-	cStyle.define_method("offset=",        set_offset);
-	cStyle.define_method("offset",         get_offset);
-
 	cStyle.define_method("margin_left=",   set_margin_left);
 	cStyle.define_method("margin_left",    get_margin_left);
 	cStyle.define_method("margin_top=",    set_margin_top);
@@ -579,10 +759,21 @@ Init_style ()
 	cStyle.define_method("padding=",        set_padding);
 	cStyle.define_method("padding",         get_padding);
 
-	cStyle.define_method("fill=",   set_fill);
-	cStyle.define_method("fill",    get_fill);
-	cStyle.define_method("stroke=", set_stroke);
-	cStyle.define_method("stroke",  get_stroke);
+	cStyle.define_method("center_x=", set_center_x);
+	cStyle.define_method("center_x",  get_center_x);
+	cStyle.define_method("center_y=", set_center_y);
+	cStyle.define_method("center_y",  get_center_y);
+	cStyle.define_method("center=",   set_center);
+	cStyle.define_method("center",    get_center);
+
+	cStyle.define_method("foreground_fill=",   set_foreground_fill);
+	cStyle.define_method("foreground_fill",    get_foreground_fill);
+	cStyle.define_method("foreground_stroke=", set_foreground_stroke);
+	cStyle.define_method("foreground_stroke",  get_foreground_stroke);
+	cStyle.define_method("background_fill=",   set_background_fill);
+	cStyle.define_method("background_fill",    get_background_fill);
+	cStyle.define_method("background_stroke=", set_background_stroke);
+	cStyle.define_method("background_stroke",  get_background_stroke);
 
 	cStyle.define_method("image=", set_image);
 	cStyle.define_method("image",  get_image);

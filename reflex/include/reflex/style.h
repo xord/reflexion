@@ -24,23 +24,23 @@ namespace Reflex
 
 			typedef coord Value;
 
-			enum Unit {NONE = 0, PIXEL, PERCENT, UNIT_LAST};
+			enum Type {NONE = 0, PIXEL, PERCENT, FILL, TYPE_LAST};
 
 			StyleLength ();
 
-			StyleLength (Value value, Unit unit = PIXEL);
+			StyleLength (Value value, Type type = PIXEL);
 
 			explicit StyleLength (const char* str);
 
 			This copy () const;
 
-			void reset (Value value = 0, Unit unit = NONE);
+			void reset (Value value = 0, Type type = NONE);
 
 			void reset (const char* str);
 
 			Value value () const;
 
-			Unit unit () const;
+			Type type () const;
 
 			String to_s () const;
 
@@ -86,99 +86,135 @@ namespace Reflex
 
 			void set_selector (const Selector& selector);
 
-			void set_flow (Flow main, Flow sub = FLOW_NONE);
+			void   set_flow (Flow main, Flow sub = FLOW_NONE);
 
-			void get_flow (Flow* main, Flow* sub) const;
+			void clear_flow ();
 
-			void            set_width  (const StyleLength& width);
+			void   get_flow (Flow* main, Flow* sub) const;
 
-			void            set_height (const StyleLength& height);
+			void           set_width (const StyleLength& width);
 
-			const StyleLength&  width  () const;
+			void         clear_width ();
 
-			const StyleLength&  height () const;
+			const StyleLength& width () const;
 
-			void            set_left     (const StyleLength& left);
+			void           set_height (const StyleLength& height);
 
-			void            set_top      (const StyleLength& top);
+			void         clear_height ();
 
-			void            set_right    (const StyleLength& right);
+			const StyleLength& height () const;
 
-			void            set_bottom   (const StyleLength& bottom);
+			void           set_left (const StyleLength& left);
 
-			const StyleLength&  left     () const;
+			void         clear_left ();
 
-			const StyleLength&  top      () const;
+			const StyleLength& left () const;
 
-			const StyleLength&  right    () const;
+			void           set_top (const StyleLength& top);
 
-			const StyleLength&  bottom   () const;
+			void         clear_top ();
 
-			void            set_offset_left   (const StyleLength& left);
+			const StyleLength& top () const;
 
-			void            set_offset_top    (const StyleLength& top);
+			void           set_right (const StyleLength& right);
 
-			void            set_offset_right  (const StyleLength& right);
+			void         clear_right ();
 
-			void            set_offset_bottom (const StyleLength& bottom);
+			const StyleLength& right () const;
 
-			const StyleLength&  offset_left   () const;
+			void           set_bottom (const StyleLength& bottom);
 
-			const StyleLength&  offset_top    () const;
+			void         clear_bottom ();
 
-			const StyleLength&  offset_right  () const;
+			const StyleLength& bottom () const;
 
-			const StyleLength&  offset_bottom () const;
+			void           set_margin_left (const StyleLength& left);
 
-			void            set_margin_left   (const StyleLength& left);
+			void         clear_margin_left ();
 
-			void            set_margin_top    (const StyleLength& top);
+			const StyleLength& margin_left () const;
 
-			void            set_margin_right  (const StyleLength& right);
+			void           set_margin_top (const StyleLength& top);
 
-			void            set_margin_bottom (const StyleLength& bottom);
+			void         clear_margin_top ();
 
-			const StyleLength&  margin_left   () const;
+			const StyleLength& margin_top () const;
 
-			const StyleLength&  margin_top    () const;
+			void           set_margin_right (const StyleLength& right);
 
-			const StyleLength&  margin_right  () const;
+			void         clear_margin_right ();
 
-			const StyleLength&  margin_bottom () const;
+			const StyleLength& margin_right () const;
 
-			void            set_padding_left   (const StyleLength& left);
+			void           set_margin_bottom (const StyleLength& bottom);
 
-			void            set_padding_top    (const StyleLength& top);
+			void         clear_margin_bottom ();
 
-			void            set_padding_right  (const StyleLength& right);
+			const StyleLength& margin_bottom () const;
 
-			void            set_padding_bottom (const StyleLength& bottom);
+			void           set_padding_left (const StyleLength& left);
 
-			const StyleLength&  padding_left   () const;
+			void         clear_padding_left ();
 
-			const StyleLength&  padding_top    () const;
+			const StyleLength& padding_left () const;
 
-			const StyleLength&  padding_right  () const;
+			void           set_padding_top (const StyleLength& top);
 
-			const StyleLength&  padding_bottom () const;
+			void         clear_padding_top ();
+
+			const StyleLength& padding_top () const;
+
+			void           set_padding_right (const StyleLength& right);
+
+			void         clear_padding_right ();
+
+			const StyleLength& padding_right () const;
+
+			void           set_padding_bottom (const StyleLength& bottom);
+
+			void         clear_padding_bottom ();
+
+			const StyleLength& padding_bottom () const;
 
 			void           set_center_x (const StyleLength& x);
 
-			void           set_center_y (const StyleLength& y);
+			void         clear_center_x ();
 
 			const StyleLength& center_x () const;
 
+			void           set_center_y (const StyleLength& y);
+
+			void         clear_center_y ();
+
 			const StyleLength& center_y () const;
 
-			void     set_fill (const Color& fill);
+			void     set_foreground_fill (const Color& fill);
 
-			const Color& fill () const;
+			void   clear_foreground_fill ();
 
-			void     set_stroke (const Color& stroke);
+			const Color& foreground_fill () const;
 
-			const Color& stroke () const;
+			void     set_foreground_stroke (const Color& stroke);
+
+			void   clear_foreground_stroke ();
+
+			const Color& foreground_stroke () const;
+
+			void     set_background_fill (const Color& fill);
+
+			void   clear_background_fill ();
+
+			const Color& background_fill () const;
+
+			void     set_background_stroke (const Color& stroke);
+
+			void   clear_background_stroke ();
+
+			const Color& background_stroke () const;
 
 			void     set_image (const Image& image);
+
+			void   clear_image ();
 
 			const Image& image () const;
 

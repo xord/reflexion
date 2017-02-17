@@ -14,6 +14,10 @@ namespace Reflex
 	class View;
 
 
+	bool StyleLength_get_pixel_length (
+		coord* pixel_length, const StyleLength& style_length, coord parent_size);
+
+
 	bool Style_set_owner (Style* style, View* owner);
 
 	bool Style_has_variable_lengths (const Style& style);
@@ -22,9 +26,11 @@ namespace Reflex
 
 	void Style_override (Style* overridden, const Style& overrides);
 
-	void Style_apply_to (const Style* style, View* view);
+	void Style_apply_to (const Style& style, View* view);
 
-	void Style_get_default_flow (Style::Flow* main, Style::Flow* sub);
+	bool Style_has_width  (const Style& style);
+
+	bool Style_has_height (const Style& style);
 
 
 }// Reflex

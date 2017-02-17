@@ -17,11 +17,6 @@ TASKS   = %w[erb lib ext test clean gem install uninstall upload].map &:intern
 TARGETS = []
 
 
-def env (key, defval = nil)
-  val = ENV[key.to_s]
-  val == nil ? defval : val
-end
-
 def cd_sh (dir, cmd)
   Dir.chdir dir do
     $stderr.puts "(in #{Dir.pwd})"
@@ -57,6 +52,10 @@ end
 
 task :all do
   TARGETS.concat MODULES
+end
+
+task :debug do
+  debug true
 end
 
 MODULES.each do |mod|

@@ -73,11 +73,11 @@ namespace Reflex
 	};// Body
 
 
-	void  Body_copy_attributes (const Body* from, Body* to);
+	void Body_copy_attributes (const Body* from, Body* to);
 
 	Body* Body_create_temporary ();
 
-	bool  Body_is_temporary (const Body* body);
+	bool Body_is_temporary (const Body* body);
 
 	      b2Body* Body_get_b2ptr (      Body* body);
 

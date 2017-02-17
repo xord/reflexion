@@ -14,7 +14,7 @@ namespace Reflex
 	typedef View* (*CreateRootViewFun) ();
 
 
-	void  Window_set_create_root_view_fun (CreateRootViewFun fun);
+	void Window_set_create_root_view_fun (CreateRootViewFun fun);
 
 	View* Window_create_root_view ();
 

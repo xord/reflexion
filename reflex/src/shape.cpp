@@ -476,8 +476,8 @@ namespace Reflex
 
 		Bounds f  = frame();
 		float ppm = view->meter2pixel();
-		b2Vec2 pos( to_b2coord(f.x, ppm),     to_b2coord(f.y, ppm));
-		b2Vec2 size(to_b2coord(f.w, ppm) / 2, to_b2coord(f.h, ppm) / 2);
+		b2Vec2 pos( to_b2coord(f.x,     ppm),     to_b2coord(f.y,      ppm));
+		b2Vec2 size(to_b2coord(f.width, ppm) / 2, to_b2coord(f.height, ppm) / 2);
 
 		b2PolygonShape b2shape;
 		b2shape.SetAsBox(size.x, size.y);
@@ -672,8 +672,8 @@ namespace Reflex
 
 		Bounds f  = frame();
 		float ppm = view->meter2pixel();
-		b2Vec2 pos( to_b2coord(f.x, ppm), to_b2coord(f.y, ppm));
-		b2Vec2 size(to_b2coord(f.w, ppm), to_b2coord(f.h, ppm));
+		b2Vec2 pos( to_b2coord(f.x,     ppm), to_b2coord(f.y,      ppm));
+		b2Vec2 size(to_b2coord(f.width, ppm), to_b2coord(f.height, ppm));
 
 		if (size.x == size.y && !self->has_angle() && !self->has_hole())
 			return create_circle_fixture(this, pos, size.x);

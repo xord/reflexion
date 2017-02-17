@@ -2,6 +2,7 @@
 
 
 #include "reflex/exception.h"
+#include "reflex/debug.h"
 #include "view.h"
 #include "selector.h"
 
@@ -10,41 +11,13 @@ namespace Reflex
 {
 
 
-	template <typename T>
-	static T get_style_default_value        () {return T();}
-
-	template <>
-	Color    get_style_default_value<Color> () {return Color(0, 0);}
-
-
-	template <typename T>
+	template <typename T, typename DefaultValue = T>
 	class StyleValue
 	{
 
-		typedef StyleValue<T> This;
+		typedef StyleValue<T, DefaultValue> This;
 
 		typedef T Value;
-
-		class Wrapper : public Xot::RefCountable<>
-		{
-
-			public:
-
-				Wrapper () : value(get_style_default_value<T>()) {}
-
-				Wrapper (const Value& value) : value(value) {}
-
-				void reset (const Value& value_) {value = value_;}
-
-				      Value& get ()       {return value;}
-
-				const Value& get () const {return value;}
-
-			private:
-
-				Value value;
-
-		};// Wrapper
 
 		public:
 
@@ -67,13 +40,15 @@ namespace Reflex
 
 			This& operator = (const Value& value)
 			{
-				reset(new Wrapper(value));
+				set_wrapper(new ValueWrapper(value));
 				return *this;
 			}
 
 			This& operator = (const This& obj)
 			{
-				if (&obj != this) reset(obj.pwrapper);
+				if (&obj == this) return *this;
+				const ValueWrapper* p = obj.wrapper();
+				set_wrapper(p ? new ValueWrapper(*p) : NULL);
 				return *this;
 			}
 
@@ -82,55 +57,44 @@ namespace Reflex
 				clear();
 			}
 
-			void clear ()
+			bool clear ()
 			{
-				reset();
+				return set_wrapper(NULL);
 			}
 
-			Value& value (bool create = false)
+			bool set (const Value& value)
 			{
-				Wrapper* p = pointer();
-				if (!p)
-				{
-					if (!create)
-						invalid_state_error(__FILE__, __LINE__);
+				const ValueWrapper* p = wrapper();
+				if (p && p->value() == value)
+					return false;
 
-					p = reset(new Wrapper());
-				}
-				return p->get();
+				set_wrapper(new ValueWrapper(value));
+				return true;
 			}
 
 			const Value& get () const
 			{
-				Wrapper* p = pointer();
-				return p ? p->get() : default_value();
+				static const Value DEFVAL = DefaultValue();
+
+				const ValueWrapper* p = wrapper();
+				return p ? p->value() : DEFVAL;
 			}
 
-			const Value& get (const T& defval) const
+			const Value& get (const Value& defval) const
 			{
-				Wrapper* p = pointer();
-				return p ? p->get() : defval;
+				const ValueWrapper* p = wrapper();
+				return p ? p->value() : defval;
 			}
 
-			bool set (const Value& val)
+			void override (const This& obj)
 			{
-				Value& current = value(true);
-				if (current == val)
-					return false;
-
-				current = val;
-				return true;
-			}
-
-			void override (const This& value)
-			{
-				if (!value)
+				if (!obj)
 					return;
 
 				if (*this && !is_inherited())
 					return;
 
-				reset(value.pointer());
+				set_wrapper(obj.wrapper());
 				set_inherited();
 			}
 
@@ -139,17 +103,42 @@ namespace Reflex
 				return get_pointer_flag(pwrapper);
 			}
 
-			operator bool () const {return pointer() != NULL;}
+			operator bool () const
+			{
+				return wrapper() != NULL;
+			}
 
-			bool operator ! () const {return !operator bool();}
+			bool operator ! () const
+			{
+				return !operator bool();
+			}
 
 		private:
 
-			Wrapper* pwrapper;
-
-			Wrapper* reset (Wrapper* ptr = NULL)
+			class ValueWrapper : public Xot::RefCountable<>
 			{
-				Wrapper* p = pointer();
+
+				public:
+
+					ValueWrapper () : value_(DefaultValue()) {}
+
+					ValueWrapper (const Value& value) : value_(value) {}
+
+					ValueWrapper (const ValueWrapper& obj) : value_(obj.value_) {}
+
+					const Value& value () const {return value_;}
+
+				private:
+
+					Value value_;
+
+			};// ValueWrapper
+
+			const ValueWrapper* pwrapper;
+
+			const ValueWrapper* set_wrapper (const ValueWrapper* ptr)
+			{
+				const ValueWrapper* p = wrapper();
 				if (ptr != p)
 				{
 					if (p) p->release();
@@ -165,12 +154,9 @@ namespace Reflex
 					pwrapper = Xot::set_pointer_flag(pwrapper, state);
 			}
 
-			Wrapper* pointer () const {return Xot::set_pointer_flag(pwrapper, false);}
-
-			const T& default_value () const
+			const ValueWrapper* wrapper () const
 			{
-				static const T defval = get_style_default_value<T>();
-				return defval;
+				return Xot::set_pointer_flag(pwrapper, false);
 			}
 
 	};// StyleValue
@@ -181,21 +167,21 @@ namespace Reflex
 
 		Value value;
 
-		Unit unit;
+		Type type;
 
 		Data ()
-		:	value(0), unit(NONE)
+		:	value(0), type(NONE)
 		{
 		}
 
 		bool is_variable () const
 		{
-			return unit == PERCENT;
+			return type == PERCENT || type == FILL;
 		}
 
 		friend bool operator == (const Data& lhs, const Data& rhs)
 		{
-			return lhs.value == rhs.value && lhs.unit == rhs.unit;
+			return lhs.value == rhs.value && lhs.type == rhs.type;
 		}
 
 	};// StyleLength::Data
@@ -205,9 +191,9 @@ namespace Reflex
 	{
 	}
 
-	StyleLength::StyleLength (Value value, Unit unit)
+	StyleLength::StyleLength (Value value, Type type)
 	{
-		reset(value, unit);
+		reset(value, type);
 	}
 
 	StyleLength::StyleLength (const char* str)
@@ -218,48 +204,90 @@ namespace Reflex
 	StyleLength
 	StyleLength::copy () const
 	{
-		return StyleLength(value(), unit());
+		return StyleLength(value(), type());
 	}
 
 	void
-	StyleLength::reset (Value value, Unit unit)
+	StyleLength::reset (Value value, Type type)
 	{
-		if (unit < NONE || UNIT_LAST <= unit)
+		if (type < NONE || TYPE_LAST <= type)
 			argument_error(__FILE__, __LINE__);
 
 		self->value = value;
-		self->unit  = unit;
+		self->type  = type;
 	}
 
-	static StyleLength::Unit
-	str2unit (const char* s)
+	static StyleLength::Type
+	str2type (const char* s)
 	{
-		     if (strcasecmp(s, "px") == 0) return StyleLength::PIXEL;
-		else if (strcasecmp(s, "%")  == 0) return StyleLength::PERCENT;
-		else                               return StyleLength::NONE;
+		     if (strcasecmp(s, "px")   == 0) return StyleLength::PIXEL;
+		else if (strcasecmp(s, "%")    == 0) return StyleLength::PERCENT;
+		else if (strcasecmp(s, "fill") == 0) return StyleLength::FILL;
+		else                                 return StyleLength::NONE;
 	}
 
 	static const char*
-	unit2str (StyleLength::Unit unit)
+	type2str (StyleLength::Type type)
 	{
-		switch (unit)
+		switch (type)
 		{
 			case StyleLength::PIXEL:   return "px";
 			case StyleLength::PERCENT: return "%";
+			case StyleLength::FILL:    return "fill";
 			default:                   return NULL;
 		}
+	}
+
+	static bool
+	get_default_value (StyleLength::Value* value, StyleLength::Type type)
+	{
+		assert(value);
+
+		switch (type)
+		{
+			case StyleLength::FILL:
+				*value = 1;
+				break;
+
+			default:
+				return false;
+		}
+
+		return true;
+	}
+
+	static bool
+	scan_value_and_type (
+		StyleLength::Value* value, StyleLength::Type* type, const char* str)
+	{
+		char buf[101];
+
+		int count = sscanf(str, "%f%100s", value, buf);
+		if (count == 2)
+		{
+			*type = str2type(buf);
+			return true;
+		}
+
+		count = sscanf(str, "%100s", buf);
+		if (count == 1)
+		{
+			*type = str2type(buf);
+			return get_default_value(value, *type);
+		}
+
+		return false;
 	}
 
 	void
 	StyleLength::reset (const char* str)
 	{
-		Value num;
-		char suffix[256];
-		int count = sscanf(str, "%f%s", &num, suffix);
-		if (count != 2)
+		Value value = 0;
+		Type type   = NONE;
+		if (!scan_value_and_type(&value, &type, str))
 			argument_error(__FILE__, __LINE__);
 
-		reset(num, str2unit(suffix));
+		reset(value, type);
 	}
 
 	StyleLength::Value
@@ -268,10 +296,10 @@ namespace Reflex
 		return self->value;
 	}
 
-	StyleLength::Unit
-	StyleLength::unit () const
+	StyleLength::Type
+	StyleLength::type () const
 	{
-		return self->unit;
+		return self->type;
 	}
 
 	String
@@ -280,22 +308,22 @@ namespace Reflex
 		if (!*this)
 			return "";
 
-		String num;
+		String value;
 		if (fmod(self->value, 1) == 0)
-			num = Xot::stringf("%d", (long) self->value);
+			value = Xot::stringf("%d", (long) self->value);
 		else
-			num = Xot::stringf("%g", self->value);
+			value = Xot::stringf("%g", self->value);
 
-		const char* suffix = unit2str(self->unit);;
-		if (!suffix)
+		const char* type = type2str(self->type);
+		if (!type)
 			invalid_state_error(__FILE__, __LINE__);
 
-		return num + suffix;
+		return value + type;
 	}
 
 	StyleLength::operator bool () const
 	{
-		return NONE < self->unit && self->unit < UNIT_LAST;
+		return NONE < self->type && self->type < TYPE_LAST;
 	}
 
 	bool
@@ -320,39 +348,54 @@ namespace Reflex
 	struct Style::Data
 	{
 
-		typedef StyleValue<bool>        StyleBool;
+		struct ForegroundColor : public Color
+		{
+			ForegroundColor () : Color(1, 1) {}
+		};
 
-		typedef StyleValue<int>         StyleInt;
+		struct BackgroundColor : public Color
+		{
+			BackgroundColor () : Color(0, 0) {}
+		};
 
-		typedef StyleValue<double>      StyleFloat;
+		struct MaxLength : public StyleLength
+		{
+			MaxLength () : StyleLength(100, PERCENT) {}
+		};
 
-		typedef StyleValue<Color>       StyleColor;
+		typedef StyleValue<bool>        BoolValue;
 
-		typedef StyleValue<Image>       StyleImage;
+		typedef StyleValue<int>         IntValue;
 
-		typedef StyleValue<StyleLength> StyleLength;
+		typedef StyleValue<double>      FloatValue;
+
+		typedef StyleValue<Color>       ColorValue;
+
+		typedef StyleValue<Image>       ImageValue;
+
+		typedef StyleValue<StyleLength> LengthValue;
 
 		View* owner;
 
 		SelectorPtr pselector;
 
-		StyleInt flow;
+		IntValue flow;
 
-		StyleLength width, height;
+		StyleValue<StyleLength, MaxLength> width, height;
 
-		StyleLength         left,         top,         right,         bottom;
+		LengthValue         left,         top,         right,         bottom;
 
-		StyleLength  offset_left,  offset_top,  offset_right,  offset_bottom;
+		LengthValue  margin_left,  margin_top,  margin_right,  margin_bottom;
 
-		StyleLength  margin_left,  margin_top,  margin_right,  margin_bottom;
+		LengthValue padding_left, padding_top, padding_right, padding_bottom;
 
-		StyleLength padding_left, padding_top, padding_right, padding_bottom;
+		LengthValue center_x, center_y;
 
-		StyleLength center_x, center_y;
+		StyleValue<Color, ForegroundColor> fore_fill, fore_stroke;
 
-		StyleColor fill, stroke;
+		StyleValue<Color, BackgroundColor> back_fill, back_stroke;
 
-		StyleImage image;
+		ImageValue image;
 
 		Data ()
 		:	owner(NULL)
@@ -374,16 +417,12 @@ namespace Reflex
 
 		Flow flow_main () const
 		{
-			Flow defval = FLOW_NONE;
-			Style_get_default_flow(&defval, NULL);
-			return (Flow) (flow.get(defval) & FLOW_MASK);
+			return (Flow) (flow.get(FLOW_NONE) & FLOW_MASK);
 		}
 
 		Flow flow_sub () const
 		{
-			Flow defval = FLOW_NONE;
-			Style_get_default_flow(NULL, &defval);
-			return (Flow) ((flow.get(defval << FLOW_SHIFT) >> FLOW_SHIFT) & FLOW_MASK);
+			return (Flow) ((flow.get(FLOW_NONE << FLOW_SHIFT) >> FLOW_SHIFT) & FLOW_MASK);
 		}
 
 	};// Data
@@ -401,10 +440,11 @@ namespace Reflex
 		return true;
 	}
 
+	template <typename T>
 	static bool
-	is_variable (const StyleValue<StyleLength>& length)
+	is_variable (const T& length)
 	{
-		return length && length.get().self->is_variable();
+		return length.get().self->is_variable();
 	}
 
 	bool
@@ -422,11 +462,6 @@ namespace Reflex
 			is_variable(s->right)  ||
 			is_variable(s->bottom) ||
 
-			is_variable(s->offset_left)   ||
-			is_variable(s->offset_top)    ||
-			is_variable(s->offset_right)  ||
-			is_variable(s->offset_bottom) ||
-
 			is_variable(s->margin_left)   ||
 			is_variable(s->margin_top)    ||
 			is_variable(s->margin_right)  ||
@@ -443,7 +478,7 @@ namespace Reflex
 
 	template <typename T>
 	static void
-	clear_inherited_value (StyleValue<T>* value)
+	clear_inherited_value (T* value)
 	{
 		assert(value);
 
@@ -465,10 +500,6 @@ namespace Reflex
 		clear_inherited_value(&self->top);
 		clear_inherited_value(&self->right);
 		clear_inherited_value(&self->bottom);
-		clear_inherited_value(&self->offset_left);
-		clear_inherited_value(&self->offset_top);
-		clear_inherited_value(&self->offset_right);
-		clear_inherited_value(&self->offset_bottom);
 		clear_inherited_value(&self->margin_left);
 		clear_inherited_value(&self->margin_top);
 		clear_inherited_value(&self->margin_right);
@@ -479,8 +510,10 @@ namespace Reflex
 		clear_inherited_value(&self->padding_bottom);
 		clear_inherited_value(&self->center_x);
 		clear_inherited_value(&self->center_y);
-		clear_inherited_value(&self->fill);
-		clear_inherited_value(&self->stroke);
+		clear_inherited_value(&self->fore_fill);
+		clear_inherited_value(&self->fore_stroke);
+		clear_inherited_value(&self->back_fill);
+		clear_inherited_value(&self->back_stroke);
 		clear_inherited_value(&self->image);
 	}
 
@@ -500,10 +533,6 @@ namespace Reflex
 		to->top           .override(from->top);
 		to->right         .override(from->right);
 		to->bottom        .override(from->bottom);
-		to->offset_left   .override(from->offset_left);
-		to->offset_top    .override(from->offset_top);
-		to->offset_right  .override(from->offset_right);
-		to->offset_bottom .override(from->offset_bottom);
 		to->margin_left   .override(from->margin_left);
 		to->margin_top    .override(from->margin_top);
 		to->margin_right  .override(from->margin_right);
@@ -514,97 +543,88 @@ namespace Reflex
 		to->padding_bottom.override(from->padding_bottom);
 		to->center_x      .override(from->center_x);
 		to->center_y      .override(from->center_y);
-		to->fill          .override(from->fill);
-		to->stroke        .override(from->stroke);
+		to->fore_fill     .override(from->fore_fill);
+		to->fore_stroke   .override(from->fore_stroke);
+		to->back_fill     .override(from->back_fill);
+		to->back_stroke   .override(from->back_stroke);
 		to->image         .override(from->image);
 	}
 
 	bool
-	get_pixel_length (
-		coord* pixel_length,
-		const StyleLength& style_length, const coord* parent_size)
+	StyleLength_get_pixel_length (
+		coord* pixel_length, const StyleLength& style_length, coord parent_size)
 	{
 		assert(pixel_length);
 
 		if (!style_length)
 			return false;
 
-		coord length = 0;
+		coord old_length = *pixel_length;
+
 		StyleLength::Value value = style_length.value();
-		switch (style_length.unit())
+		switch (style_length.type())
 		{
 			case StyleLength::PIXEL:
-				length = value;
+				*pixel_length = value;
 				break;
 
 			case StyleLength::PERCENT:
-			{
-				if (!parent_size)
-					argument_error(__FILE__, __LINE__);
-
-				length = (value == 100) ?
-					*parent_size : floor(*parent_size * value / 100);
+				*pixel_length =
+					(value == 100) ? parent_size : floor(parent_size * value / 100);
 				break;
-			}
+
+			case StyleLength::FILL:
+				break;
 
 			default:
 				invalid_state_error(__FILE__, __LINE__);
 		}
 
-		if (length == *pixel_length)
-			return false;
-
-		*pixel_length = length;
-		return true;
+		return *pixel_length != old_length;
 	}
 
 	static void
 	update_frame (View* view, const Style& style)
 	{
 		assert(view);
-		Style::Data* s = style.self.get();
 
-		Bounds frame         = view->frame();
-		View* parent_view    = view->parent();
-		const Bounds* parent = parent_view ? &parent_view->frame() : NULL;
-		bool update          = false;
+		View* parent = view->parent();
+		if (!parent) return;
 
-		if (s->width)
-		{
-			update |= get_pixel_length(
-				&frame.width, s->width.value(), parent ? &parent->width  : NULL);
-		}
+		Bounds frame               = view->frame();
+		const Bounds& parent_frame = parent->frame();
 
-		if (s->height) {
-			update |= get_pixel_length(
-				&frame.height, s->height.value(), parent ? &parent->height : NULL);
-		}
+		bool update = false;
+		update |=
+			StyleLength_get_pixel_length(&frame.w, style.width(),  parent_frame.w);
+		update |=
+			StyleLength_get_pixel_length(&frame.h, style.height(), parent_frame.h);
 
 		if (update)
-			view->set_frame(frame);
+			View_set_frame(view, frame);
 	}
 
 	void
-	Style_apply_to (const Style* style, View* view)
+	Style_apply_to (const Style& style, View* view)
 	{
-		assert(style);
-
-		if (!view)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
 		//update_margin(view, values);
 		//update_padding(view, values);
-		update_frame(view, *style);
+		update_frame(view, style);
 		//update_background(view, values);
 	}
 
-	void
-	Style_get_default_flow (Style::Flow* main, Style::Flow* sub)
+	bool
+	Style_has_width (const Style& style)
 	{
-		assert(main || sub);
+		return style.self->width;
+	}
 
-		if (main) *main = Style::FLOW_NONE;
-		if (sub)  *sub  = Style::FLOW_NONE;
+	bool
+	Style_has_height (const Style& style)
+	{
+		return style.self->height;
 	}
 
 	static void
@@ -699,6 +719,13 @@ namespace Reflex
 	}
 
 	void
+	Style::clear_flow ()
+	{
+		if (self->flow.clear())
+			update_owner(*this);
+	}
+
+	void
 	Style::get_flow (Flow* main, Flow* sub) const
 	{
 		if (!main && !sub)
@@ -719,6 +746,20 @@ namespace Reflex
 	Style::set_height (const StyleLength& height)
 	{
 		if (self->height.set(height))
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_width ()
+	{
+		if (self->width.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_height ()
+	{
+		if (self->height.clear())
 			update_owner(*this);
 	}
 
@@ -762,6 +803,34 @@ namespace Reflex
 			update_owner(*this);
 	}
 
+	void
+	Style::clear_left ()
+	{
+		if (self->left.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_top ()
+	{
+		if (self->top.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_right ()
+	{
+		if (self->right.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_bottom ()
+	{
+		if (self->bottom.clear())
+			update_owner(*this);
+	}
+
 	const StyleLength&
 	Style::left () const
 	{
@@ -784,58 +853,6 @@ namespace Reflex
 	Style::bottom () const
 	{
 		return self->bottom.get();
-	}
-
-	void
-	Style::set_offset_left (const StyleLength& left)
-	{
-		if (self->offset_left.set(left))
-			update_owner(*this);
-	}
-
-	void
-	Style::set_offset_top (const StyleLength& top)
-	{
-		if (self->offset_top.set(top))
-			update_owner(*this);
-	}
-
-	void
-	Style::set_offset_right (const StyleLength& right)
-	{
-		if (self->offset_right.set(right))
-			update_owner(*this);
-	}
-
-	void
-	Style::set_offset_bottom (const StyleLength& bottom)
-	{
-		if (self->offset_bottom.set(bottom))
-			update_owner(*this);
-	}
-
-	const StyleLength&
-	Style::offset_left () const
-	{
-		return self->offset_left.get();
-	}
-
-	const StyleLength&
-	Style::offset_top () const
-	{
-		return self->offset_top.get();
-	}
-
-	const StyleLength&
-	Style::offset_right () const
-	{
-		return self->offset_right.get();
-	}
-
-	const StyleLength&
-	Style::offset_bottom () const
-	{
-		return self->offset_bottom.get();
 	}
 
 	void
@@ -863,6 +880,34 @@ namespace Reflex
 	Style::set_margin_bottom (const StyleLength& bottom)
 	{
 		if (self->margin_bottom.set(bottom))
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_margin_left ()
+	{
+		if (self->margin_left.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_margin_top ()
+	{
+		if (self->margin_top.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_margin_right ()
+	{
+		if (self->margin_right.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_margin_bottom ()
+	{
+		if (self->margin_bottom.clear())
 			update_owner(*this);
 	}
 
@@ -918,6 +963,34 @@ namespace Reflex
 			update_owner(*this);
 	}
 
+	void
+	Style::clear_padding_left ()
+	{
+		if (self->padding_left.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_padding_top ()
+	{
+		if (self->padding_top.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_padding_right ()
+	{
+		if (self->padding_right.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_padding_bottom ()
+	{
+		if (self->padding_bottom.clear())
+			update_owner(*this);
+	}
+
 	const StyleLength&
 	Style::padding_left () const
 	{
@@ -956,6 +1029,20 @@ namespace Reflex
 			update_owner(*this);
 	}
 
+	void
+	Style::clear_center_x ()
+	{
+		if (self->center_x.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_center_y ()
+	{
+		if (self->center_y.clear())
+			update_owner(*this);
+	}
+
 	const StyleLength&
 	Style::center_x () const
 	{
@@ -969,35 +1056,96 @@ namespace Reflex
 	}
 
 	void
-	Style::set_fill (const Color& fill)
+	Style::set_foreground_fill (const Color& fill)
 	{
-		if (self->fill.set(fill))
+		if (self->fore_fill.set(fill))
 			update_owner(*this);
-	}
-
-	const Color&
-	Style::fill () const
-	{
-		return self->fill.get();
 	}
 
 	void
-	Style::set_stroke (const Color& stroke)
+	Style::set_foreground_stroke (const Color& stroke)
 	{
-		if (self->stroke.set(stroke))
+		if (self->fore_stroke.set(stroke))
+			update_owner(*this);
+	}
+
+	void
+	Style::set_background_fill (const Color& fill)
+	{
+		if (self->back_fill.set(fill))
+			update_owner(*this);
+	}
+
+	void
+	Style::set_background_stroke (const Color& stroke)
+	{
+		if (self->back_stroke.set(stroke))
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_foreground_fill ()
+	{
+		if (self->fore_fill.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_foreground_stroke ()
+	{
+		if (self->fore_stroke.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_background_fill ()
+	{
+		if (self->back_fill.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_background_stroke ()
+	{
+		if (self->back_stroke.clear())
 			update_owner(*this);
 	}
 
 	const Color&
-	Style::stroke () const
+	Style::foreground_fill () const
 	{
-		return self->stroke.get();
+		return self->fore_fill.get();
+	}
+
+	const Color&
+	Style::foreground_stroke () const
+	{
+		return self->fore_stroke.get();
+	}
+
+	const Color&
+	Style::background_fill () const
+	{
+		return self->back_fill.get();
+	}
+
+	const Color&
+	Style::background_stroke () const
+	{
+		return self->back_stroke.get();
 	}
 
 	void
 	Style::set_image (const Image& image)
 	{
 		if (self->image.set(image))
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_image ()
+	{
+		if (self->image.clear())
 			update_owner(*this);
 	}
 

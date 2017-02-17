@@ -25,7 +25,7 @@ module Reflex
     end
 
     def self.start (*args, &block)
-      self.new(*args, &block).start
+      new(*args, &block).start
     end
 
     private

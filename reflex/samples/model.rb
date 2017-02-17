@@ -15,20 +15,9 @@ class SliderView < View
   has_model
 
   def initialize ()
-    flow :none
-
-    add @back = View.new(name: :back, stroke: :white) {
-      style {
-        width  '100%'
-        height '100%'
-      }
-    }
-
-    add @knob = View.new(name: :knob, stroke: :white, fill: :gray, x: 50) {
-      style {
-        width  50
-        height '100%'
-      }
+    add @back = View.new(name: :back, background: :white)
+    add @knob = View.new(name: :knob, background: :gray, x: 50) {
+      style.width 50
     }
 
     start = nil
@@ -87,7 +76,6 @@ end# ArrayView
 win = Window.new do
   title 'Model View Sample'
   frame 100, 100, 500, 400
-  flow  :none
 
   add @slider = SliderView.new {set name: :slider, frame: [50, 50, 300, 30]}
   add @text   = LabelView.new  {set name: :text,   frame: [50, 150, 300, 30]}

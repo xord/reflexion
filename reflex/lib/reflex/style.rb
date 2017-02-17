@@ -30,25 +30,61 @@ module Reflex
       get_flow.map {|n| flow2sym n}
     end
 
+    def foreground= (fill, stroke = nil)
+      self.foreground_fill   = fill
+      self.foreground_stroke = stroke
+    end
+
+    def foreground ()
+      return foreground_fill, foreground_stroke
+    end
+
+    def background= (fill, stroke = nil)
+      self.background_fill   = fill
+      self.background_stroke = stroke
+    end
+
+    def background ()
+      return background_fill, background_stroke
+    end
+
+    alias x=   left=
+    alias x    left
+    alias y=   top=
+    alias y    top
+    alias w=   width=
+    alias w    width
+    alias h=   height=
+    alias h    height
+    alias pos= position=
+    alias pos  position
+
+    alias fill=   foreground_fill=
+    alias fill    foreground_fill
+    alias stroke= foreground_stroke=
+    alias stroke  foreground_stroke
+
     universal_accessor :name, :selector, :flow, :width, :height, :size,
               :left,         :top,         :right,         :bottom, :position,
-       :offset_left,  :offset_top,  :offset_right,  :offset_bottom, :offset,
        :margin_left,  :margin_top,  :margin_right,  :margin_bottom, :margin,
       :padding_left, :padding_top, :padding_right, :padding_bottom, :padding,
+      :center, :center_x, :center_y,
+      :foreground, :foreground_fill, :foreground_stroke,
+      :background, :background_fill, :background_stroke,
       :fill, :stroke, :image
 
     def inspect ()
       attrs = {
-        selector: selector,
-        flow:     flow,
-        size:     size,
-        position: position,
-        offset:   offset,
-        margin:   margin,
-        padding:  padding,
-        fill:     fill,
-        stroke:   stroke,
-        image:    image
+        selector:   selector,
+        flow:       flow,
+        size:       size,
+        position:   position,
+        margin:     margin,
+        padding:    padding,
+        center:     center,
+        foreground: foreground,
+        background: background,
+        image:      image
       }
       "#<Reflex::Style #{attrs.map {|k, v| %(#{k}:#{v.to_s})}.join ' '}>"
     end

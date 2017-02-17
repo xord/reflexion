@@ -91,11 +91,13 @@ namespace Reflex
 
 			UPDATING_WORLD       = Xot::bit(5),
 
-			REMOVE_SELF          = Xot::bit(6),
+			RESIZE_TO_FIT        = Xot::bit(6),
 
-			HAS_VARIABLE_LENGTHS = Xot::bit(7),
+			REMOVE_SELF          = Xot::bit(7),
 
-			NO_SHAPE             = Xot::bit(8),
+			HAS_VARIABLE_LENGTHS = Xot::bit(8),
+
+			NO_SHAPE             = Xot::bit(9),
 
 			DEFAULT_FLAGS        = UPDATE_STYLE | UPDATE_LAYOUT
 
@@ -205,23 +207,6 @@ namespace Reflex
 			}
 		}
 
-		void draw_shapes (View* view, DrawEvent* e)
-		{
-			assert(view && e && e->painter);
-
-			Shape* shape = view->shape(
-				e->painter->fill()  .alpha > 0 ||
-				e->painter->stroke().alpha > 0);
-			if (shape)
-				shape->on_draw(e);
-
-			if (pshapes)
-			{
-				for (auto& shape : *pshapes)
-					shape->on_draw(e);
-			}
-		}
-
 		void resize_shapes (FrameEvent* e)
 		{
 			if (pshape)
@@ -298,10 +283,6 @@ namespace Reflex
 			wall->set_shape(new WallShape());
 			wall->set_static();
 
-			Style* style = wall->style();
-			style->set_width( StyleLength(100, StyleLength::PERCENT));
-			style->set_height(StyleLength(100, StyleLength::PERCENT));
-
 			view->add_child(wall);
 		}
 
@@ -371,8 +352,95 @@ namespace Reflex
 		{
 			Event e;
 			view->on_attach(&e);
-			view->resize_to_fit();
+			view->self->add_flag(View::Data::RESIZE_TO_FIT);
 		}
+	}
+
+	static void
+	resize_view (View* view, FrameEvent* event)
+	{
+		assert(view);
+
+		view->self->resize_shapes(event);
+		view->on_resize(event);
+	}
+
+	static void
+	apply_style_to_children_have_variable_lengths (View* parent)
+	{
+		assert(parent);
+
+		View::ChildList* pchildren = parent->self->pchildren.get();
+		if (!pchildren) return;
+
+		for (auto& pchild : *pchildren)
+		{
+			assert(pchild);
+
+			if (pchild->self->has_flag(View::Data::HAS_VARIABLE_LENGTHS))
+				pchild->self->add_flag(View::Data::APPLY_STYLE);
+		}
+	}
+
+	static void
+	update_view_layout (View* view, bool update_parent = false)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		self->add_flag(View::Data::UPDATE_LAYOUT);
+
+		if (update_parent && self->parent)
+			update_view_layout(self->parent);
+	}
+
+	static void
+	update_view_frame (
+		View* view, const Bounds& frame, float angle, bool update_body)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		if (frame == self->frame && angle == self->angle)
+			return;
+
+		FrameEvent event(frame, self->frame, angle, self->angle);
+		self->frame = frame;
+		self->angle = angle;
+
+		bool move = event.is_move(), rotate = event.is_rotate();
+
+		if (move)   view->on_move(&event);
+		if (rotate) view->on_rotate(&event);
+
+		if (update_body && (move || rotate) && self->pbody)
+			self->update_body_frame();
+
+		if (event.is_resize())
+		{
+			resize_view(view, &event);
+			apply_style_to_children_have_variable_lengths(view);
+			update_view_layout(view, true);
+		}
+
+		view->redraw();
+	}
+
+	void
+	View_set_frame (View* view, const Bounds& frame)
+	{
+		assert(view);
+
+		update_view_frame(view, frame, view->self->angle, true);
+	}
+
+	const Style&
+	View_get_style (View* view)
+	{
+		assert(view);
+
+		static const Style DEFAULT_STYLE;
+		return view->self->pstyle ? *view->self->pstyle : DEFAULT_STYLE;
 	}
 
 	Body*
@@ -445,80 +513,11 @@ namespace Reflex
 		assert(view);
 		View::Data* self = view->self.get();
 
-		if (!self->has_flag(View::Data::REMOVE_SELF) || !self->parent)
+		if (!self->parent)
 			return false;
 
 		self->parent->remove_child(view);
 		return true;
-	}
-
-	static void
-	resize_view (View* view, FrameEvent* event)
-	{
-		assert(view);
-
-		view->self->resize_shapes(event);
-		view->on_resize(event);
-	}
-
-	static void
-	apply_style_to_children_have_variable_lengths (View* parent)
-	{
-		assert(parent);
-
-		View::ChildList* pchildren = parent->self->pchildren.get();
-		if (!pchildren) return;
-
-		for (auto& pchild : *pchildren)
-		{
-			assert(pchild);
-
-			if (pchild->self->has_flag(View::Data::HAS_VARIABLE_LENGTHS))
-				pchild->self->add_flag(View::Data::APPLY_STYLE);
-		}
-	}
-
-	static void
-	update_layout (View* view, bool update_parent = false)
-	{
-		assert(view);
-		View::Data* self = view->self.get();
-
-		self->add_flag(View::Data::UPDATE_LAYOUT);
-
-		if (update_parent && self->parent)
-			update_layout(self->parent);
-	}
-
-	static void
-	update_view_frame (View* view, const Bounds& frame, float angle, bool update_body)
-	{
-		assert(view);
-		View::Data* self = view->self.get();
-
-		if (frame == self->frame && angle == self->angle)
-			return;
-
-		FrameEvent event(frame, self->frame, angle, self->angle);
-		self->frame = frame;
-		self->angle = angle;
-
-		bool move = event.is_move(), rotate = event.is_rotate();
-
-		if (move)   view->on_move(&event);
-		if (rotate) view->on_rotate(&event);
-
-		if (update_body && (move || rotate) && self->pbody)
-			self->update_body_frame();
-
-		if (event.is_resize())
-		{
-			resize_view(view, &event);
-			apply_style_to_children_have_variable_lengths(view);
-			update_layout(view, true);
-		}
-
-		view->redraw();
 	}
 
 	static void
@@ -596,7 +595,7 @@ namespace Reflex
 	get_styles_for_selector (
 		View::StyleList* result, View* view, const Selector& selector)
 	{
-		assert(styles);
+		assert(result);
 
 		View* parent = view->parent();
 		if (parent)
@@ -626,65 +625,33 @@ namespace Reflex
 		assert(view);
 		View::Data* self = view->self.get();
 
-		if (!self->check_and_remove_flag(View::Data::UPDATE_STYLE))
-			return;
-
-		Style* style = self->pstyle.get();
-		if (style)
-			Style_clear_inherited_values(style);
+		Style* pstyle = self->pstyle.get();
+		if (pstyle)
+			Style_clear_inherited_values(pstyle);
 
 		View::StyleList styles;
 		if (get_styles_for_view(&styles, view))
 		{
-			if (!style)
-				style = &self->style(view);
+			if (!pstyle)
+				pstyle = &self->style(view);
 
 			for (auto& st : styles)
-				Style_override(style, st);
+				Style_override(pstyle, st);
 		}
 
-		if (style && Style_has_variable_lengths(*style))
+		const Style& style = View_get_style(view);
+		if (Style_has_variable_lengths(style))
 			self->add_flag(View::Data::HAS_VARIABLE_LENGTHS);
 		else
 			self->remove_flag(View::Data::HAS_VARIABLE_LENGTHS);
 
-		if (style)
-			self->add_flag(View::Data::APPLY_STYLE);
-	}
-
-	static void
-	apply_view_style (View* view)
-	{
-		assert(view);
-		View::Data* self = view->self.get();
-
-		if (!self->check_and_remove_flag(View::Data::APPLY_STYLE))
-			return;
-
-		Style* style = self->pstyle.get();
-		if (!self) return;
-
-		Style_apply_to(style, view);
-	}
-
-	static void reflow_children (View* parent, const FrameEvent* event = NULL);
-
-	static void
-	update_view_layout (View* view)
-	{
-		assert(view);
-
-		if (!view->self->check_and_remove_flag(View::Data::UPDATE_LAYOUT))
-			return;
-
-		reflow_children(view);
+		self->add_flag(View::Data::APPLY_STYLE);
 	}
 
 	static void
 	update_view_shapes (View* view)
 	{
 		assert(view);
-
 		View::Data* self = view->self.get();
 
 		if (self->pbody && !self->pshape)
@@ -698,13 +665,17 @@ namespace Reflex
 	View_update_tree (View* view, const UpdateEvent& event)
 	{
 		assert(view);
+		View::Data* self = view->self.get();
 
-		if (remove_self(view))
-			return;
+		if (self->check_and_remove_flag(View::Data::REMOVE_SELF))
+		{
+			if (remove_self(view))
+				return;
+		}
 
 		fire_timers(view, event.now);
 
-		View::ChildList* pchildren = view->self->pchildren.get();
+		View::ChildList* pchildren = self->pchildren.get();
 		if (pchildren)
 		{
 			for (auto& pchild : *pchildren)
@@ -717,30 +688,71 @@ namespace Reflex
 		view->on_update(&e);
 
 		update_views_for_selectors(view);
-		update_view_style(view);
-		apply_view_style(view);
-		update_view_layout(view);
+
+		if (self->check_and_remove_flag(View::Data::UPDATE_STYLE))
+			update_view_style(view);
+
+		if (self->check_and_remove_flag(View::Data::APPLY_STYLE))
+			Style_apply_to(View_get_style(view), view);
+
+		if (self->check_and_remove_flag(View::Data::RESIZE_TO_FIT))
+			view->resize_to_fit();
+
+		if (self->check_and_remove_flag(View::Data::UPDATE_LAYOUT))
+			view->update_layout();
+
 		update_view_shapes(view);
+	}
+
+	static void
+	setup_painter (Painter* painter, const Color& fill, const Color& stroke)
+	{
+		assert(painter);
+
+		painter->set_fill(fill);
+		painter->set_stroke(stroke);
+	}
+
+	static void
+	draw_default_shape (View* view, DrawEvent* e)
+	{
+		assert(view && e && e->painter);
+
+		const Style& style       = View_get_style(view);
+		const Color& back_fill   = style.background_fill();
+		const Color& back_stroke = style.background_stroke();
+
+		Shape* shape = view->shape(false);
+		if (shape)
+		{
+			setup_painter(e->painter, back_fill, back_stroke);
+			shape->on_draw(e);
+		}
+		else if (back_fill.alpha > 0 || back_stroke.alpha > 0)
+		{
+			setup_painter(e->painter, back_fill, back_stroke);
+			e->painter->rect(e->bounds);
+		}
 	}
 
 	static void
 	draw_view (View* view, DrawEvent* e)
 	{
-		assert(view);
+		assert(view && e && e->painter);
 
-		Style* style = view->self->pstyle.get();
-		if (!style) return;
+		draw_default_shape(view, e);
 
-		const Color& f = style->fill();
-		const Color& s = style->stroke();
-		if (f.alpha <= 0 && s.alpha <= 0)
-			return;
+		const Style& style = View_get_style(view);
+		setup_painter(
+			e->painter, style.foreground_fill(), style.foreground_stroke());
 
-		Painter* p = e->painter;
-		p->set_fill(f);
-		p->set_stroke(s);
+		View::ShapeList* pshapes = view->self->pshapes.get();
+		if (pshapes && !pshapes->empty())
+		{
+			for (auto& pshape : *pshapes)
+				pshape->on_draw(e);
+		}
 
-		view->self->draw_shapes(view, e);
 		view->on_draw(e);
 	}
 
@@ -748,8 +760,7 @@ namespace Reflex
 	View_draw_tree (
 		View* view, const DrawEvent& event, const Point& offset, const Bounds& clip)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
 		if (event.is_blocked() || view->hidden())
 			return;
@@ -785,15 +796,6 @@ namespace Reflex
 		else
 			p->set_clip(clip2);
 
-		Style* style = self->pstyle.get();
-		if (style)
-		{
-			const Color& f = style->fill();
-			const Color& s = style->stroke();
-			if (f.alpha > 0) p->set_fill(f);
-			if (s.alpha > 0) p->set_stroke(s);
-		}
-
 		e.view   = view;
 		e.bounds = frame.move_to(0, 0, frame.z);
 		draw_view(view, &e);
@@ -821,9 +823,7 @@ namespace Reflex
 	void
 	View_update_styles (View* view, const Selector& selector)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
-
+		assert(view);
 		View::Data* self = view->self.get();
 
 		if (selector.is_empty())
@@ -835,8 +835,7 @@ namespace Reflex
 	void
 	View_update_shapes (View* view)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
 		view->self->add_flag(View::Data::UPDATE_SHAPES);
 	}
@@ -1161,194 +1160,308 @@ namespace Reflex
 	}
 #endif
 
-	struct LayoutContext
+	class LayoutContext
 	{
 
-		View* parent;
+		public:
 
-		const Bounds& parent_frame;
-
-		const Style* parent_style;
-
-		Style::Flow flow_main, flow_sub;
-
-		coord x, y, size_max;
-
-		int flow_count;
-
-		Bounds child_frame;
-
-		LayoutContext (View* parent)
-		:	parent(parent),
-			parent_frame(parent->self->frame),
-			parent_style(parent->style(false)),
-			x(0), y(0), size_max(0), flow_count(0)
-		{
-			if (parent_style)
-				parent_style->get_flow(&flow_main, &flow_sub);
-			else
-				Style_get_default_flow(&flow_main, &flow_sub);
-
-#if 0
-			int main_h, main_v, sub_h, sub_v;
-			get_flow_factor(&main_h, &main_v, flow_main);
-			get_flow_factor(&sub_h,  &sub_v,  flow_sub);
-#endif
-		}
-
-		void place_child (View* child)
-		{
-			assert(child);
-
-			Bounds frame = child->self->frame;
-			if (
-				place_position(&frame, child) ||
-				place_in_flow(&frame, child))
+			LayoutContext (View* parent)
+			:	parent(parent),
+				parent_style(View_get_style(parent)),
+				parent_frame(parent->self->frame)
 			{
-				child->set_frame(frame);
-			}
-		}
-
-		bool place_position (Bounds* frame, View* child)
-		{
-			assert(frame && child);
-
-			Style* style = child->self->pstyle.get();
-			if (!style)
-				return false;
-
-			const StyleLength& l = style->left();
-			const StyleLength& t = style->top();
-			const StyleLength& r = style->right();
-			const StyleLength& b = style->bottom();
-			if (!l && !t && !r && !b)
-				return false;
-
-			bool get_pixel_length (
-				coord* pixel_length,
-				const StyleLength& style_length, const coord* parent_size);
-
-			if (l && r)
-			{
-				coord ll, rr;
-				get_pixel_length(&ll, l, &parent_frame.width);
-				get_pixel_length(&rr, r, &parent_frame.width);
-				frame->set_left(ll);
-				frame->set_right(parent_frame.width - rr);
-			}
-			else if (l && !r)
-				get_pixel_length(&frame->x, l, &parent_frame.width);
-			else if (!l && r)
-			{
-				coord rr;
-				get_pixel_length(&rr, r, &parent_frame.width);
-				frame->move_to(parent_frame.width - (rr + frame->width), frame->y);
+				Style::Flow flow_main, flow_sub;
+				parent_style.get_flow(&flow_main, &flow_sub);
+				get_flow_sign(&flow_main_h, &flow_main_v, flow_main);
+				get_flow_sign(&flow_sub_h,  &flow_sub_v,  flow_sub);
 			}
 
-			if (t && b)
+			void place_children ()
 			{
-				coord tt, bb;
-				get_pixel_length(&tt, t, &parent_frame.height);
-				get_pixel_length(&bb, b, &parent_frame.height);
-				frame->set_top(tt);
-				frame->set_bottom(parent_frame.height - bb);
+				View::ChildList* pchildren = parent->self->pchildren.get();
+				if (!pchildren || pchildren->empty())
+					return;
+
+				bool leftward = flow_main_h < 0 || flow_sub_h < 0;
+				bool upward   = flow_main_v < 0 || flow_sub_v < 0;
+				Point start_position(
+					leftward ? parent_frame.width  : 0,
+					upward   ? parent_frame.height : 0);
+				Point position = start_position;
+
+				for (iterator begin = pchildren->begin(), end = pchildren->end(); true;)
+				{
+					iterator line_end;
+					coord main_fill_size = 0;
+					coord sub_size_max   = 0;
+					calc_line(&line_end, &main_fill_size, &sub_size_max, begin, end);
+
+					for (iterator it = begin; it != line_end; ++it)
+						place_child(it->get(), &position, main_fill_size, sub_size_max);
+
+					if (line_end == end)
+						break;
+
+					flow_value(position.x, position.y, DIR_MAIN) =
+						flow_value(start_position.x, start_position.y, DIR_MAIN);
+
+					flow_value(position.x, position.y, DIR_SUB) +=
+						sub_size_max * flow_value(flow_sub_h, flow_sub_v, DIR_SUB);
+
+					begin = line_end;
+				}
 			}
-			else if (t && !b)
-				get_pixel_length(&frame->y, t, &parent_frame.height);
-			else if (!t && b)
+
+		private:
+
+			enum FlowDirection {DIR_MAIN, DIR_SUB};
+
+			typedef View::ChildList::iterator iterator;
+
+			View* parent;
+
+			const Style& parent_style;
+
+			const Bounds& parent_frame;
+
+			schar flow_main_h, flow_main_v, flow_sub_h, flow_sub_v;
+
+			static void get_flow_sign (schar* h, schar* v, Style::Flow flow)
 			{
-				coord bb;
-				get_pixel_length(&bb, b, &parent_frame.height);
-				frame->move_to(frame->x, parent_frame.height - (bb + frame->height));
+				assert(h && v);
+
+				switch (flow)
+				{
+					case Style::FLOW_RIGHT: *h = +1; *v =  0; break;
+					case Style::FLOW_DOWN:  *h =  0; *v = +1; break;
+					case Style::FLOW_LEFT:  *h = -1; *v =  0; break;
+					case Style::FLOW_UP:    *h =  0; *v = -1; break;
+					default:                *h =  0; *v =  0; break;
+				}
 			}
 
-			return true;
-		}
+			void calc_line (
+				iterator* line_end, coord* main_fill_size, coord* sub_size_max,
+				iterator begin, iterator end)
+			{
+				assert(line_end && main_fill_size && sub_size_max);
 
-		bool place_in_flow (Bounds* frame, View* child)
-		{
-			assert(frame && child);
+				*line_end       = end;
+				*main_fill_size = 0;
+				*sub_size_max   = 0;
 
-			if (!has_flow())
-				return false;
+				if (!has_flow())
+					return;
 
-			if (is_line_end(frame->width))
-				break_line();
+				bool multiline     = flow_sub_h != 0 || flow_sub_v != 0;
+				bool line_has_fill = false;
+				coord parent_size  = flow_size(parent_frame, DIR_MAIN);
+				coord pos          = 0;
 
-			frame->x = x;
-			frame->y = y;
+				for (iterator it = begin; it != end; ++it)
+				{
+					const View* child  = it->get();
+					const Style* style = child->self->pstyle.get();
+					if (is_absolute(style))
+						continue;
 
-			x += frame->width;
+					const Bounds& frame = child->self->frame;
+					coord main_size     = flow_size(frame, DIR_MAIN);
+					bool child_has_fill = has_fill_length(style, DIR_MAIN);
 
-			if (size_max < frame->height)
-				size_max = frame->height;
+					if (multiline && it != begin)
+					{
+						bool next_line   = (pos + main_size) > parent_size;
+						bool double_fill = child_has_fill && line_has_fill;
+						if (next_line || double_fill)
+						{
+							*line_end = it;
+							break;
+						}
+					}
 
-			//if (y + size_max > parent_frame.height)
-			//	parent_frame.height = y + size_max;
+					if (!child_has_fill)
+						pos += main_size;
 
-			++flow_count;
-			return true;
-		}
+					if (!has_fill_length(style, DIR_SUB))
+					{
+						coord sub_size = flow_size(frame, DIR_SUB);
+						if (sub_size > *sub_size_max) *sub_size_max = sub_size;
+					}
 
-		bool has_flow () const
-		{
-			return has_flow(flow_main) && has_flow(flow_sub);
-		}
+					line_has_fill |= child_has_fill;
+				}
 
-		static bool has_flow (Style::Flow flow)
-		{
-			return Style::FLOW_NONE < flow && flow < Style::FLOW_LAST;
-		}
+				*main_fill_size = parent_size - pos;
+			}
 
-		void break_line ()
-		{
-			x          = 0;
-			y         += size_max;
-			size_max   = 0;
-			flow_count = 0;
-		}
+			void place_child (
+				View* child, Point* position, coord main_fill_size, coord sub_size_max)
+			{
+				assert(child && position);
 
-		bool is_line_end (coord child_width) const
-		{
-			return
-				is_multiline() &&
-				flow_count > 0 &&
-				(x + child_width) > parent_frame.width;
-		}
+				const Style* style = child->self->pstyle.get();
+				Bounds frame       = child->frame();
+				bool update        = false;
 
-		bool is_multiline () const
-		{
-			return flow_sub != Style::FLOW_NONE;
-		}
+				if (has_flow() && !is_absolute(style))
+				{
+					update |= fill_child(&frame, style, main_fill_size, sub_size_max);
+					update |= place_in_flow(&frame, position);
+				}
 
-		operator bool () const
-		{
-			return flow_main != Style::FLOW_NONE;
-		}
+				update |= place_position(&frame, style);
 
-		bool operator ! () const
-		{
-			return !operator bool();
-		}
+				if (update)
+					View_set_frame(child, frame);
+			}
+
+			bool fill_child (
+				Bounds* frame,
+				const Style* style, coord main_fill_size, coord sub_size_max)
+			{
+				assert(frame);
+
+				bool update = false;
+
+				if (has_fill_length(style, DIR_MAIN))
+					update |= set_flow_size(frame, main_fill_size, DIR_MAIN);
+
+				if (has_fill_length(style, DIR_SUB))
+					update |= set_flow_size(frame, sub_size_max, DIR_SUB);
+
+				return update;
+			}
+
+			bool place_in_flow (Bounds* frame, Point* position)
+			{
+				assert(frame && position);
+
+				coord old_x = frame->x;
+				coord old_y = frame->y;
+
+				if (flow_main_h < 0) position->x -= frame->width;
+				if (flow_main_v < 0) position->y -= frame->height;
+
+				frame->x = position->x;
+				frame->y = position->y;
+
+				if (flow_main_h > 0) position->x += frame->width;
+				if (flow_main_v > 0) position->y += frame->height;
+
+				if (flow_sub_h < 0) frame->x -= frame->width;
+				if (flow_sub_v < 0) frame->y -= frame->height;
+
+				return frame->x != old_x || frame->y != old_y;
+			}
+
+			bool place_position (Bounds* frame, const Style* style)
+			{
+				assert(frame);
+
+				if (!style)
+					return false;
+
+				const StyleLength& l = style->left();
+				const StyleLength& t = style->top();
+				const StyleLength& r = style->right();
+				const StyleLength& b = style->bottom();
+				if (!l && !t && !r && !b)
+					return false;
+
+				bool update = false;
+
+				if (l && r)
+				{
+					coord ll, rr;
+					update |= StyleLength_get_pixel_length(&ll, l, parent_frame.w);
+					update |= StyleLength_get_pixel_length(&rr, r, parent_frame.w);
+					frame->x = ll;
+					frame->set_right(parent_frame.w - rr);
+				}
+				else if (l && !r)
+					update |= StyleLength_get_pixel_length(&frame->x, l, parent_frame.w);
+				else if (!l && r)
+				{
+					coord rr;
+					update |= StyleLength_get_pixel_length(&rr, r, parent_frame.w);
+					frame->x = parent_frame.w - (rr + frame->w);
+				}
+
+				if (t && b)
+				{
+					coord tt, bb;
+					update |= StyleLength_get_pixel_length(&tt, t, parent_frame.h);
+					update |= StyleLength_get_pixel_length(&bb, b, parent_frame.h);
+					frame->y = tt;
+					frame->set_bottom(parent_frame.h - bb);
+				}
+				else if (t && !b)
+					update |= StyleLength_get_pixel_length(&frame->y, t, parent_frame.h);
+				else if (!t && b)
+				{
+					coord bb;
+					update |= StyleLength_get_pixel_length(&bb, b, parent_frame.h);
+					frame->y = parent_frame.h - (bb + frame->h);
+				}
+
+				return update;
+			}
+
+			template <typename T>
+			T& flow_value (T& horizontal, T& vertical, FlowDirection dir) const
+			{
+				if (dir == DIR_MAIN)
+					return is_horizontal() ? horizontal : vertical;
+				else
+					return is_horizontal() ? vertical   : horizontal;
+			}
+
+			bool set_flow_size (Bounds* frame, coord size, FlowDirection dir) const
+			{
+				assert(frame);
+
+				coord& value = flow_value(frame->width, frame->height, dir);
+				if (value == size) return false;
+
+				value = size;
+				return true;
+			}
+
+			const coord& flow_size (const Bounds& frame, FlowDirection dir) const
+			{
+				return flow_value(frame.width, frame.height, dir);
+			}
+
+			bool is_horizontal () const
+			{
+				return flow_main_h != 0;
+			}
+
+			bool is_absolute (const Style* style) const
+			{
+				if (!style) return false;
+
+				if (is_horizontal())
+					return style->top()  || style->bottom();
+				else
+					return style->left() || style->right();
+			}
+
+			bool has_flow () const
+			{
+				return flow_main_h != 0 || flow_main_v != 0;
+			}
+
+			bool has_fill_length (const Style* style, FlowDirection dir) const
+			{
+				if (!style) return false;
+
+				const StyleLength& l = flow_value(style->width(), style->height(), dir);
+				return l.type() == StyleLength::FILL;
+			}
 
 	};// LayoutContext
-
-	static void
-	reflow_children (View* parent, const FrameEvent* event)
-	{
-		assert(parent);
-
-		View::ChildList* pchildren = parent->self->pchildren.get();
-		if (!pchildren || pchildren->empty())
-			return;
-
-		LayoutContext c(parent);
-		if (!c)
-			return;
-
-		for (auto& pchild : *pchildren)
-			c.place_child(pchild.get());
-	}
 
 	template <typename FUN, typename EVENT>
 	static void
@@ -1367,8 +1480,7 @@ namespace Reflex
 	void
 	View_call_key_event (View* view, const KeyEvent& event)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
 		bool capturing = view->capture() & View::CAPTURE_KEY;
 		if (capturing != event.capture) return;
@@ -1406,8 +1518,7 @@ namespace Reflex
 	void
 	View_call_pointer_event (View* view, const PointerEvent& event)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
 		bool capturing = view->capture() & View::CAPTURE_POINTER;
 		if (capturing != event.capture) return;
@@ -1437,8 +1548,7 @@ namespace Reflex
 	void
 	View_call_wheel_event (View* view, const WheelEvent& event)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
 		const Bounds& frame = view->frame();
 
@@ -1456,8 +1566,7 @@ namespace Reflex
 	void
 	View_call_contact_event (View* view, const ContactEvent& event)
 	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
+		assert(view);
 
 		ContactEvent e = event;
 		view->on_contact(&e);
@@ -1572,6 +1681,12 @@ namespace Reflex
 		return start_timer(seconds, -1);
 	}
 
+	void
+	View::update_layout ()
+	{
+		LayoutContext(this).place_children();
+	}
+
 	Point
 	View::from_parent (const Point& point) const
 	{
@@ -1654,7 +1769,7 @@ namespace Reflex
 		self->children().push_back(child);
 		set_parent(child, this);
 
-		update_layout(this);
+		update_view_layout(this);
 	}
 
 	void
@@ -1686,7 +1801,7 @@ namespace Reflex
 		if (self->pchildren->empty())
 			self->pchildren.reset();
 
-		update_layout(this);
+		update_view_layout(this);
 	}
 
 	void
@@ -1862,8 +1977,6 @@ namespace Reflex
 	static void
 	set_shape_owner (Shape* shape, View* owner)
 	{
-		assert(shape);
-
 		if (!shape || !Shape_set_owner(shape, owner))
 			return;
 
@@ -2040,7 +2153,17 @@ namespace Reflex
 	void
 	View::set_frame (const Bounds& frame)
 	{
-		update_view_frame(this, frame, self->angle, true);
+		static const StyleLength NONE(0, StyleLength::NONE);
+
+		const Bounds& current = self->frame;
+
+		if (frame.w != current.w && !Style_has_width(*style()))
+			style()->set_width(NONE);
+
+		if (frame.h != current.h && !Style_has_height(*style()))
+			style()->set_height(NONE);
+
+		View_set_frame(this, frame);
 	}
 
 	const Bounds&
@@ -2064,9 +2187,9 @@ namespace Reflex
 		const Style* st = style(false);
 
 		Bounds b = frame();
-		if ((!st || !st->width())  && size.x >= 0) b.width  = size.x;
-		if ((!st || !st->height()) && size.y >= 0) b.height = size.y;
-		if (                          size.z >= 0) b.depth  = size.z;
+		if ((!st || !Style_has_width(*st))  && size.x >= 0) b.width  = size.x;
+		if ((!st || !Style_has_height(*st)) && size.y >= 0) b.height = size.y;
+		if (                                   size.z >= 0) b.depth  = size.z;
 		set_frame(b);
 	}
 

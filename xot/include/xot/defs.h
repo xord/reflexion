@@ -26,6 +26,8 @@ namespace Xot
 	{
 
 
+		typedef   signed char schar;
+
 		typedef unsigned char uchar;
 
 		#ifdef CYGWIN

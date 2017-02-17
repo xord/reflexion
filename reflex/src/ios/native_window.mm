@@ -145,7 +145,7 @@
 				Rays::Bounds b = REF->frame();
 				b.move_to(0, 0);
 				if (REF->painter()) REF->painter()->canvas(b);
-				if (REF->root())    REF->root()->set_frame(b);
+				if (REF->root())    View_set_frame(REF->root(), b);
 				REF->on_resize(&e);
 			}
 		}

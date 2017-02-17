@@ -23,19 +23,23 @@ module Reflex
     def_delegators :root,
       :timeout, :interval,
       :add_child, :remove_child, :find_children,
-      :style, :styles,
-      :meter2pixel, :meter, :gravity=, :gravity, :wall,
-      :debug=, :debug, :debug?
+      :style, :styles, :meter2pixel, :meter, :wall,
+      :flow=,              :flow,
+      :fill=,              :fill,
+      :stroke=,            :stroke,
+      :foreground=,        :foreground,
+      :background=,        :background,
+      :foreground_fill=,   :foreground_fill,
+      :foreground_stroke=, :foreground_stroke,
+      :background_fill=,   :background_fill,
+      :background_stroke=, :background_stroke,
+      :image=,             :image,
+      :gravity=,           :gravity,
+      :debug=,             :debug, :debug?
 
     def_delegators :wall,
       :friction=,    :friction,
       :restitution=, :restitution
-
-    def_delegators :style,
-      :flow=,   :flow,
-      :fill=,   :fill,
-      :stroke=, :stroke,
-      :image=,  :image
 
     universal_accessor :title, :frame
 

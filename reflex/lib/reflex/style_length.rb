@@ -15,7 +15,7 @@ module Reflex
       when Numeric
         args << :px if args.size < 2
         setup_num *args
-      when String
+      when String, Symbol
         setup_str *args
       end
     end

@@ -14,29 +14,33 @@ namespace Reflex
 	class Body;
 
 
-	void  View_set_window (View* view, Window* window);
+	void View_set_window (View* view, Window* window);
+
+	void View_set_frame (View* view, const Bounds& frame);
+
+	const Style& View_get_style (View* view);
 
 	Body* View_get_body (View* view, bool create = true);
 
-	bool  View_is_active (const View& view);
+	bool View_is_active (const View& view);
 
-	void  View_update_tree (View* view, const UpdateEvent& event);
+	void View_update_tree (View* view, const UpdateEvent& event);
 
-	void  View_draw_tree   (
+	void View_draw_tree   (
 		View* view, const DrawEvent& event,
 		const Point& offset, const Bounds& clip);
 
-	void  View_update_styles (View* view, const Selector& selector);
+	void View_update_styles (View* view, const Selector& selector);
 
-	void  View_update_shapes (View* view);
+	void View_update_shapes (View* view);
 
-	void  View_call_key_event     (View* view, const KeyEvent& event);
+	void View_call_key_event     (View* view, const KeyEvent& event);
 
-	void  View_call_pointer_event (View* view, const PointerEvent& event);
+	void View_call_pointer_event (View* view, const PointerEvent& event);
 
-	void  View_call_wheel_event   (View* view, const WheelEvent& event);
+	void View_call_wheel_event   (View* view, const WheelEvent& event);
 
-	void  View_call_contact_event (View* view, const ContactEvent& event);
+	void View_call_contact_event (View* view, const ContactEvent& event);
 
 
 }// Reflex

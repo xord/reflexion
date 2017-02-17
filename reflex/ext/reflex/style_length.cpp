@@ -23,16 +23,18 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEF2(setup_num, value, unit)
+RUCY_DEF2(setup_num, value, type)
 {
 	CHECK;
 
-	const char* str = unit.as_s(true);
-	Reflex::StyleLength::Unit u = Reflex::StyleLength::NONE;
-	     if (strcasecmp(str, "px") == 0) u = Reflex::StyleLength::PIXEL;
-	else if (strcasecmp(str, "%")  == 0) u = Reflex::StyleLength::PERCENT;
+	const char* str = type.as_s(true);
+	Reflex::StyleLength::Type type = Reflex::StyleLength::NONE;
+	     if (strcasecmp(str, "px")   == 0) type = Reflex::StyleLength::PIXEL;
+	else if (strcasecmp(str, "%")    == 0) type = Reflex::StyleLength::PERCENT;
+	else if (strcasecmp(str, "fill") == 0) type = Reflex::StyleLength::FILL;
 	else argument_error(__FILE__, __LINE__);
-	THIS->reset(to<coord>(value), u);
+
+	THIS->reset(to<coord>(value), type);
 }
 RUCY_END
 
@@ -62,16 +64,18 @@ RUCY_DEF0(get_value)
 RUCY_END
 
 static
-RUCY_DEF0(get_unit)
+RUCY_DEF0(get_type)
 {
 	CHECK;
 
 	RUCY_SYMBOL(pixel,   "px");
 	RUCY_SYMBOL(percent, "%");
-	switch (THIS->unit())
+	RUCY_SYMBOL(fill,    "fill");
+	switch (THIS->type())
 	{
 		case Reflex::StyleLength::PIXEL:   return pixel.value();
 		case Reflex::StyleLength::PERCENT: return percent.value();
+		case Reflex::StyleLength::FILL:    return fill.value();
 		default:                           return nil();
 	}
 }
@@ -99,7 +103,7 @@ Init_style_length ()
 	cStyleLength.define_private_method("setup_str", setup_str);
 	cStyleLength.define_private_method("initialize_copy", initialize_copy);
 	cStyleLength.define_method("value",  get_value);
-	cStyleLength.define_method("unit",   get_unit);
+	cStyleLength.define_method("type",   get_type);
 	cStyleLength.define_method("to_s", to_s);
 }
 
@@ -121,10 +125,14 @@ namespace Rucy
 
 		if (convert)
 		{
-			     if (argv->is_nil()) return Reflex::StyleLength();
-			else if (argv->is_i())   return Reflex::StyleLength(argv[0].as_i());
-			else if (argv->is_f())   return Reflex::StyleLength(argv[0].as_f());
-			else if (argv->is_s())   return Reflex::StyleLength(argv[0].c_str());
+			if (argv->is_nil())
+				return Reflex::StyleLength();
+			else if (argv->is_i())
+				return Reflex::StyleLength(argv[0].as_i());
+			else if (argv->is_f())
+				return Reflex::StyleLength(argv[0].as_f());
+			else if (argv->is_s() || argv->is_sym())
+				return Reflex::StyleLength(argv[0].c_str());
 		}
 
 		if (argc != 1)

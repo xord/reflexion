@@ -11,11 +11,8 @@ include Reflex
 
 module Reflex
   class View
-    def view (frame = [0, 0, rand(10..200), rand(10..200)], color = [rand, rand, rand], &block)
-      v = RectShape.new &block
-      v.set frame: frame, fill: color
-      add v
-      v
+    def view (color: [rand, rand, rand], &block)
+      add View.new background: color, &block
     end
 
     alias text view
@@ -25,17 +22,19 @@ module Reflex
 end
 
 win = Window.new title: 'Layout Sample', frame: [100, 100, 500, 400] do
-  20.times do
+  flow :right, :down
+  100.times do |i|
     root.view do
       style {
-        width  '25%'
-        height '50%'
+        width  100
+        height 200
+        left top '50%' if i == 5
       }
     end
   end
   root.view do
     style {
-      left top right bottom '10%'
+      left top right bottom '45%'
     }
   end
 =begin

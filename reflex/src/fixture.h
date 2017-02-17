@@ -68,11 +68,11 @@ namespace Reflex
 	};// Fixture
 
 
-	void     Fixture_copy_attributes (const Fixture* from, Fixture* to);
+	void Fixture_copy_attributes (const Fixture* from, Fixture* to);
 
 	Fixture* Fixture_create_temporary ();
 
-	bool     Fixture_is_temporary (const Fixture* fixture);
+	bool Fixture_is_temporary (const Fixture* fixture);
 
 
 }// Reflex

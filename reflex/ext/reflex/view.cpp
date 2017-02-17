@@ -124,6 +124,14 @@ RUCY_DEFN(start_timer)
 RUCY_END
 
 static
+RUCY_DEF0(update_layout)
+{
+	CHECK;
+	THIS->update_layout();
+}
+RUCY_END
+
+static
 RUCY_DEF1(add_child, child)
 {
 	CHECK;
@@ -925,6 +933,7 @@ Init_view ()
 	cView.define_method("blur",   blur);
 	cView.define_method("focus?", has_focus);
 	cView.define_private_method("start_timer", start_timer);
+	cView.define_method("update_layout", update_layout);
 
 	cView.define_method("add_child",     add_child);
 	cView.define_method("remove_child",  remove_child);

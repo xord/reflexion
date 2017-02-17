@@ -87,6 +87,8 @@ namespace Reflex
 
 			virtual Timer* start_interval (float seconds);
 
+			virtual void update_layout ();
+
 			virtual Point from_parent (const Point& point) const;
 
 			virtual Point   to_parent (const Point& point) const;
