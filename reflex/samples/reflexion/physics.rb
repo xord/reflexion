@@ -22,11 +22,11 @@ end
 pointer do
   if down? || drag?
     count += 1 if window.add View.new {
-      pos     event.pos
-      size    rand 20..40
-      fill    event.right? ? :gray : [:red, :green, :blue].sample
-      dynamic event.left?
-      shape   [RectShape, EllipseShape].sample.new(density: 1)
+      pos        event.pos
+      size       rand 20..40
+      background event.right? ? :gray : [:red, :green, :blue].sample
+      dynamic    event.left?
+      shape      [RectShape, EllipseShape].sample.new(density: 1)
       interval(1) {fill rand, rand, rand}
     }
   end
