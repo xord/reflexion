@@ -323,6 +323,310 @@ namespace Reflex
 	};// View::Data
 
 
+	class LayoutContext
+	{
+
+		public:
+
+			LayoutContext (View* parent)
+			:	parent(parent),
+				parent_style(View_get_style(parent)),
+				parent_frame(parent->self->frame)
+			{
+				Style::Flow flow_main, flow_sub;
+				parent_style.get_flow(&flow_main, &flow_sub);
+				get_flow_sign(&flow_main_h, &flow_main_v, flow_main);
+				get_flow_sign(&flow_sub_h,  &flow_sub_v,  flow_sub);
+			}
+
+			void place_children ()
+			{
+				View::ChildList* pchildren = parent->self->pchildren.get();
+				if (!pchildren || pchildren->empty())
+					return;
+
+				bool leftward = flow_main_h < 0 || flow_sub_h < 0;
+				bool upward   = flow_main_v < 0 || flow_sub_v < 0;
+				Point start_position(
+					leftward ? parent_frame.width  : 0,
+					upward   ? parent_frame.height : 0);
+				Point position = start_position;
+
+				for (iterator begin = pchildren->begin(), end = pchildren->end(); true;)
+				{
+					iterator line_end;
+					coord main_fill_size = 0;
+					coord sub_size_max   = 0;
+					calc_line(&line_end, &main_fill_size, &sub_size_max, begin, end);
+
+					for (iterator it = begin; it != line_end; ++it)
+						place_child(it->get(), &position, main_fill_size, sub_size_max);
+
+					if (line_end == end)
+						break;
+
+					flow_value(position.x, position.y, DIR_MAIN) =
+						flow_value(start_position.x, start_position.y, DIR_MAIN);
+
+					flow_value(position.x, position.y, DIR_SUB) +=
+						sub_size_max * flow_value(flow_sub_h, flow_sub_v, DIR_SUB);
+
+					begin = line_end;
+				}
+			}
+
+		private:
+
+			enum FlowDirection {DIR_MAIN, DIR_SUB};
+
+			typedef View::ChildList::iterator iterator;
+
+			View* parent;
+
+			const Style& parent_style;
+
+			const Bounds& parent_frame;
+
+			schar flow_main_h, flow_main_v, flow_sub_h, flow_sub_v;
+
+			static void get_flow_sign (schar* h, schar* v, Style::Flow flow)
+			{
+				assert(h && v);
+
+				switch (flow)
+				{
+					case Style::FLOW_RIGHT: *h = +1; *v =  0; break;
+					case Style::FLOW_DOWN:  *h =  0; *v = +1; break;
+					case Style::FLOW_LEFT:  *h = -1; *v =  0; break;
+					case Style::FLOW_UP:    *h =  0; *v = -1; break;
+					default:                *h =  0; *v =  0; break;
+				}
+			}
+
+			void calc_line (
+				iterator* line_end, coord* main_fill_size, coord* sub_size_max,
+				iterator begin, iterator end)
+			{
+				assert(line_end && main_fill_size && sub_size_max);
+
+				*line_end       = end;
+				*main_fill_size = 0;
+				*sub_size_max   = 0;
+
+				if (!has_flow())
+					return;
+
+				bool multiline     = flow_sub_h != 0 || flow_sub_v != 0;
+				bool line_has_fill = false;
+				coord parent_size  = flow_size(parent_frame, DIR_MAIN);
+				coord pos          = 0;
+
+				for (iterator it = begin; it != end; ++it)
+				{
+					const View* child  = it->get();
+					const Style* style = child->self->pstyle.get();
+					if (is_absolute(style))
+						continue;
+
+					const Bounds& frame = child->self->frame;
+					coord main_size     = flow_size(frame, DIR_MAIN);
+					bool child_has_fill = has_fill_length(style, DIR_MAIN);
+
+					if (multiline && it != begin)
+					{
+						bool next_line   = (pos + main_size) > parent_size;
+						bool double_fill = child_has_fill && line_has_fill;
+						if (next_line || double_fill)
+						{
+							*line_end = it;
+							break;
+						}
+					}
+
+					if (!child_has_fill)
+						pos += main_size;
+
+					if (!has_fill_length(style, DIR_SUB))
+					{
+						coord sub_size = flow_size(frame, DIR_SUB);
+						if (sub_size > *sub_size_max) *sub_size_max = sub_size;
+					}
+
+					line_has_fill |= child_has_fill;
+				}
+
+				*main_fill_size = parent_size - pos;
+			}
+
+			void place_child (
+				View* child, Point* position, coord main_fill_size, coord sub_size_max)
+			{
+				assert(child && position);
+
+				const Style* style = child->self->pstyle.get();
+				Bounds frame       = child->frame();
+				bool update        = false;
+
+				if (has_flow() && !is_absolute(style))
+				{
+					update |= fill_child(&frame, style, main_fill_size, sub_size_max);
+					update |= place_in_flow(&frame, position);
+				}
+
+				update |= place_position(&frame, style);
+
+				if (update)
+					View_set_frame(child, frame);
+			}
+
+			bool fill_child (
+				Bounds* frame,
+				const Style* style, coord main_fill_size, coord sub_size_max)
+			{
+				assert(frame);
+
+				bool update = false;
+
+				if (has_fill_length(style, DIR_MAIN))
+					update |= set_flow_size(frame, main_fill_size, DIR_MAIN);
+
+				if (has_fill_length(style, DIR_SUB))
+					update |= set_flow_size(frame, sub_size_max, DIR_SUB);
+
+				return update;
+			}
+
+			bool place_in_flow (Bounds* frame, Point* position)
+			{
+				assert(frame && position);
+
+				coord old_x = frame->x;
+				coord old_y = frame->y;
+
+				if (flow_main_h < 0) position->x -= frame->width;
+				if (flow_main_v < 0) position->y -= frame->height;
+
+				frame->x = position->x;
+				frame->y = position->y;
+
+				if (flow_main_h > 0) position->x += frame->width;
+				if (flow_main_v > 0) position->y += frame->height;
+
+				if (flow_sub_h < 0) frame->x -= frame->width;
+				if (flow_sub_v < 0) frame->y -= frame->height;
+
+				return frame->x != old_x || frame->y != old_y;
+			}
+
+			bool place_position (Bounds* frame, const Style* style)
+			{
+				assert(frame);
+
+				if (!style)
+					return false;
+
+				const StyleLength& l = style->left();
+				const StyleLength& t = style->top();
+				const StyleLength& r = style->right();
+				const StyleLength& b = style->bottom();
+				if (!l && !t && !r && !b)
+					return false;
+
+				bool update = false;
+
+				if (l && r)
+				{
+					coord ll, rr;
+					update |= StyleLength_get_pixel_length(&ll, l, parent_frame.w);
+					update |= StyleLength_get_pixel_length(&rr, r, parent_frame.w);
+					frame->x = ll;
+					frame->set_right(parent_frame.w - rr);
+				}
+				else if (l && !r)
+					update |= StyleLength_get_pixel_length(&frame->x, l, parent_frame.w);
+				else if (!l && r)
+				{
+					coord rr;
+					update |= StyleLength_get_pixel_length(&rr, r, parent_frame.w);
+					frame->x = parent_frame.w - (rr + frame->w);
+				}
+
+				if (t && b)
+				{
+					coord tt, bb;
+					update |= StyleLength_get_pixel_length(&tt, t, parent_frame.h);
+					update |= StyleLength_get_pixel_length(&bb, b, parent_frame.h);
+					frame->y = tt;
+					frame->set_bottom(parent_frame.h - bb);
+				}
+				else if (t && !b)
+					update |= StyleLength_get_pixel_length(&frame->y, t, parent_frame.h);
+				else if (!t && b)
+				{
+					coord bb;
+					update |= StyleLength_get_pixel_length(&bb, b, parent_frame.h);
+					frame->y = parent_frame.h - (bb + frame->h);
+				}
+
+				return update;
+			}
+
+			template <typename T>
+			T& flow_value (T& horizontal, T& vertical, FlowDirection dir) const
+			{
+				if (dir == DIR_MAIN)
+					return is_horizontal() ? horizontal : vertical;
+				else
+					return is_horizontal() ? vertical   : horizontal;
+			}
+
+			bool set_flow_size (Bounds* frame, coord size, FlowDirection dir) const
+			{
+				assert(frame);
+
+				coord& value = flow_value(frame->width, frame->height, dir);
+				if (value == size) return false;
+
+				value = size;
+				return true;
+			}
+
+			const coord& flow_size (const Bounds& frame, FlowDirection dir) const
+			{
+				return flow_value(frame.width, frame.height, dir);
+			}
+
+			bool is_horizontal () const
+			{
+				return flow_main_h != 0;
+			}
+
+			bool is_absolute (const Style* style) const
+			{
+				if (!style) return false;
+
+				if (is_horizontal())
+					return style->top()  || style->bottom();
+				else
+					return style->left() || style->right();
+			}
+
+			bool has_flow () const
+			{
+				return flow_main_h != 0 || flow_main_v != 0;
+			}
+
+			bool has_fill_length (const Style* style, FlowDirection dir) const
+			{
+				if (!style) return false;
+
+				const StyleLength& l = flow_value(style->width(), style->height(), dir);
+				return l.type() == StyleLength::FILL;
+			}
+
+	};// LayoutContext
+
+
 	void
 	View_set_window (View* view, Window* window)
 	{
