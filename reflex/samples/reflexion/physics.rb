@@ -8,6 +8,8 @@
 require 'reflexion/include'
 
 
+COLORS = [:red, :green, :blue, :orange, :yellow, :indigo, :pink, :peach, :brown]
+
 count = 0
 
 setup do
@@ -24,7 +26,7 @@ pointer do
     count += 1 if window.add View.new {
       pos        event.pos
       size       rand 20..40
-      background event.right? ? :gray : [:red, :green, :blue].sample
+      background event.right? ? :gray : COLORS.sample
       dynamic    event.left?
       shape      [RectShape, EllipseShape].sample.new(density: 1)
       interval(1) {fill rand, rand, rand}
