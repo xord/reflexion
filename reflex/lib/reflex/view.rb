@@ -25,14 +25,18 @@ module Reflex
 
     def_delegators :style,
       :flow=,              :flow,
-      :fill=,              :fill,
-      :stroke=,            :stroke,
-      :foreground=,        :foreground,
-      :background=,        :background,
       :foreground_fill=,   :foreground_fill,
       :foreground_stroke=, :foreground_stroke,
       :background_fill=,   :background_fill,
       :background_stroke=, :background_stroke,
+      :foreground=,        :foreground,
+      :background=,        :background,
+      :fore_fill=,         :fore_fill,
+      :fore_stroke=,       :fore_stroke,
+      :back_fill=,         :back_fill,
+      :back_stroke=,       :back_stroke,
+      :fill=,              :fill,
+      :stroke=,            :stroke,
       :image=,             :image
 
     bit_flag_accessor :capture do

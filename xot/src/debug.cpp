@@ -21,7 +21,7 @@ namespace Xot
 	{
 		va_list args;
 		va_start(args, format);
-		printf("%s", stringf(format, args).c_str());
+		fprintf(stderr, "%s", stringf(format, args).c_str());
 		va_end(args);
 	}
 
@@ -30,7 +30,7 @@ namespace Xot
 	{
 		va_list args;
 		va_start(args, format);
-		printf("%s\n", stringf(format, args).c_str());
+		fprintf(stderr, "%s\n", stringf(format, args).c_str());
 		va_end(args);
 	}
 

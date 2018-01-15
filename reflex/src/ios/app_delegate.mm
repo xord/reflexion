@@ -33,7 +33,7 @@
 	{
 		assert(pref && !REF);
 
-		[self stopDeviceMotionUpdate];
+		[self stopUpdateDeviceMotion];
 		delete pref;
 
 		[super dealloc];
@@ -116,7 +116,7 @@
 		motion_manager = [man retain];
 	}
 
-	- (void)stopUpdateDeviceMotion
+	- (void) stopUpdateDeviceMotion
 	{
 		if (!motion_manager || !motion_manager.deviceMotionActive)
 			return;

@@ -348,14 +348,14 @@ namespace Reflex
 	struct Style::Data
 	{
 
-		struct ForegroundColor : public Color
+		struct WhiteColor : public Color
 		{
-			ForegroundColor () : Color(1, 1) {}
+			WhiteColor () : Color(1, 1) {}
 		};
 
-		struct BackgroundColor : public Color
+		struct TransparentColor : public Color
 		{
-			BackgroundColor () : Color(0, 0) {}
+			TransparentColor () : Color(0, 0) {}
 		};
 
 		struct MaxLength : public StyleLength
@@ -391,9 +391,9 @@ namespace Reflex
 
 		LengthValue center_x, center_y;
 
-		StyleValue<Color, ForegroundColor> fore_fill, fore_stroke;
+		StyleValue<Color, WhiteColor>       fore_fill;
 
-		StyleValue<Color, BackgroundColor> back_fill, back_stroke;
+		StyleValue<Color, TransparentColor> fore_stroke, back_fill, back_stroke;
 
 		ImageValue image;
 

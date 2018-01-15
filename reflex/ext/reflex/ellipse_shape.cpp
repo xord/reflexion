@@ -59,19 +59,21 @@ RUCY_DEF0(get_angle_to)
 RUCY_END
 
 static
-RUCY_DEF1(set_radius_min, radius)
+RUCY_DEFN(set_hole_size)
 {
 	CHECK;
-	THIS->set_radius_min(to<coord>(radius));
-	return radius;
+	check_arg_count(__FILE__, __LINE__, "EllipseShape#set_hole_size", argc, 1, 2, 3);
+
+	THIS->set_hole_size(to<Rays::Point>(argc, argv));
+	return value(THIS->hole_size());
 }
 RUCY_END
 
 static
-RUCY_DEF0(get_radius_min)
+RUCY_DEF0(get_hole_size)
 {
 	CHECK;
-	return value(THIS->radius_min());
+	return value(THIS->hole_size());
 }
 RUCY_END
 
@@ -108,9 +110,9 @@ Init_ellipse_shape ()
 	cEllipseShape.define_method("angle_from=", set_angle_from);
 	cEllipseShape.define_method("angle_from",  get_angle_from);
 	cEllipseShape.define_method("angle_to=",   set_angle_to);
-	cEllipseShape.define_method("angle_to=",   get_angle_to);
-	cEllipseShape.define_method("radius_min=", set_radius_min);
-	cEllipseShape.define_method("radius_min",  get_radius_min);
+	cEllipseShape.define_method("angle_to",    get_angle_to);
+	cEllipseShape.define_method("hole_size=", set_hole_size);
+	cEllipseShape.define_method("hole_size",  get_hole_size);
 	cEllipseShape.define_method("nsegment=", set_nsegment);
 	cEllipseShape.define_method("nsegment",  get_nsegment);
 	cEllipseShape.define_clear_override_flags(cof);

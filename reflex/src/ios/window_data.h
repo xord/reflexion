@@ -6,8 +6,8 @@
 
 #include <map>
 #include <xot/time.h>
-#include <reflex/point.h>
-#include <reflex/painter.h>
+#include <rays/point.h>
+#include <rays/painter.h>
 #include <reflex/window.h>
 #include <reflex/view.h>
 

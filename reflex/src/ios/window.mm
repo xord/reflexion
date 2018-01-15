@@ -2,17 +2,10 @@
 #include "../window.h"
 
 
-#include "reflex/event.h"
 #include "reflex/exception.h"
 #include "../view.h"
 #include "window_data.h"
 #import "native_window.h"
-
-
-namespace Rays
-{
-	void set_painter_scale_factor(Painter*, float);
-};
 
 
 namespace Reflex
@@ -93,8 +86,6 @@ namespace Reflex
 		self->root.reset(Window_create_root_view());
 		self->root->set_name("ROOT");
 		View_set_window(self->root.get(), this);
-
-		Rays::set_painter_scale_factor(&self->painter, UIScreen.mainScreen.scale);
 
 		self->painter.canvas(0, 0, 1, 1);
 	}

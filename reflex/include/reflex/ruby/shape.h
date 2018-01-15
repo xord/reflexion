@@ -18,6 +18,9 @@ namespace Reflex
 	Rucy::Class shape_class ();
 	// class Reflex::Shape
 
+	Rucy::Class line_shape_class ();
+	// class Reflex::LineShape
+
 	Rucy::Class rect_shape_class ();
 	// class Reflex::RectShape
 
@@ -84,6 +87,8 @@ namespace Reflex
 
 RUCY_DECLARE_WRAPPER_VALUE_FROM_TO(Reflex::Shape)
 
+RUCY_DECLARE_WRAPPER_VALUE_FROM_TO(Reflex::LineShape)
+
 RUCY_DECLARE_WRAPPER_VALUE_FROM_TO(Reflex::RectShape)
 
 RUCY_DECLARE_WRAPPER_VALUE_FROM_TO(Reflex::EllipseShape)
@@ -97,6 +102,12 @@ namespace Rucy
 	get_ruby_class<Reflex::Shape> ()
 	{
 		return Reflex::shape_class();
+	}
+
+	template <> inline Class
+	get_ruby_class<Reflex::LineShape> ()
+	{
+		return Reflex::line_shape_class();
 	}
 
 	template <> inline Class

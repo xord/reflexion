@@ -50,7 +50,7 @@ module Reflex
     def initialize (options = nil, &block)
       super()
       set options if options
-      @show_block = block if block
+      @show_block = block
     end
 
     def paint (&block)

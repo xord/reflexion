@@ -37,13 +37,13 @@ namespace :lib do
   outname = "lib#{modname}.a"
   out     = File.join libdir, outname
 
-  erbs    = glob *[incdir, srcdir].map {|s| "#{s}/**/*.erb"}
-  erbs    = convertions erbs, {".erb" => ""}
-  srcs    = glob("#{srcdir}/**/*.cpp")   | erbs.values.grep(/\.cpp$/)
-  srcs   += glob("#{srcdir}/**/*.mm") if osx? || ios?
-  srcs    = srcs.reject {|s| s =~ %r(/win32/)} unless win32?
-  srcs    = srcs.reject {|s| s =~ %r(/osx/)}   unless osx?
-  srcs    = srcs.reject {|s| s =~ %r(/ios/)}   unless ios?
+  erbs  = glob *[incdir, srcdir].map {|s| "#{s}/**/*.erb"}
+  erbs  = convertions erbs, {".erb" => ""}
+  srcs  = glob("#{srcdir}/**/*.cpp")   | erbs.values.grep(/\.cpp$/)
+  srcs += glob("#{srcdir}/**/*.mm") if osx? || ios?
+  srcs  = srcs.reject {|s| s =~ %r(/win32/)} unless win32?
+  srcs  = srcs.reject {|s| s =~ %r(/osx/)}   unless osx?
+  srcs  = srcs.reject {|s| s =~ %r(/ios/)}   unless ios?
 
   depend = 'depend.mf'
   objs   = convertions srcs, {".cpp" => ".o", ".mm" => ".o"}

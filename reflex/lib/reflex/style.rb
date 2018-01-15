@@ -48,6 +48,15 @@ module Reflex
       return background_fill, background_stroke
     end
 
+    universal_accessor :name, :selector, :flow, :width, :height, :size,
+              :left,         :top,         :right,         :bottom, :position,
+       :margin_left,  :margin_top,  :margin_right,  :margin_bottom, :margin,
+      :padding_left, :padding_top, :padding_right, :padding_bottom, :padding,
+      :center, :center_x, :center_y,
+      :foreground_fill, :foreground_stroke, :foreground,
+      :background_fill, :background_stroke, :background,
+      :image
+
     alias x=   left=
     alias x    left
     alias y=   top=
@@ -59,19 +68,20 @@ module Reflex
     alias pos= position=
     alias pos  position
 
+    alias fore_fill=   foreground_fill=
+    alias fore_fill    foreground_fill
+    alias fore_stroke= foreground_stroke=
+    alias fore_stroke  foreground_stroke
+
+    alias back_fill=   background_fill=
+    alias back_fill    background_fill
+    alias back_stroke= background_stroke=
+    alias back_stroke  background_stroke
+
     alias fill=   foreground_fill=
     alias fill    foreground_fill
     alias stroke= foreground_stroke=
     alias stroke  foreground_stroke
-
-    universal_accessor :name, :selector, :flow, :width, :height, :size,
-              :left,         :top,         :right,         :bottom, :position,
-       :margin_left,  :margin_top,  :margin_right,  :margin_bottom, :margin,
-      :padding_left, :padding_top, :padding_right, :padding_bottom, :padding,
-      :center, :center_x, :center_y,
-      :foreground, :foreground_fill, :foreground_stroke,
-      :background, :background_fill, :background_stroke,
-      :fill, :stroke, :image
 
     def inspect ()
       attrs = {

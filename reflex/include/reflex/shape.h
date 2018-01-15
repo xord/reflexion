@@ -98,6 +98,40 @@ namespace Reflex
 	};// Shape
 
 
+	class LineShape : public Shape
+	{
+
+		typedef Shape Super;
+
+		public:
+
+			LineShape (const char* name = NULL);
+
+			virtual ~LineShape ();
+
+			virtual void add_point (coord x, coord y, coord z = 0);
+
+			virtual void add_point (const Point& point);
+
+			virtual void add_points (const Point* points, size_t size);
+
+			virtual void set_loop (bool loop = true);
+
+			virtual bool     loop () const;
+
+			virtual void on_draw (DrawEvent* e);
+
+			struct Data;
+
+			Xot::PImpl<Data> self;
+
+		protected:
+
+			virtual Fixture* create_fixtures ();
+
+	};// LineShape
+
+
 	class RectShape : public Shape
 	{
 
@@ -166,9 +200,11 @@ namespace Reflex
 
 			virtual float    angle_to () const;
 
-			virtual void set_radius_min (coord radius);
+			virtual void     set_hole_size (coord width, coord height);
 
-			virtual coord    radius_min () const;
+			virtual void     set_hole_size (const Point& size);
+
+			virtual const Point& hole_size () const;
 
 			virtual void set_nsegment (uint num_of_segments);
 
@@ -185,62 +221,6 @@ namespace Reflex
 			virtual Fixture* create_fixtures ();
 
 	};// EllipseShape
-
-
-	class LineShape : public Shape
-	{
-
-		typedef Shape Super;
-
-		public:
-
-			LineShape (const char* name = NULL);
-
-			virtual ~LineShape ();
-
-			virtual void add (coord x1, coord y1, coord x2, coord y2);
-
-			virtual void add (const Point& p1, const Point& p2);
-
-			virtual void add (const Point* points, size_t size, bool loop = false);
-
-			virtual void on_draw (DrawEvent* e);
-
-			struct Data;
-
-			Xot::PImpl<Data> self;
-
-		protected:
-
-			virtual Fixture* create_fixtures ();
-
-	};// LineShape
-
-
-	class PolygonShape : public Shape
-	{
-
-		typedef Shape Super;
-
-		public:
-
-			PolygonShape (const char* name = NULL);
-
-			virtual ~PolygonShape ();
-
-			virtual void add (const Point* points, size_t size);
-
-			virtual void on_draw (DrawEvent* e);
-
-			struct Data;
-
-			Xot::PImpl<Data> self;
-
-		protected:
-
-			virtual Fixture* create_fixtures ();
-
-	};// PolygonShape
 
 
 }// Reflex

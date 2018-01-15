@@ -3,7 +3,7 @@
 
 
 #include <assert.h>
-#include "reflex/bounds.h"
+#include "rays/bounds.h"
 #include "reflex/window.h"
 #include "reflex/exception.h"
 #include "../view.h"
@@ -144,8 +144,13 @@
 			{
 				Rays::Bounds b = REF->frame();
 				b.move_to(0, 0);
-				if (REF->painter()) REF->painter()->canvas(b);
-				if (REF->root())    View_set_frame(REF->root(), b);
+
+				if (REF->painter())
+					REF->painter()->canvas(b, UIScreen.mainScreen.scale);
+
+				if (REF->root())
+					View_set_frame(REF->root(), b);
+
 				REF->on_resize(&e);
 			}
 		}

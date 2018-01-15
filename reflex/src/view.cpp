@@ -1032,7 +1032,7 @@ namespace Reflex
 			setup_painter(e->painter, back_fill, back_stroke);
 			shape->on_draw(e);
 		}
-		else if (back_fill.alpha > 0 || back_stroke.alpha > 0)
+		else if (back_fill || back_stroke)
 		{
 			setup_painter(e->painter, back_fill, back_stroke);
 			e->painter->rect(e->bounds);
@@ -1091,7 +1091,7 @@ namespace Reflex
 		if (zoom != 1 && zoom > 0)
 			p->scale(zoom, zoom);
 
-		p->push_attrs();
+		p->push_state();
 
 		pos += offset;
 		Bounds clip2 = clip & frame.move_to(pos);
@@ -1104,7 +1104,7 @@ namespace Reflex
 		e.bounds = frame.move_to(0, 0, frame.z);
 		draw_view(view, &e);
 
-		p->pop_attrs();
+		p->pop_state();
 
 		View::ChildList* pchildren = view->self->pchildren.get();
 		if (pchildren)
@@ -1116,9 +1116,9 @@ namespace Reflex
 		World* child_world = view->self->pchild_world.get();
 		if (child_world)
 		{
-			p->push_attrs();
+			p->push_state();
 			child_world->on_draw(p);
-			p->pop_attrs();
+			p->pop_state();
 		}
 
 		p->pop_matrix();

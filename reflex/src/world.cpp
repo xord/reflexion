@@ -37,12 +37,12 @@ namespace Reflex
 			void begin (Painter* painter)
 			{
 				this->painter = painter;
-				painter->push_attrs();
+				painter->push_state();
 			}
 
 			void end ()
 			{
-				painter->pop_attrs();
+				painter->pop_state();
 				painter = NULL;
 			}
 
@@ -58,7 +58,7 @@ namespace Reflex
 				for (int i = 0; i < vertexCount; ++i)
 					points[i] = to_point(vertices[i], ppm);
 
-				painter->polygon(&points[0], vertexCount);
+				painter->line(&points[0], vertexCount, true);
 			}
 
 			void DrawSolidPolygon (
@@ -73,7 +73,7 @@ namespace Reflex
 				for (int i = 0; i < vertexCount; ++i)
 					points[i] = to_point(vertices[i], ppm);
 
-				painter->polygon(&points[0], vertexCount);
+				painter->line(&points[0], vertexCount, true);
 			}
 
 			void DrawCircle (

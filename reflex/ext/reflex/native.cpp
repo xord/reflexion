@@ -31,6 +31,7 @@ void Init_window ();
 void Init_view ();
 
 void Init_shape ();
+void Init_line_shape ();
 void Init_rect_shape ();
 void Init_ellipse_shape ();
 
@@ -74,6 +75,7 @@ extern "C" void
 	Init_view();
 
 	Init_shape();
+	Init_line_shape();
 	Init_rect_shape();
 	Init_ellipse_shape();
 

@@ -21,9 +21,12 @@
 	{
 		[super viewDidLoad];
 
-		context = [[EAGLContext alloc] initWithAPI: kEAGLRenderingAPIOpenGLES1];
+		context = (EAGLContext*) Rays::get_offscreen_context();
 		if (!context)
-			Reflex::reflex_error(__FILE__, __LINE__, "failed to create OpenGL context.");
+		{
+			Reflex::reflex_error(
+				__FILE__, __LINE__, "failed to setup OpenGL context.");
+		}
 
 		GLKView* view = (GLKView*) self.view;
 		view.context              = context;

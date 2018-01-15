@@ -21,6 +21,20 @@ namespace Reflex
 {
 
 
+	static bool
+	has_fill (Shape* shape)
+	{
+		assert(shape);
+
+		View* owner = shape->owner();
+		if (!owner) return false;
+
+		const Style& style = View_get_style(owner);
+		bool default_shape = shape == owner->shape(false);
+		return default_shape ? style.background_fill() : style.foreground_fill();
+	}
+
+
 	struct Shape::Data
 	{
 
@@ -339,6 +353,133 @@ namespace Reflex
 	}
 
 
+	struct LineShape::Data
+	{
+
+		std::vector<Point> points;
+
+		bool loop;
+
+		Data ()
+		:	loop(false)
+		{
+		}
+
+	};// LineShape::Data
+
+
+	LineShape::LineShape (const char* name)
+	:	Super(name)
+	{
+	}
+
+	LineShape::~LineShape ()
+	{
+	}
+
+	void
+	LineShape::add_point (coord x, coord y, coord z)
+	{
+		add_point(Point(x, y, z));
+	}
+
+	void
+	LineShape::add_point (const Point& point)
+	{
+		self->points.emplace_back(point);
+
+		Shape_update_fixtures_on_next_update(this);
+	}
+
+	void
+	LineShape::add_points (const Point* points, size_t size)
+	{
+		self->points.insert(self->points.begin(), points, points + size);
+
+		Shape_update_fixtures_on_next_update(this);
+	}
+
+	void
+	LineShape::set_loop (bool loop)
+	{
+		self->loop = loop;
+	}
+
+	bool
+	LineShape::loop () const
+	{
+		return self->loop;
+	}
+
+	void
+	LineShape::on_draw (DrawEvent* e)
+	{
+		assert(e && e->painter);
+
+		e->painter->line(&self->points[0], self->points.size(), self->loop);
+	}
+
+	static Fixture*
+	create_line (LineShape* shape, float ppm)
+	{
+		assert(shape && shape->self->points.size() == 2);
+
+		b2EdgeShape b2shape;
+		b2shape.Set(
+			to_b2vec2(shape->self->points[0], ppm),
+			to_b2vec2(shape->self->points[1], ppm));
+
+		return FixtureBuilder(shape, &b2shape).fixtures();
+	}
+
+	static Fixture*
+	create_lines (LineShape* shape, float ppm)
+	{
+		assert(shape && shape->self->points.size() >= 3);
+		LineShape::Data* self = shape->self.get();
+
+		std::vector<b2Vec2> vecs;
+		vecs.reserve(self->points.size());
+		for (auto point : self->points)
+			vecs.emplace_back(to_b2vec2(point, ppm));
+
+		FixtureBuilder builder(shape);
+		if (has_fill(shape))
+		{
+			b2PolygonShape b2shape;
+			b2shape.Set(&vecs[0], (int32) vecs.size());
+			builder.add(&b2shape);
+		}
+		else
+		{
+			b2ChainShape b2shape;
+			if (self->loop)
+				b2shape.CreateLoop(&vecs[0], (int32) vecs.size());
+			else
+				b2shape.CreateChain(&vecs[0], (int32) vecs.size());
+			builder.add(&b2shape);
+		}
+		return builder.fixtures();
+	}
+
+	Fixture*
+	LineShape::create_fixtures ()
+	{
+		const View* view = owner();
+		if (!view)
+			invalid_state_error(__FILE__, __LINE__);
+
+		if (self->points.size() <= 1) return NULL;
+
+		float ppm = view->meter2pixel();
+
+		if (self->points.size() == 2)
+			return create_line(this, ppm);
+		else
+			return create_lines(this, ppm);
+	}
+
+
 	struct RectShape::Data
 	{
 
@@ -467,6 +608,38 @@ namespace Reflex
 			self->nsegment);
 	}
 
+	static Fixture*
+	create_solid_rect (RectShape* shape, const b2Vec2& pos, const b2Vec2& size)
+	{
+		float32 w = size.x / 2, h = size.y / 2;
+
+		b2PolygonShape b2shape;
+		b2shape.SetAsBox(w, h);
+		for (int i = 0; i < 4; ++i)
+		{
+			b2shape.m_vertices[i].x += pos.x + w;
+			b2shape.m_vertices[i].y += pos.y + h;
+		}
+
+		return FixtureBuilder(shape, &b2shape).fixtures();
+	}
+
+	static Fixture*
+	create_line_rect (RectShape* shape, const b2Vec2& pos, const b2Vec2& size)
+	{
+		b2Vec2 points[] = {
+			{pos.x,          pos.y},
+			{pos.x + size.x, pos.y},
+			{pos.x + size.x, pos.y + size.y},
+			{pos.x,          pos.y + size.y}
+		};
+
+		b2ChainShape b2shape;
+		b2shape.CreateLoop(points, 4);
+
+		return FixtureBuilder(shape, &b2shape).fixtures();
+	}
+
 	Fixture*
 	RectShape::create_fixtures ()
 	{
@@ -476,18 +649,13 @@ namespace Reflex
 
 		Bounds f  = frame();
 		float ppm = view->meter2pixel();
-		b2Vec2 pos( to_b2coord(f.x,     ppm),     to_b2coord(f.y,      ppm));
-		b2Vec2 size(to_b2coord(f.width, ppm) / 2, to_b2coord(f.height, ppm) / 2);
+		b2Vec2 pos( to_b2coord(f.x, ppm), to_b2coord(f.y, ppm));
+		b2Vec2 size(to_b2coord(f.w, ppm), to_b2coord(f.h, ppm));
 
-		b2PolygonShape b2shape;
-		b2shape.SetAsBox(size.x, size.y);
-		for (int i = 0; i < 4; ++i)
-		{
-			b2shape.m_vertices[i].x += pos.x + size.x;
-			b2shape.m_vertices[i].y += pos.y + size.y;
-		}
-
-		return FixtureBuilder(this, &b2shape).fixtures();
+		if (has_fill(this))
+			return create_solid_rect(this, pos, size);
+		else
+			return create_line_rect(this, pos, size);
 	}
 
 
@@ -502,13 +670,12 @@ namespace Reflex
 
 		float angle_from, angle_to;
 
-		coord radius_min;
+		Point hole_size;
 
 		uint nsegment;
 
 		Data ()
-		:	angle_from(DEFAULT_ANGLE_FROM), angle_to(DEFAULT_ANGLE_TO),
-			radius_min(0), nsegment(0)
+		:	angle_from(DEFAULT_ANGLE_FROM), angle_to(DEFAULT_ANGLE_TO), nsegment(0)
 		{
 		}
 
@@ -521,7 +688,7 @@ namespace Reflex
 
 		bool has_hole () const
 		{
-			return radius_min > 0;
+			return hole_size.x != 0 && hole_size.y != 0;
 		}
 
 	};// EllipseShape::Data
@@ -565,17 +732,23 @@ namespace Reflex
 	}
 
 	void
-	EllipseShape::set_radius_min (coord radius)
+	EllipseShape::set_hole_size (coord width, coord height)
 	{
-		self->radius_min = radius;
+		self->hole_size.reset(width, height);
 
 		Shape_update_fixtures_on_next_update(this);
 	}
 
-	coord
-	EllipseShape::radius_min () const
+	void
+	EllipseShape::set_hole_size (const Point& hole_size)
 	{
-		return self->radius_min;
+		set_hole_size(hole_size.x, hole_size.y);
+	}
+
+	const Point&
+	EllipseShape::hole_size () const
+	{
+		return self->hole_size;
 	}
 
 	void
@@ -599,60 +772,80 @@ namespace Reflex
 
 		e->painter->ellipse(
 			frame(), self->angle_from, self->angle_to,
-			self->radius_min, self->nsegment);
+			self->hole_size, self->nsegment);
 	}
 
-	static Fixture*
-	create_circle_fixture (Shape* shape, const b2Vec2& pos, coord size)
+	static uint
+	get_ellipse_nsegment (EllipseShape* shape)
 	{
 		assert(shape);
+		EllipseShape::Data* self = shape->self.get();
 
-		coord radius = size / 2;
+		int nseg = self->nsegment;
 
-		b2CircleShape b2shape;
-		b2shape.m_radius = radius;
-		b2shape.m_p.Set(pos.x + radius, pos.y + radius);
+		if (nseg <= 0)
+		{
+			nseg = Painter::NSEGMENT_ELLIPSE / 2;
 
-		return FixtureBuilder(shape, &b2shape).fixtures();
+			if (self->has_angle())
+			{
+				static const float ANGLE_MAX =
+					EllipseShape::Data::DEFAULT_ANGLE_TO -
+					EllipseShape::Data::DEFAULT_ANGLE_FROM;
+
+				nseg *= (self->angle_to - self->angle_from) / ANGLE_MAX;
+				if (nseg <  0) nseg = -nseg;
+				if (nseg == 0) nseg = 1;
+			}
+		}
+
+		return nseg;
 	}
 
 	static inline void
 	make_ellipse_point (
-		b2Vec2* result, uint segment, uint nsegment,
-		const b2Vec2& pos, coord width, coord height,
-		float angle_from, float angle_to)
+		b2Vec2* result, const b2Vec2& center, const b2Vec2& radius,
+		float angle_from, float angle_to, uint nsegment, uint segment_index)
 	{
 		assert(result);
 
-		float t      = (float) segment / (float) nsegment;
+		float t      = (float) segment_index / (float) nsegment;
 		float radian = Xot::deg2rad(angle_from + (angle_to - angle_from) * t);
 		result->Set(
-			pos.x + width  + width  *  cos(radian),
-			pos.y + height + height * -sin(radian));
+			center.x + radius.x *  cos(radian),
+			center.y + radius.y * -sin(radian));
 	}
 
 	static Fixture*
-	create_ellipse_fixtures (
-		Shape* shape, const b2Vec2& pos, const b2Vec2& size,
-		float angle_from, float angle_to, coord radius_min, uint nsegment)
+	create_solid_circle (EllipseShape* shape, const b2Vec2& center, coord radius)
 	{
 		assert(shape);
 
-		coord w = size.x / 2, h = size.y / 2;
+		b2CircleShape b2shape;
+		b2shape.m_p      = center;
+		b2shape.m_radius = radius;
 
-		if (nsegment == 0)
-			nsegment = Painter::NSEGMENT_ELLIPSE / 2;
+		return FixtureBuilder(shape, &b2shape).fixtures();
+	}
+
+	static Fixture*
+	create_solid_ellipse (
+		EllipseShape* shape,
+		const b2Vec2& center, const b2Vec2& radius,
+		float angle_from, float angle_to, uint nseg)
+	{
+		assert(shape);
 
 		FixtureBuilder builder(shape);
 
 		b2Vec2 vecs[3];
-		vecs[0].Set(pos.x + w, pos.y + h);// center
-		for (uint seg = 0; seg < nsegment; ++seg)
+		vecs[0] = center;
+		for (uint i = 0; i < nseg; ++i)
 		{
 			make_ellipse_point(
-				&vecs[1], seg + 0, nsegment, pos, w, h, angle_from, angle_to);
+				&vecs[1], center, radius, angle_from, angle_to, nseg, i + 0);
 			make_ellipse_point(
-				&vecs[2], seg + 1, nsegment, pos, w, h, angle_from, angle_to);
+				&vecs[2], center, radius, angle_from, angle_to, nseg, i + 1);
 
 			b2PolygonShape b2shape;
 			b2shape.Set(vecs, 3);
@@ -663,6 +856,141 @@ namespace Reflex
 		return builder.fixtures();
 	}
 
+	static Fixture*
+	create_line_ellipse (
+		EllipseShape* shape,
+		const b2Vec2& center, const b2Vec2& radius,
+		uint nseg)
+	{
+		assert(shape);
+
+		std::vector<b2Vec2> vecs(nseg);
+		for (uint i = 0; i < nseg; ++i)
+		{
+			make_ellipse_point(
+				&vecs[i], center, radius,
+				EllipseShape::Data::DEFAULT_ANGLE_FROM,
+				EllipseShape::Data::DEFAULT_ANGLE_TO,
+				nseg, i);
+		}
+
+		b2ChainShape b2shape;
+		b2shape.CreateLoop(&vecs[0], (int32) vecs.size());
+
+		return FixtureBuilder(shape, &b2shape).fixtures();
+	}
+
+	static Fixture*
+	create_line_ellipse (
+		EllipseShape* shape,
+		const b2Vec2& center, const b2Vec2& radius,
+		float angle_from, float angle_to, uint nseg)
+	{
+		assert(shape);
+
+		std::vector<b2Vec2> vecs(nseg + 2);
+		for (uint i = 0; i <= nseg; ++i)
+		{
+			make_ellipse_point(
+				&vecs[i], center, radius, angle_from, angle_to, nseg, i);
+		}
+
+		vecs.back() = center;
+
+		b2ChainShape b2shape;
+		b2shape.CreateLoop(&vecs[0], (int32) vecs.size());
+
+		return FixtureBuilder(shape, &b2shape).fixtures();
+	}
+
+	static Fixture*
+	create_solid_donut (
+		EllipseShape* shape,
+		const b2Vec2& center, const b2Vec2& radius_max, const b2Vec2& radius_min,
+		float angle_from, float angle_to, uint nseg)
+	{
+		assert(shape);
+
+		FixtureBuilder builder(shape);
+
+		b2Vec2 vecs[4];
+		for (uint i = 0; i < nseg; ++i)
+		{
+			make_ellipse_point(
+				&vecs[0], center, radius_max, angle_from, angle_to, nseg, i + 0);
+			make_ellipse_point(
+				&vecs[1], center, radius_max, angle_from, angle_to, nseg, i + 1);
+			make_ellipse_point(
+				&vecs[2], center, radius_min, angle_from, angle_to, nseg, i + 1);
+			make_ellipse_point(
+				&vecs[3], center, radius_min, angle_from, angle_to, nseg, i + 0);
+
+			b2PolygonShape b2shape;
+			b2shape.Set(vecs, 4);
+
+			builder.add(&b2shape);
+		}
+
+		return builder.fixtures();
+	}
+
+	static Fixture*
+	create_line_donut (
+		EllipseShape* shape,
+		const b2Vec2& center, const b2Vec2& radius_max, const b2Vec2& radius_min,
+		uint nseg)
+	{
+		assert(shape);
+
+		FixtureBuilder builder(shape);
+
+		std::vector<b2Vec2> vecs(nseg);
+		for (const auto& radius : {radius_max, radius_min})
+		{
+			for (uint i = 0; i < nseg; ++i)
+			{
+				make_ellipse_point(
+					&vecs[i], center, radius,
+					EllipseShape::Data::DEFAULT_ANGLE_FROM,
+					EllipseShape::Data::DEFAULT_ANGLE_TO,
+					nseg, i);
+			}
+
+			b2ChainShape b2shape;
+			b2shape.CreateLoop(&vecs[0], (int32) vecs.size());
+
+			builder.add(&b2shape);
+		}
+
+		return builder.fixtures();
+	}
+
+	static Fixture*
+	create_line_donut (
+		EllipseShape* shape,
+		const b2Vec2& center, const b2Vec2& radius_max, const b2Vec2& radius_min,
+		float angle_from, float angle_to, uint nseg)
+	{
+		assert(shape);
+
+		float from = angle_from, to = angle_to;
+
+		uint npoint = nseg + 1;
+		std::vector<b2Vec2> vecs(npoint * 2);
+		for (uint i = 0; i <= nseg; ++i)
+		{
+			make_ellipse_point(
+				&vecs[         i], center, radius_max, from, to, nseg,        i);
+			make_ellipse_point(
+				&vecs[npoint + i], center, radius_min, from, to, nseg, nseg - i);
+		}
+
+		b2ChainShape b2shape;
+		b2shape.CreateLoop(&vecs[0], (int32) vecs.size());
+
+		return FixtureBuilder(shape, &b2shape).fixtures();
+	}
+
 	Fixture*
 	EllipseShape::create_fixtures ()
 	{
@@ -670,220 +998,42 @@ namespace Reflex
 		if (!view)
 			invalid_state_error(__FILE__, __LINE__);
 
-		Bounds f  = frame();
-		float ppm = view->meter2pixel();
-		b2Vec2 pos( to_b2coord(f.x,     ppm), to_b2coord(f.y,      ppm));
-		b2Vec2 size(to_b2coord(f.width, ppm), to_b2coord(f.height, ppm));
+		Bounds f    = frame();
+		float ppm   = view->meter2pixel();
+		bool angled = self->has_angle();
+		bool holed  = self->has_hole();
+		bool solid  = has_fill(this);
 
-		if (size.x == size.y && !self->has_angle() && !self->has_hole())
-			return create_circle_fixture(this, pos, size.x);
-		else
+		b2Vec2 center(to_b2coord(f.x, ppm),     to_b2coord(f.y, ppm));
+		b2Vec2 radius(to_b2coord(f.w, ppm) / 2, to_b2coord(f.h, ppm) / 2);
+		center += radius;
+
+		if (radius.x == radius.y && !angled && !holed && solid)
+			return create_solid_circle(this, center, radius.x);
+
+		float from = self->angle_from;
+		float to   = self->angle_to;
+		uint nseg  = get_ellipse_nsegment(this);
+
+		if (holed)
 		{
-			coord radius_min = to_b2coord(self->radius_min, ppm);
-			return create_ellipse_fixtures(
-				this, pos, size,
-				self->angle_from, self->angle_to, radius_min, self->nsegment);
-		}
-	}
+			b2Vec2 min_(
+				to_b2coord(self->hole_size.x, ppm) / 2,
+				to_b2coord(self->hole_size.y, ppm) / 2);
 
-
-	struct Line
-	{
-
-		std::vector<Point> points;
-
-		bool loop;
-
-		Line (const Point& p1, const Point& p2)
-		:	loop(false)
-		{
-			points.push_back(p1);
-			points.push_back(p2);
-		}
-
-		Line (const Point* points, size_t size, bool loop = false)
-		:	points(points, points + size), loop(loop)
-		{
-		}
-
-	};// Line
-
-
-	struct LineShape::Data
-	{
-
-		std::vector<std::unique_ptr<Line>> lines;
-
-	};// LineShape::Data
-
-
-	LineShape::LineShape (const char* name)
-	:	Super(name)
-	{
-	}
-
-	LineShape::~LineShape ()
-	{
-	}
-
-	void
-	LineShape::add (coord x1, coord y1, coord x2, coord y2)
-	{
-		add(Point(x1, y1), Point(x2, y2));
-	}
-
-	void
-	LineShape::add (const Point& p1, const Point& p2)
-	{
-		self->lines.emplace_back(new Line(p1, p2));
-
-		Shape_update_fixtures_on_next_update(this);
-	}
-
-	void
-	LineShape::add (const Point* points, size_t size, bool loop)
-	{
-		self->lines.emplace_back(new Line(points, size, loop));
-
-		Shape_update_fixtures_on_next_update(this);
-	}
-
-	void
-	LineShape::on_draw (DrawEvent* e)
-	{
-		assert(e && e->painter);
-
-		for (auto it = self->lines.begin(), end = self->lines.end(); it != end; ++it)
-		{
-			const Line& line = **it;
-			e->painter->lines(&line.points[0], line.points.size());
-		}
-	}
-
-	static void
-	create_line_fixture (
-		FixtureBuilder* builder, const Point& p1, const Point& p2, float ppm)
-	{
-		assert(builder);
-
-		b2EdgeShape b2shape;
-		b2shape.Set(to_b2vec2(p1, ppm), to_b2vec2(p2, ppm));
-
-		builder->add(&b2shape);
-	}
-
-	static void
-	create_line_fixtures (FixtureBuilder* builder, const Line& line, float ppm)
-	{
-		assert(builder);
-
-		std::vector<b2Vec2> vecs;
-		vecs.reserve(line.points.size());
-		for (auto it = line.points.begin(), end = line.points.end(); it != end; ++it)
-			vecs.push_back(to_b2vec2(*it, ppm));
-
-		b2ChainShape b2shape;
-		if (line.loop)
-			b2shape.CreateLoop(&vecs[0], (int32) line.points.size());
-		else
-			b2shape.CreateChain(&vecs[0], (int32) line.points.size());
-
-		builder->add(&b2shape);
-	}
-
-	Fixture*
-	LineShape::create_fixtures ()
-	{
-		const View* view = owner();
-		if (!view)
-			invalid_state_error(__FILE__, __LINE__);
-
-		float ppm = view->meter2pixel();
-
-		FixtureBuilder builder(this);
-		for (auto it = self->lines.begin(), end = self->lines.end(); it != end; ++it)
-		{
-			const Line& line = **it;
-			if (line.points.size() == 2)
-				create_line_fixture(&builder, line.points[0], line.points[1], ppm);
+			if (solid)
+				return create_solid_donut(this, center, radius, min_, from, to, nseg);
+			else if (angled)
+				return create_line_donut(this, center, radius, min_, from, to, nseg);
 			else
-				create_line_fixtures(&builder, line, ppm);
+				return create_line_donut(this, center, radius, min_, nseg);
 		}
-
-		return builder.fixtures();
-	}
-
-
-	struct PolygonShape::Data
-	{
-
-		std::vector<std::unique_ptr<Line>> lines;
-
-	};// PolygonShape::Data
-
-
-	PolygonShape::PolygonShape (const char* name)
-	:	Super(name)
-	{
-	}
-
-	PolygonShape::~PolygonShape ()
-	{
-	}
-
-	void
-	PolygonShape::add (const Point* points, size_t size)
-	{
-		self->lines.emplace_back(new Line(points, size));
-
-		Shape_update_fixtures_on_next_update(this);
-	}
-
-	void
-	PolygonShape::on_draw (DrawEvent* e)
-	{
-		assert(e && e->painter);
-
-		for (auto it = self->lines.begin(), end = self->lines.end(); it != end; ++it)
-		{
-			const Line& line = **it;
-			e->painter->polygon(&line.points[0], line.points.size());
-		}
-	}
-
-	static void
-	create_polygon_fixtures (FixtureBuilder* builder, const Line& line, float ppm)
-	{
-		assert(builder);
-
-		if (line.points.size() < 3)
-			argument_error(__FILE__, __LINE__);
-
-		std::vector<b2Vec2> vecs;
-		vecs.reserve(line.points.size());
-		for (auto it = line.points.begin(), end = line.points.end(); it != end; ++it)
-			vecs.push_back(to_b2vec2(*it, ppm));
-
-		b2PolygonShape b2shape;
-		b2shape.Set(&vecs[0], (int32) line.points.size());
-
-		builder->add(&b2shape);
-	}
-
-	Fixture*
-	PolygonShape::create_fixtures ()
-	{
-		const View* view = owner();
-		if (!view)
-			invalid_state_error(__FILE__, __LINE__);
-
-		float ppm = view->meter2pixel();
-
-		FixtureBuilder builder(this);
-		for (auto it = self->lines.begin(), end = self->lines.end(); it != end; ++it)
-			create_polygon_fixtures(&builder, **it, ppm);
-
-		return builder.fixtures();
+		else if (solid)
+			return create_solid_ellipse(this, center, radius, from, to, nseg);
+		else if (angled)
+			return create_line_ellipse(this, center, radius, from, to, nseg);
+		else
+			return create_line_ellipse(this, center, radius, nseg);
 	}
 
 

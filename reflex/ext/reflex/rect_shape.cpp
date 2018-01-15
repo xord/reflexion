@@ -28,7 +28,7 @@ static
 RUCY_DEFN(set_round)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "RectShape#set_fill", argc, 1, 4);
+	check_arg_count(__FILE__, __LINE__, "RectShape#set_round", argc, 1, 4);
 
 	if (argc == 1)
 		THIS->set_round(to<float>(argv[0]));

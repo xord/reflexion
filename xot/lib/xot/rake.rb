@@ -103,7 +103,7 @@ module Xot
       s << ' ' << RbConfig::CONFIG['debugflags'] if debug?
       s << ' -std=c++11' if gcc?
       s << ' -std=c++11 -stdlib=libc++ -mmacosx-version-min=10.7' if clang?
-      s.gsub! /-O\d?/, '-O0' if debug?
+      s.gsub! /-O\d?\w*/, '-O0' if debug?
       s
     end
 
@@ -151,11 +151,11 @@ module Xot
     end
 
     def gcc? ()
-      RbConfig::CONFIG['CXX'] =~ /g\+\+/
+      RbConfig::CONFIG['CXX'] =~ /[^\s]g\+\+/i
     end
 
     def clang? ()
-      RbConfig::CONFIG['CXX'] =~ /clang/
+      RbConfig::CONFIG['CXX'] =~ /[^\s]clang/i
     end
 
     def ruby (*args)

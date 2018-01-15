@@ -63,11 +63,12 @@ make_pixelformat (int antialias_nsample = 0)
 		self = [super initWithFrame: frame pixelFormat: make_pixelformat(nsample)];
 		if (!self) return nil;
 
+		[self setWantsBestResolutionOpenGLSurface: YES];
 		[self activateContext];
 
-		GLint swapinterval = 1;
+		GLint swapInterval = 1;
 		[[self openGLContext]
-			setValues: &swapinterval
+			setValues: &swapInterval
 			forParameter: NSOpenGLCPSwapInterval];
 
 #ifdef TRANSPARENT_BACKGROUND

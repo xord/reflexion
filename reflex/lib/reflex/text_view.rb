@@ -46,7 +46,7 @@ module Reflex
       def create_text_image ()
         str, size = string, content_size
         return nil unless str && size.all? {|n| n > 0}
-        Image.new Bitmap.new(*size, :GRAY).draw_string(str), true
+        Image.new(*size, :ALPHA).paint {text str}
       end
 
   end# TextView
