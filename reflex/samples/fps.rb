@@ -30,18 +30,20 @@ w = Reflex::Window
       yy = y + Math.cos(n) * 50
       p.rect xx, yy, 50, 50
     end
+
+    p.font font
+
     p.fill = 1
-    p.text "hello Rays/Reflex!", x, y + 32, font
+    p.text "hello Rays/Reflex!", x, y + 32
     x = (x + 1) % 100
     y = (y + 1) % 100
 
     now = Time.now
     fps = 1 / (now - prev) if x % 10 == 0
     p.fill = 1, 1, 1, 1
-    p.text "#{fps.to_i} FPS", 0, sz.y - font.height, font
+    p.text "#{fps.to_i} FPS", 0, sz.y - font.height
     prev = now
   end
-
 
 Reflex.start do
   w.show

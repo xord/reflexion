@@ -7,6 +7,7 @@
 #include <vector>
 #include <xot/ref.h>
 #include <xot/pimpl.h>
+#include <xot/util.h>
 #include <rays/point.h>
 #include <rays/bounds.h>
 #include <rays/painter.h>
@@ -54,14 +55,25 @@ namespace Reflex
 
 			typedef ShapeList::const_iterator const_shape_iterator;
 
+			enum Flag
+			{
+
+				FLAG_CLIP  = Xot::bit(0),
+
+				FLAG_CACHE = Xot::bit(1),
+
+				FLAG_LAST  = FLAG_CACHE
+
+			};// Flag
+
 			enum Capture
 			{
 
 				CAPTURE_NONE      = 0,
 
-				CAPTURE_KEY       = 0x1 << 0,
+				CAPTURE_KEY       = Xot::bit(0),
 
-				CAPTURE_POINTER   = 0x1 << 1,
+				CAPTURE_POINTER   = Xot::bit(1),
 
 				CAPTURE_ALL       = CAPTURE_KEY | CAPTURE_POINTER,
 
@@ -213,6 +225,12 @@ namespace Reflex
 			virtual       Window* window ();
 
 			virtual const Window* window () const;
+
+			virtual void    add_flag (uint flags);
+
+			virtual void remove_flag (uint flags);
+
+			virtual bool    has_flag (uint flags) const;
 
 			//
 			// for physics body

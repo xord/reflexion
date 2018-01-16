@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <Box2D/Collision/Shapes/b2ChainShape.h>
-#include <xot/util.h>
 #include "reflex/window.h"
 #include "reflex/timer.h"
 #include "reflex/exception.h"
@@ -76,32 +75,34 @@ namespace Reflex
 
 		typedef std::set<Selector> SelectorSet;
 
-		enum Flags
+		enum Flag
 		{
 
-			ACTIVE               = Xot::bit(0),
+			ACTIVE               = Xot::bit(1, FLAG_LAST),
 
-			APPLY_STYLE          = Xot::bit(1),
+			REDRAW               = Xot::bit(2, FLAG_LAST),
 
-			UPDATE_STYLE         = Xot::bit(2),
+			APPLY_STYLE          = Xot::bit(3, FLAG_LAST),
 
-			UPDATE_SHAPES        = Xot::bit(3),
+			UPDATE_STYLE         = Xot::bit(4, FLAG_LAST),
 
-			UPDATE_LAYOUT        = Xot::bit(4),
+			UPDATE_SHAPES        = Xot::bit(5, FLAG_LAST),
 
-			UPDATING_WORLD       = Xot::bit(5),
+			UPDATE_LAYOUT        = Xot::bit(6, FLAG_LAST),
 
-			RESIZE_TO_FIT        = Xot::bit(6),
+			UPDATING_WORLD       = Xot::bit(7, FLAG_LAST),
 
-			REMOVE_SELF          = Xot::bit(7),
+			RESIZE_TO_FIT        = Xot::bit(8, FLAG_LAST),
 
-			HAS_VARIABLE_LENGTHS = Xot::bit(8),
+			REMOVE_SELF          = Xot::bit(9, FLAG_LAST),
 
-			NO_SHAPE             = Xot::bit(9),
+			HAS_VARIABLE_LENGTHS = Xot::bit(10, FLAG_LAST),
 
-			DEFAULT_FLAGS        = UPDATE_LAYOUT | UPDATE_STYLE
+			NO_SHAPE             = Xot::bit(11, FLAG_LAST),
 
-		};// Flags
+			DEFAULT_FLAGS        = FLAG_CLIP | REDRAW | UPDATE_LAYOUT | UPDATE_STYLE
+
+		};// Flag
 
 		Window* window;
 
@@ -122,6 +123,8 @@ namespace Reflex
 		SelectorPtr                  pselector;
 
 		std::unique_ptr<SelectorSet> pselectors_for_update;
+
+		std::unique_ptr<Image>       pcache_image;
 
 		std::unique_ptr<Timers>      ptimers;
 
@@ -1008,6 +1011,28 @@ namespace Reflex
 		update_view_shapes(view);
 	}
 
+	static bool
+	reset_cache_image (View::Data* self, const Painter& painter)
+	{
+		assert(self && self->has_flag(View::FLAG_CACHE));
+
+		Image* cache = self->pcache_image.get();
+		int w        = ceil(self->frame.width);
+		int h        = ceil(self->frame.height);
+		if (
+			cache &&
+			cache->width()         == w &&
+			cache->height()        == h &&
+			cache->pixel_density() == painter.pixel_density())
+		{
+			return false;
+		}
+
+		self->pcache_image.reset(
+			new Image(w, h, Rays::RGBA, painter.pixel_density()));
+		return true;
+	}
+
 	static void
 	setup_painter (Painter* painter, const Color& fill, const Color& stroke)
 	{
@@ -1018,9 +1043,9 @@ namespace Reflex
 	}
 
 	static void
-	draw_default_shape (View* view, DrawEvent* e)
+	draw_default_shape (View* view, DrawEvent* event)
 	{
-		assert(view && e && e->painter);
+		assert(view && event && event->painter);
 
 		const Style& style       = View_get_style(view);
 		const Color& back_fill   = style.background_fill();
@@ -1029,35 +1054,111 @@ namespace Reflex
 		Shape* shape = view->shape(false);
 		if (shape)
 		{
-			setup_painter(e->painter, back_fill, back_stroke);
-			shape->on_draw(e);
+			setup_painter(event->painter, back_fill, back_stroke);
+			shape->on_draw(event);
 		}
 		else if (back_fill || back_stroke)
 		{
-			setup_painter(e->painter, back_fill, back_stroke);
-			e->painter->rect(e->bounds);
+			setup_painter(event->painter, back_fill, back_stroke);
+			event->painter->rect(event->bounds);
 		}
 	}
 
 	static void
-	draw_view (View* view, DrawEvent* e)
+	draw_content (View* view, DrawEvent* event)
 	{
-		assert(view && e && e->painter);
+		assert(view && event && event->painter);
 
-		draw_default_shape(view, e);
+		draw_default_shape(view, event);
 
 		const Style& style = View_get_style(view);
 		setup_painter(
-			e->painter, style.foreground_fill(), style.foreground_stroke());
+			event->painter, style.foreground_fill(), style.foreground_stroke());
 
 		View::ShapeList* pshapes = view->self->pshapes.get();
 		if (pshapes && !pshapes->empty())
 		{
 			for (auto& pshape : *pshapes)
-				pshape->on_draw(e);
+				pshape->on_draw(event);
 		}
 
-		view->on_draw(e);
+		view->on_draw(event);
+	}
+
+	static void
+	draw_view (
+		View* view, DrawEvent* event, const Point& offset, const Bounds& clip)
+	{
+		assert(view && event && event->painter);
+
+		View::Data* self = view->self.get();
+
+		Painter* p = event->painter;
+		p->push_state();
+
+		Bounds clip2 = clip & self->frame.dup().move_to(offset);
+		if (self->has_flag(View::FLAG_CLIP))
+			p->set_clip(clip2);
+		else
+			p->no_clip();
+
+		draw_content(view, event);
+
+		p->pop_state();
+
+		View::ChildList* pchildren = view->self->pchildren.get();
+		if (pchildren)
+		{
+			for (auto& pchild : *pchildren)
+				View_draw_tree(pchild.get(), *event, offset, clip2);
+		}
+
+		World* child_world = view->self->pchild_world.get();
+		if (child_world)
+		{
+			p->push_state();
+			child_world->on_draw(p);
+			p->pop_state();
+		}
+	}
+
+	static bool
+	draw_view_with_cache (
+		View* view, DrawEvent* event, const Point& offset, const Bounds& clip)
+	{
+		assert(view && event && event->painter);
+
+		View::Data* self = view->self.get();
+
+		bool cache  = self->has_flag(View::FLAG_CACHE);
+		bool redraw = self->check_and_remove_flag(View::Data::REDRAW);
+		if (!cache)
+		{
+			self->pcache_image.reset();
+			return false;
+		}
+
+		if (reset_cache_image(self, *event->painter) || redraw)
+		{
+			Painter* view_painter = event->painter;
+			Painter cache_painter = self->pcache_image->painter();
+			event->painter = &cache_painter;
+
+			cache_painter.begin();
+			draw_view(view, event, 0, event->bounds);
+			cache_painter.end();
+
+			event->painter = view_painter;
+		}
+
+		Painter* p = event->painter;
+		Color fill = p->fill();
+
+		p->set_fill(1);
+		p->image(*self->pcache_image);
+		p->set_fill(fill);
+
+		return true;
 	}
 
 	void
@@ -1070,17 +1171,21 @@ namespace Reflex
 			return;
 
 		View::Data* self = view->self.get();
-		DrawEvent e      = event;
-		Painter* p       = e.painter;
 
-		p->push_matrix();
+		if (self->frame.width <= 0 || self->frame.height <= 0)
+			return;
 
-		Bounds frame = view->frame();
-		Point pos    = frame.position();
+		DrawEvent e = event;
+		e.view      = view;
+		e.bounds    = self->frame;
+		e.bounds.move_to(0, 0, e.bounds.z);
 
-		const Point* scroll = view->self->pscroll.get();
+		Point pos = self->frame.position();
+		const Point* scroll = self->pscroll.get();
 		if (scroll) pos -= *scroll;
 
+		Painter* p = event.painter;
+		p->push_matrix();
 		p->translate(pos);
 
 		float angle = self->angle;
@@ -1091,35 +1196,9 @@ namespace Reflex
 		if (zoom != 1 && zoom > 0)
 			p->scale(zoom, zoom);
 
-		p->push_state();
-
 		pos += offset;
-		Bounds clip2 = clip & frame.move_to(pos);
-		if (self->pbody)
-			p->no_clip();
-		else
-			p->set_clip(clip2);
-
-		e.view   = view;
-		e.bounds = frame.move_to(0, 0, frame.z);
-		draw_view(view, &e);
-
-		p->pop_state();
-
-		View::ChildList* pchildren = view->self->pchildren.get();
-		if (pchildren)
-		{
-			for (auto& pchild : *pchildren)
-				View_draw_tree(pchild.get(), e, pos, clip2);
-		}
-
-		World* child_world = view->self->pchild_world.get();
-		if (child_world)
-		{
-			p->push_state();
-			child_world->on_draw(p);
-			p->pop_state();
-		}
+		if (!draw_view_with_cache(view, &e, pos, clip))
+			draw_view(view, &e, pos, clip);
 
 		p->pop_matrix();
 	}
@@ -1318,10 +1397,15 @@ namespace Reflex
 	void
 	View::redraw ()
 	{
-		Window* w = window();
-		if (!w) return;
+		if (self->has_flag(Data::REDRAW))
+			return;
 
-		w->redraw();
+		self->add_flag(Data::REDRAW);
+
+		if (self->parent)
+			self->parent->redraw();
+		else if (self->window)
+			self->window->redraw();
 	}
 
 	void
@@ -1996,6 +2080,24 @@ namespace Reflex
 	View::window () const
 	{
 		return const_cast<View*>(this)->window();
+	}
+
+	void
+	View::add_flag (uint flags)
+	{
+		self->add_flag(flags);
+	}
+
+	void
+	View::remove_flag (uint flags)
+	{
+		self->remove_flag(flags);
+	}
+
+	bool
+	View::has_flag (uint flags) const
+	{
+		return self->has_flag(flags);
 	}
 
 	void

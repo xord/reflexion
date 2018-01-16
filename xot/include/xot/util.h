@@ -28,9 +28,16 @@ namespace Xot
 
 	template <typename T = uint>
 	inline constexpr T
+	bit (int nth, T base)
+	{
+		return (T) (base << nth);
+	}
+
+	template <typename T = uint>
+	inline constexpr T
 	bit (int nth)
 	{
-		return (T) (0x1 << nth);
+		return bit(nth, 0x1);
 	}
 
 	template <typename T>

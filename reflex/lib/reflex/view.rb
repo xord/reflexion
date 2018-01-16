@@ -112,6 +112,9 @@ module Reflex
     alias remove remove_child
     alias find   find_child
 
+    alias clip?  clip
+    alias cache? cache
+
     alias apply_impulse apply_linear_impulse
     alias static?       static
     alias dynamic?      dynamic
@@ -123,6 +126,7 @@ module Reflex
     alias debug? debug
 
     universal_accessor :shape, :name, :selector, :frame, :zoom, :capture,
+      :clip, :cache,
       :static, :dynamic, :density, :friction, :restitution,
       :sensor, :category, :collision,
       :linear_velocity, :angular_velocity, :gravity_scale,

@@ -9,7 +9,7 @@ require 'reflex'
 
 
 win = Reflex::Window.new do
-  set title: "Bats", frame: [100, 100, 300, 300], flow: :none
+  set title: "Bats", frame: [100, 100, 300, 300]
 
   @children = []
   @count    = model = Reflex::Model.new(@children.size) {set min: 0}

@@ -112,14 +112,15 @@
 		if (!e.painter)
 			Xot::invalid_state_error(__FILE__, __LINE__);
 
-		Rays::Bounds b = REF->frame();
-		e.bounds.reset(0, 0, b.width, b.height);
+		Rays::Bounds frame = REF->frame();
+		e.bounds.reset(0, 0, frame.width, frame.height);
 
 		e.painter->begin();
 		e.painter->clear();
 
 		REF->on_draw(&e);
-		Reflex::View_draw_tree(REF->root(), e, 0, REF->frame().dup().move_to(0));
+		if (!e.is_blocked())
+			Reflex::View_draw_tree(REF->root(), e, 0, frame.move_to(0));
 
 		e.painter->end();
 	}

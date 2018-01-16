@@ -436,6 +436,46 @@ RUCY_DEF0(window)
 RUCY_END
 
 static
+RUCY_DEF1(set_clip, clip)
+{
+	CHECK;
+
+	if (clip)
+		THIS->add_flag(Reflex::View::FLAG_CLIP);
+	else
+		THIS->remove_flag(Reflex::View::FLAG_CLIP);
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_clip)
+{
+	CHECK;
+	return value(THIS->has_flag(Reflex::View::FLAG_CLIP));
+}
+RUCY_END
+
+static
+RUCY_DEF1(set_cache, cache)
+{
+	CHECK;
+
+	if (cache)
+		THIS->add_flag(Reflex::View::FLAG_CACHE);
+	else
+		THIS->remove_flag(Reflex::View::FLAG_CACHE);
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_cache)
+{
+	CHECK;
+	return value(THIS->has_flag(Reflex::View::FLAG_CACHE));
+}
+RUCY_END
+
+static
 RUCY_DEFN(apply_force)
 {
 	CHECK;
@@ -967,6 +1007,10 @@ Init_view ()
 	cView.define_method("capture",  get_capture);
 	cView.define_method("parent", parent);
 	cView.define_method("window", window);
+	cView.define_method("clip=", set_clip);
+	cView.define_method("clip",  get_clip);
+	cView.define_method("cache=", set_cache);
+	cView.define_method("cache",  get_cache);
 
 	cView.define_method("apply_force",           apply_force);
 	cView.define_method("apply_torque",          apply_torque);
@@ -1027,11 +1071,12 @@ Init_view ()
 	cView.define_method("on_contact",       on_contact);
 	cView.define_method("on_contact_begin", on_contact_begin);
 	cView.define_method("on_contact_end",   on_contact_end);
-	cView.define_const("CAPTURE_NONE",      Reflex::View::CAPTURE_NONE);
-	cView.define_const("CAPTURE_KEY",       Reflex::View::CAPTURE_KEY);
-	cView.define_const("CAPTURE_POINTER",   Reflex::View::CAPTURE_POINTER);
-	cView.define_const("CAPTURE_ALL",       Reflex::View::CAPTURE_ALL);
 	cView.define_clear_override_flags(cof);
+
+	cView.define_const("CAPTURE_NONE",    Reflex::View::CAPTURE_NONE);
+	cView.define_const("CAPTURE_KEY",     Reflex::View::CAPTURE_KEY);
+	cView.define_const("CAPTURE_POINTER", Reflex::View::CAPTURE_POINTER);
+	cView.define_const("CAPTURE_ALL",     Reflex::View::CAPTURE_ALL);
 
 	define_selector_methods<Reflex::View>(cView);
 }
