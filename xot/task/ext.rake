@@ -39,7 +39,7 @@ namespace :ext do
   libout  = File.join libdir, outname
 
   srcs = FileList["#{extdir}/**/*.cpp"]
-  libs = FileList["#{libdir}/../lib*.a"]
+  libs = mods.map {|mod| mod.name.downcase}.map {|s| "../#{s}/lib/lib#{s}.a"}
 
   extconf  = File.join extdir, 'extconf.rb'
   makefile = File.join extdir, 'Makefile'

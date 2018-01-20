@@ -9,6 +9,7 @@
 #include "reflex/ruby/timer.h"
 #include "reflex/ruby/style.h"
 #include "reflex/ruby/shape.h"
+#include "reflex/ruby/filter.h"
 #include "reflex/ruby/window.h"
 #include "defs.h"
 #include "selector.h"
@@ -293,6 +294,23 @@ RUCY_DEF0(each_shape)
 	for (Reflex::View::shape_iterator it = THIS->shape_begin(); it != end; ++it)
 		ret = rb_yield(value(it->get()));
 	return ret;
+}
+RUCY_END
+
+static
+RUCY_DEF1(set_filter, filter)
+{
+	CHECK;
+	THIS->set_filter(filter ? to<Reflex::Filter*>(filter) : NULL);
+	return filter;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_filter)
+{
+	CHECK;
+	return value(THIS->filter());
 }
 RUCY_END
 
@@ -992,6 +1010,9 @@ Init_view ()
 	cView.define_method("remove_shape", remove_shape);
 	cView.define_method("find_shapes",  find_shapes);
 	cView.define_method("each_shape",   each_shape);
+
+	cView.define_method("filter=", set_filter);
+	cView.define_method("filter",  get_filter);
 
 	cView.define_method("frame=", set_frame);
 	cView.define_method("frame",  get_frame);

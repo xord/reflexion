@@ -89,7 +89,6 @@ Init_timer ()
 	Module mReflex = define_module("Reflex");
 
 	cTimer = mReflex.define_class("Timer");
-
 	cTimer.define_method("stop", stop);
 	cTimer.define_method("owner", get_owner);
 	cTimer.define_method("id", get_id);

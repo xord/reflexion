@@ -11,6 +11,7 @@ void Init_selector ();
 void Init_style ();
 void Init_style_length ();
 void Init_timer ();
+void Init_filter ();
 
 void Init_event ();
 void Init_motion_event ();
@@ -26,14 +27,14 @@ void Init_capture_event ();
 void Init_timer_event ();
 void Init_contact_event ();
 
-void Init_application ();
-void Init_window ();
-void Init_view ();
-
 void Init_shape ();
 void Init_line_shape ();
 void Init_rect_shape ();
 void Init_ellipse_shape ();
+
+void Init_application ();
+void Init_window ();
+void Init_view ();
 
 void Init_image_view ();
 
@@ -55,6 +56,7 @@ extern "C" void
 	Init_style();
 	Init_style_length();
 	Init_timer();
+	Init_filter();
 
 	Init_event();
 	Init_motion_event();
@@ -70,14 +72,14 @@ extern "C" void
 	Init_timer_event();
 	Init_contact_event();
 
-	Init_application();
-	Init_window();
-	Init_view();
-
 	Init_shape();
 	Init_line_shape();
 	Init_rect_shape();
 	Init_ellipse_shape();
+
+	Init_application();
+	Init_window();
+	Init_view();
 
 	Init_image_view();
 

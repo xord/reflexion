@@ -18,9 +18,10 @@ require 'reflex/reflex'
 require 'reflex/helper'
 
 require 'reflex/selector'
-require 'reflex/timer'
 require 'reflex/style'
 require 'reflex/style_length'
+require 'reflex/timer'
+require 'reflex/filter'
 
 require 'reflex/update_event'
 require 'reflex/draw_event'
@@ -34,17 +35,17 @@ require 'reflex/capture_event'
 require 'reflex/timer_event'
 require 'reflex/contact_event'
 
+require 'reflex/shape'
+require 'reflex/line_shape'
+require 'reflex/rect_shape'
+require 'reflex/ellipse_shape'
+
 require 'reflex/model'
 require 'reflex/model_owner'
 
 require 'reflex/application'
 require 'reflex/window'
 require 'reflex/view'
-
-require 'reflex/shape'
-require 'reflex/line_shape'
-require 'reflex/rect_shape'
-require 'reflex/ellipse_shape'
 
 require 'reflex/button'
 require 'reflex/text_view'

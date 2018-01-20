@@ -26,6 +26,7 @@ namespace Reflex
 
 
 	class Window;
+	class Filter;
 
 
 	class View : public Xot::RefCountable<>, public HasSelector
@@ -177,6 +178,12 @@ namespace Reflex
 			virtual       shape_iterator shape_end ();
 
 			virtual const_shape_iterator shape_end () const;
+
+			virtual void      set_filter (Filter* filter);
+
+			virtual       Filter* filter ();
+
+			virtual const Filter* filter () const;
 
 			virtual void set_name (const char* name);
 

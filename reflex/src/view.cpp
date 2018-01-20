@@ -8,6 +8,7 @@
 #include <Box2D/Collision/Shapes/b2ChainShape.h>
 #include "reflex/window.h"
 #include "reflex/timer.h"
+#include "reflex/filter.h"
 #include "reflex/exception.h"
 #include "reflex/debug.h"
 #include "selector.h"
@@ -135,6 +136,8 @@ namespace Reflex
 		Shape::Ref                   pshape;
 
 		std::unique_ptr<ShapeList>   pshapes;
+
+		Filter::Ref                  pfilter;
 
 		std::unique_ptr<Body>        pbody;
 
@@ -1012,18 +1015,32 @@ namespace Reflex
 	}
 
 	static bool
-	reset_cache_image (View::Data* self, const Painter& painter)
+	use_cache (View* view)
 	{
-		assert(self && self->has_flag(View::FLAG_CACHE));
+		assert(view);
 
-		Image* cache = self->pcache_image.get();
+		View::Data* self = view->self.get();
+
+		return
+			self->has_flag(View::FLAG_CACHE) ||
+			(self->pfilter && *self->pfilter);
+	}
+
+	static bool
+	reset_cache_image (View* view, const Painter& painter)
+	{
+		assert(view && use_cache(view));
+
+		View::Data* self = view->self.get();
+
+		Image* image = self->pcache_image.get();
 		int w        = ceil(self->frame.width);
 		int h        = ceil(self->frame.height);
 		if (
-			cache &&
-			cache->width()         == w &&
-			cache->height()        == h &&
-			cache->pixel_density() == painter.pixel_density())
+			image &&
+			image->width()         == w &&
+			image->height()        == h &&
+			image->pixel_density() == painter.pixel_density())
 		{
 			return false;
 		}
@@ -1097,7 +1114,7 @@ namespace Reflex
 		p->push_state();
 
 		Bounds clip2 = clip & self->frame.dup().move_to(offset);
-		if (self->has_flag(View::FLAG_CLIP))
+		if (self->has_flag(View::FLAG_CLIP) && !self->pbody)
 			p->set_clip(clip2);
 		else
 			p->no_clip();
@@ -1122,41 +1139,58 @@ namespace Reflex
 		}
 	}
 
+	static void
+	draw_view_to_cache (View* view, DrawEvent* event)
+	{
+		assert(view && event && event->painter && self->pcache_image);
+
+		Painter* view_painter = event->painter;
+		Painter cache_painter = view->self->pcache_image->painter();
+		event->painter = &cache_painter;
+
+		cache_painter.begin();
+		draw_view(view, event, 0, event->bounds);
+		cache_painter.end();
+
+		event->painter = view_painter;
+	}
+
 	static bool
 	draw_view_with_cache (
-		View* view, DrawEvent* event, const Point& offset, const Bounds& clip)
+		View* view, DrawEvent* event, const Point& offset, const Bounds& clip,
+		bool redraw)
 	{
 		assert(view && event && event->painter);
 
 		View::Data* self = view->self.get();
 
-		bool cache  = self->has_flag(View::FLAG_CACHE);
-		bool redraw = self->check_and_remove_flag(View::Data::REDRAW);
-		if (!cache)
+		if (!use_cache(view))
 		{
 			self->pcache_image.reset();
 			return false;
 		}
 
-		if (reset_cache_image(self, *event->painter) || redraw)
+		if (reset_cache_image(view, *event->painter) || redraw)
 		{
-			Painter* view_painter = event->painter;
-			Painter cache_painter = self->pcache_image->painter();
-			event->painter = &cache_painter;
+			if (!self->pcache_image)
+				return false;
 
-			cache_painter.begin();
-			draw_view(view, event, 0, event->bounds);
-			cache_painter.end();
-
-			event->painter = view_painter;
+			draw_view_to_cache(view, event);
 		}
 
 		Painter* p = event->painter;
-		Color fill = p->fill();
 
+		p->push_state();
 		p->set_fill(1);
-		p->image(*self->pcache_image);
-		p->set_fill(fill);
+		p->no_stroke();
+		p->no_shader();
+
+		if (self->pfilter && *self->pfilter)
+			self->pfilter->apply(p, *self->pcache_image);
+		else
+			p->image(*self->pcache_image, event->bounds);
+
+		p->pop_state();
 
 		return true;
 	}
@@ -1167,10 +1201,11 @@ namespace Reflex
 	{
 		assert(view);
 
+		View::Data* self = view->self.get();
+		bool redraw      = self->check_and_remove_flag(View::Data::REDRAW);
+
 		if (event.is_blocked() || view->hidden())
 			return;
-
-		View::Data* self = view->self.get();
 
 		if (self->frame.width <= 0 || self->frame.height <= 0)
 			return;
@@ -1197,7 +1232,7 @@ namespace Reflex
 			p->scale(zoom, zoom);
 
 		pos += offset;
-		if (!draw_view_with_cache(view, &e, pos, clip))
+		if (!draw_view_with_cache(view, &e, pos, clip, redraw))
 			draw_view(view, &e, pos, clip);
 
 		p->pop_matrix();
@@ -1860,6 +1895,24 @@ namespace Reflex
 	{
 		if (!self->pshapes) return empty_shapes.end();
 		return self->pshapes->end();
+	}
+
+	void
+	View::set_filter (Filter* filter)
+	{
+		self->pfilter = filter;
+	}
+
+	Filter*
+	View::filter ()
+	{
+		return self->pfilter.get();
+	}
+
+	const Filter*
+	View::filter () const
+	{
+		return const_cast<View*>(this)->filter();
 	}
 
 	void

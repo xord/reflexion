@@ -11,9 +11,10 @@
 
 #include <reflex/selector.h>
 #include <reflex/event.h>
-#include <reflex/timer.h>
 #include <reflex/style.h>
+#include <reflex/timer.h>
 #include <reflex/shape.h>
+#include <reflex/filter.h>
 
 #include <reflex/application.h>
 #include <reflex/window.h>
