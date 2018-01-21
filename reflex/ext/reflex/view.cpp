@@ -349,6 +349,15 @@ RUCY_DEF0(resize_to_fit)
 RUCY_END
 
 static
+RUCY_DEF1(set_angle, degree)
+{
+	CHECK;
+	THIS->set_angle(to<float>(degree));
+	return degree;
+}
+RUCY_END
+
+static
 RUCY_DEF0(get_angle)
 {
 	CHECK;
@@ -410,6 +419,7 @@ RUCY_DEF1(set_zoom, zoom)
 {
 	CHECK;
 	THIS->set_zoom(to<float>(zoom));
+	return zoom;
 }
 RUCY_END
 
@@ -426,6 +436,7 @@ RUCY_DEF1(set_capture, types)
 {
 	CHECK;
 	THIS->set_capture(to<uint>(types));
+	return types;
 }
 RUCY_END
 
@@ -462,6 +473,8 @@ RUCY_DEF1(set_clip, clip)
 		THIS->add_flag(Reflex::View::FLAG_CLIP);
 	else
 		THIS->remove_flag(Reflex::View::FLAG_CLIP);
+
+	return clip;
 }
 RUCY_END
 
@@ -482,6 +495,8 @@ RUCY_DEF1(set_cache, cache)
 		THIS->add_flag(Reflex::View::FLAG_CACHE);
 	else
 		THIS->remove_flag(Reflex::View::FLAG_CACHE);
+
+	return cache;
 }
 RUCY_END
 
@@ -1018,7 +1033,8 @@ Init_view ()
 	cView.define_method("frame",  get_frame);
 	cView.define_method("content_size",  content_size);
 	cView.define_method("resize_to_fit", resize_to_fit);
-	cView.define_method("angle", get_angle);
+	cView.define_method("angle=", set_angle);
+	cView.define_method("angle",  get_angle);
 	cView.define_method("scroll_to", scroll_to);
 	cView.define_method("scroll_by", scroll_by);
 	cView.define_method("scroll", get_scroll);

@@ -85,7 +85,7 @@ namespace Reflex
 		[[[NativeWindow alloc] init] bind: this];
 
 		self->root.reset(Window_create_root_view());
-		self->root->set_name("ROOT");
+		self->root->set_name(VIEW_TAG_ROOT);
 		View_set_window(self->root.get(), this);
 
 		self->painter.canvas(0, 0, 1, 1);

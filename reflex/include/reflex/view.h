@@ -205,7 +205,9 @@ namespace Reflex
 
 			virtual void resize_to_fit ();
 
-			virtual float angle () const;
+			virtual void set_angle (float degree);
+
+			virtual float    angle () const;
 
 			virtual void         scroll_to (coord x, coord y, coord z = 0);
 

@@ -33,7 +33,7 @@ win = Window.new do
     image1.image = images[count % 2]
   end
 
-  set title: 'Many View Sample', frame: [100, 100, 500, 400]
+  set title: 'Many View Sample', frame: [100, 100, 500, 400], flow: :right
 end
 
 

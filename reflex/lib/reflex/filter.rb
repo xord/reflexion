@@ -10,7 +10,7 @@ module Reflex
 
   class Filter
 
-		universal_accessor :shader
+    universal_accessor :shader
 
   end# Filter
 

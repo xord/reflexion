@@ -125,8 +125,8 @@ module Reflex
     alias meter  meter2pixel
     alias debug? debug
 
-    universal_accessor :shape, :name, :selector, :frame, :zoom, :capture,
-      :clip, :cache,
+    universal_accessor :shape, :name, :selector, :frame, :angle, :zoom,
+      :capture, :clip, :cache,
       :static, :dynamic, :density, :friction, :restitution,
       :sensor, :category, :collision,
       :linear_velocity, :angular_velocity, :gravity_scale,

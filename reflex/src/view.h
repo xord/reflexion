@@ -11,6 +11,9 @@ namespace Reflex
 {
 
 
+	constexpr const char* VIEW_TAG_ROOT = "ROOT";
+
+
 	class Body;
 
 

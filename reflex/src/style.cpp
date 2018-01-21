@@ -165,135 +165,50 @@ namespace Reflex
 	struct StyleLength::Data
 	{
 
-		Value value;
-
 		Type type;
 
+		Value value;
+
 		Data ()
-		:	value(0), type(NONE)
+		:	type(NONE), value(0)
 		{
 		}
 
 		bool is_variable () const
 		{
-			return type == PERCENT || type == FILL;
+			return type == PERCENT || type == FILL || type == FIT;
 		}
 
 		friend bool operator == (const Data& lhs, const Data& rhs)
 		{
-			return lhs.value == rhs.value && lhs.type == rhs.type;
+			return lhs.type == rhs.type && lhs.value == rhs.value;
 		}
 
 	};// StyleLength::Data
 
 
-	StyleLength::StyleLength ()
+	StyleLength::StyleLength (Type type, Value value)
 	{
-	}
-
-	StyleLength::StyleLength (Value value, Type type)
-	{
-		reset(value, type);
-	}
-
-	StyleLength::StyleLength (const char* str)
-	{
-		reset(str);
+		reset(type, value);
 	}
 
 	StyleLength
 	StyleLength::copy () const
 	{
-		return StyleLength(value(), type());
+		return StyleLength(type(), value());
 	}
 
 	void
-	StyleLength::reset (Value value, Type type)
+	StyleLength::reset (Type type, Value value)
 	{
 		if (type < NONE || TYPE_LAST <= type)
 			argument_error(__FILE__, __LINE__);
 
-		self->value = value;
-		self->type  = type;
-	}
-
-	static StyleLength::Type
-	str2type (const char* s)
-	{
-		     if (strcasecmp(s, "px")   == 0) return StyleLength::PIXEL;
-		else if (strcasecmp(s, "%")    == 0) return StyleLength::PERCENT;
-		else if (strcasecmp(s, "fill") == 0) return StyleLength::FILL;
-		else                                 return StyleLength::NONE;
-	}
-
-	static const char*
-	type2str (StyleLength::Type type)
-	{
-		switch (type)
-		{
-			case StyleLength::PIXEL:   return "px";
-			case StyleLength::PERCENT: return "%";
-			case StyleLength::FILL:    return "fill";
-			default:                   return NULL;
-		}
-	}
-
-	static bool
-	get_default_value (StyleLength::Value* value, StyleLength::Type type)
-	{
-		assert(value);
-
-		switch (type)
-		{
-			case StyleLength::FILL:
-				*value = 1;
-				break;
-
-			default:
-				return false;
-		}
-
-		return true;
-	}
-
-	static bool
-	scan_value_and_type (
-		StyleLength::Value* value, StyleLength::Type* type, const char* str)
-	{
-		char buf[101];
-
-		int count = sscanf(str, "%f%100s", value, buf);
-		if (count == 2)
-		{
-			*type = str2type(buf);
-			return true;
-		}
-
-		count = sscanf(str, "%100s", buf);
-		if (count == 1)
-		{
-			*type = str2type(buf);
-			return get_default_value(value, *type);
-		}
-
-		return false;
-	}
-
-	void
-	StyleLength::reset (const char* str)
-	{
-		Value value = 0;
-		Type type   = NONE;
-		if (!scan_value_and_type(&value, &type, str))
+		if (type == FIT && value != 1)
 			argument_error(__FILE__, __LINE__);
 
-		reset(value, type);
-	}
-
-	StyleLength::Value
-	StyleLength::value () const
-	{
-		return self->value;
+		self->type  = type;
+		self->value = value;
 	}
 
 	StyleLength::Type
@@ -302,23 +217,10 @@ namespace Reflex
 		return self->type;
 	}
 
-	String
-	StyleLength::to_s () const
+	StyleLength::Value
+	StyleLength::value () const
 	{
-		if (!*this)
-			return "";
-
-		String value;
-		if (fmod(self->value, 1) == 0)
-			value = Xot::stringf("%d", (long) self->value);
-		else
-			value = Xot::stringf("%g", self->value);
-
-		const char* type = type2str(self->type);
-		if (!type)
-			invalid_state_error(__FILE__, __LINE__);
-
-		return value + type;
+		return self->value;
 	}
 
 	StyleLength::operator bool () const
@@ -360,7 +262,7 @@ namespace Reflex
 
 		struct MaxLength : public StyleLength
 		{
-			MaxLength () : StyleLength(100, PERCENT) {}
+			MaxLength () : StyleLength(PERCENT, 100) {}
 		};
 
 		typedef StyleValue<bool>        BoolValue;

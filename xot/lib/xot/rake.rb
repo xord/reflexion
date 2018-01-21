@@ -151,11 +151,11 @@ module Xot
     end
 
     def gcc? ()
-      RbConfig::CONFIG['CXX'] =~ /[^\s]g\+\+/i
+      RbConfig::CONFIG['CXX'] =~ /(^|\s)g\+\+/i
     end
 
     def clang? ()
-      RbConfig::CONFIG['CXX'] =~ /[^\s]clang/i
+      RbConfig::CONFIG['CXX'] =~ /(^|\s)clang/i
     end
 
     def ruby (*args)

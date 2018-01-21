@@ -30,9 +30,29 @@ namespace Reflex
 	class WallShape : public Shape
 	{
 
-		typedef Shape Super;
-
 		public:
+
+			enum Position
+			{
+
+				LEFT   = Xot::bit(1),
+
+				TOP    = Xot::bit(2),
+
+				RIGHT  = Xot::bit(3),
+
+				BOTTOM = Xot::bit(4),
+
+				ALL    = LEFT | TOP | RIGHT | BOTTOM
+
+			};// Position
+
+			enum {DEFAULT_THICKNESS = 100};
+
+			WallShape (uint positions, coord thickness = DEFAULT_THICKNESS)
+			:	positions(positions), thickness(thickness)
+			{
+			}
 
 			virtual void on_draw (DrawEvent* e)
 			{
@@ -42,31 +62,63 @@ namespace Reflex
 
 			virtual Fixture* create_fixtures ()
 			{
+				FixtureBuilder builder(this);
+				if (positions & LEFT)   add_wall(&builder, LEFT);
+				if (positions & TOP)    add_wall(&builder, TOP);
+				if (positions & RIGHT)  add_wall(&builder, RIGHT);
+				if (positions & BOTTOM) add_wall(&builder, BOTTOM);
+				return builder.fixtures();
+			}
+
+			void add_wall (FixtureBuilder* builder, Position pos)
+			{
+				assert(builder);
+
 				View* view = owner();
 				if (!view)
 					invalid_state_error(__FILE__, __LINE__);
 
 				Bounds f  = frame();
 				float ppm = view->meter2pixel();
+				coord x1  = to_b2coord(0,         ppm);
+				coord y1  = to_b2coord(0,         ppm);
+				coord x2  = to_b2coord(f.width,   ppm);
+				coord y2  = to_b2coord(f.height,  ppm);
+				coord t   = to_b2coord(thickness, ppm);
 
-				coord offset = 1;// hide wall
-				coord x1 = to_b2coord(         - offset, ppm);
-				coord y1 = to_b2coord(         - offset, ppm);
-				coord x2 = to_b2coord(f.width  + offset, ppm);
-				coord y2 = to_b2coord(f.height + offset, ppm);
-
-				std::vector<b2Vec2> vecs;
-				vecs.reserve(4);
-				vecs.push_back(b2Vec2(x1, y1));
-				vecs.push_back(b2Vec2(x2, y1));
-				vecs.push_back(b2Vec2(x2, y2));
-				vecs.push_back(b2Vec2(x1, y2));
-
-				b2ChainShape b2shape;
-				b2shape.CreateLoop(&vecs[0], 4);
-
-				return FixtureBuilder(this, &b2shape).fixtures();
+				switch (pos)
+				{
+					case LEFT:   add_wall(builder, x1 - t, y1 - t, x1,     y2 + t); break;
+					case TOP:    add_wall(builder, x1 - t, y1 - t, x2 + t, y1);     break;
+					case RIGHT:  add_wall(builder, x2,     y1 - t, x2 + t, y2 + t); break;
+					case BOTTOM: add_wall(builder, x1 - t, y2,     x2 + t, y2 + t); break;
+				}
 			}
+
+			void add_wall (
+				FixtureBuilder* builder, coord x1, coord y1, coord x2, coord y2)
+			{
+				assert(builder);
+
+				coord w = (x2 - x1) / 2;
+				coord h = (y2 - y1) / 2;
+
+				b2PolygonShape b2shape;
+				b2shape.SetAsBox(w, h);
+				for (int i = 0; i < 4; ++i)
+				{
+					b2shape.m_vertices[i].x += x1 + w;
+					b2shape.m_vertices[i].y += y1 + h;
+				}
+
+				builder->add(&b2shape);
+			}
+
+		private:
+
+			uint positions;
+
+			coord thickness;
 
 	};// WallShape
 
@@ -273,20 +325,20 @@ namespace Reflex
 			if (!pchild_world && create)
 			{
 				pchild_world.reset(new World());
-				create_wall(view);
+				create_walls(view);
 			}
 
 			return pchild_world.get();
 		}
 
-		void create_wall (View* view)
+		void create_walls (View* view)
 		{
 			assert(view);
 
 			clear_walls(view);
 
 			View* wall = new View(WALL_NAME);
-			wall->set_shape(new WallShape());
+			wall->add_shape(new WallShape(WallShape::ALL));
 			wall->set_static();
 
 			view->add_child(wall);
@@ -1127,7 +1179,10 @@ namespace Reflex
 		if (pchildren)
 		{
 			for (auto& pchild : *pchildren)
-				View_draw_tree(pchild.get(), *event, offset, clip2);
+			{
+				if (event->bounds & pchild->self->frame)
+					View_draw_tree(pchild.get(), *event, offset, clip2);
+			}
 		}
 
 		World* child_world = view->self->pchild_world.get();
@@ -1142,7 +1197,7 @@ namespace Reflex
 	static void
 	draw_view_to_cache (View* view, DrawEvent* event)
 	{
-		assert(view && event && event->painter && self->pcache_image);
+		assert(view && event && event->painter && view->self->pcache_image);
 
 		Painter* view_painter = event->painter;
 		Painter cache_painter = view->self->pcache_image->painter();
@@ -1217,7 +1272,11 @@ namespace Reflex
 
 		Point pos = self->frame.position();
 		const Point* scroll = self->pscroll.get();
-		if (scroll) pos -= *scroll;
+		if (scroll)
+		{
+			pos     .move_by(-*scroll);
+			e.bounds.move_by( *scroll);
+		}
 
 		Painter* p = event.painter;
 		p->push_matrix();
@@ -1485,6 +1544,7 @@ namespace Reflex
 	View::update_layout ()
 	{
 		LayoutContext(this).place_children();
+		redraw();
 	}
 
 	Point
@@ -1971,15 +2031,13 @@ namespace Reflex
 	void
 	View::set_frame (const Bounds& frame)
 	{
-		static const StyleLength NONE(0, StyleLength::NONE);
-
 		const Bounds& current = self->frame;
 
 		if (frame.w != current.w && !Style_has_width(*style()))
-			style()->set_width(NONE);
+			style()->set_width(StyleLength::NONE);
 
 		if (frame.h != current.h && !Style_has_height(*style()))
-			style()->set_height(NONE);
+			style()->set_height(StyleLength::NONE);
 
 		View_set_frame(this, frame);
 	}
@@ -2011,13 +2069,11 @@ namespace Reflex
 		set_frame(b);
 	}
 
-#if 0
 	void
 	View::set_angle (float degree)
 	{
 		update_view_frame(this, self->frame, degree, true);
 	}
-#endif
 
 	float
 	View::angle () const

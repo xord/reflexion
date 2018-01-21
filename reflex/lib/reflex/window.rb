@@ -23,7 +23,11 @@ module Reflex
     def_delegators :root,
       :timeout, :interval,
       :add_child, :remove_child, :find_children,
-      :style, :styles, :meter2pixel, :meter, :wall,
+      :style, :styles, :scroll_to, :scroll_by, :scroll,
+      :meter2pixel, :meter, :wall,
+      :zoom=,              :zoom,
+      :clip=,              :clip,  :clip?,
+      :cache=,             :cache, :cache?,
       :flow=,              :flow,
       :fill=,              :fill,
       :stroke=,            :stroke,
@@ -35,8 +39,6 @@ module Reflex
       :background_stroke=, :background_stroke,
       :image=,             :image,
       :gravity=,           :gravity,
-      :clip=,              :clip,  :clip?,
-      :cache=,             :cache, :cache?,
       :debug=,             :debug, :debug?
 
     def_delegators :wall,

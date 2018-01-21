@@ -24,25 +24,17 @@ namespace Reflex
 
 			typedef coord Value;
 
-			enum Type {NONE = 0, PIXEL, PERCENT, FILL, TYPE_LAST};
+			enum Type {NONE = 0, PIXEL, PERCENT, FILL, FIT, TYPE_LAST};
 
-			StyleLength ();
-
-			StyleLength (Value value, Type type = PIXEL);
-
-			explicit StyleLength (const char* str);
+			StyleLength (Type type = NONE, Value value = 0);
 
 			This copy () const;
 
-			void reset (Value value = 0, Type type = NONE);
-
-			void reset (const char* str);
+			void reset (Type type = NONE, Value value = 0);
 
 			Value value () const;
 
 			Type type () const;
-
-			String to_s () const;
 
 			operator bool () const;
 
