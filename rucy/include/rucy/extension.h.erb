@@ -4,8 +4,6 @@
 #define __RUCY_EXTENSION_H__
 
 
-#include <typeinfo>
-#include <bitset>
 #include <xot/ref.h>
 #include <xot/string.h>
 #include <rucy/rucy.h>
@@ -179,23 +177,6 @@
 	RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(native_class)
 
 
-#define RUCY_OVERRIDE_BEGIN(super_class) \
-	typedef super_class Super; \
-	enum { OVERRIDE_ID_FIRST = super_class::OVERRIDE_ID_LAST - 1,
-
-#define RUCY_OVERRIDE_END \
-	OVERRIDE_ID_LAST };
-
-#define RUCY_OVERRIDE_ID(name) \
-	OID_##name,
-
-#define RUCY_IS_OVERRIDABLE() \
-	!this->value.is_nil() && this->is_overridable()
-
-#define RUCY_IS_OVERRIDDEN(name) \
-	!this->value.is_nil() && this->is_overridden(name, OID_##name)
-
-
 #define RUCY_TRY \
 	Rucy::RubyValue RUCY__rubyexception__ = Rucy::nil(); \
 	int RUCY__rubyjumptag__ = 0; \
@@ -274,16 +255,6 @@
 		RUCY_TRY
 %	end
 
-#define RUCY_DEF_clear_override_flags(name, native_class) \
-	RUCY_DEF0(name) \
-	{ \
-		RUCY_CHECK_OBJ(native_class, self); \
-		Rucy::ClassWrapper<native_class>* obj = \
-			dynamic_cast<Rucy::ClassWrapper<native_class>*>(Rucy::to<native_class*>(self)); \
-		if (obj) obj->clear_override_flags(); \
-	} \
-	RUCY_END
-
 #define RUCY_END \
 		RUCY_CATCH \
 		return Rucy::nil(); \
@@ -308,7 +279,7 @@
 	} \
 	while(0)
 
-#define RUCY_WRAPPER_CALL(native_class, obj, fun) \
+#define RUCY_CALL_SUPER(obj, fun) \
 	((obj)->rucy_disable_override() ? (obj)->fun : (obj)->fun)
 
 
@@ -328,15 +299,15 @@ namespace Rucy
 	template <typename T> Class get_ruby_class ();
 
 
-	template <typename T, int N = 8>
+	template <typename T>
 	class ClassWrapper : public T
 	{
 
 		typedef ClassWrapper This;
 
-		public:
+		typedef T RucyWrapped;
 
-			typedef T RucyWrapped;
+		public:
 
 			GlobalValue value;
 
@@ -367,13 +338,11 @@ namespace Rucy
 				RucyWrapped::release();
 			}
 
-			virtual void clear_override_flags ()
-			{
-				override_flags.reset();
-			}
-
 			virtual bool is_overridable () const
 			{
+				if (value.is_nil())
+					return false;
+
 				if (!overridable)
 				{
 					overridable = true;
@@ -381,28 +350,6 @@ namespace Rucy
 				}
 
 				return true;
-			}
-
-			virtual bool is_overridden (const Symbol& name, uint id) const
-			{
-				if (id <= OVERRIDE_ID_UNKNOWN)
-					return false;
-
-				if (!overridable)
-				{
-					overridable = true;
-					return false;
-				}
-
-				bool checked = false, overridden = false;
-				get_override_flag(&checked, &overridden, id);
-				if (checked) return overridden;
-
-				overridden = check_overridden(name);
-				if (!set_override_flag(id, true, overridden))
-					return false;
-
-				return overridden;
 			}
 
 			virtual void* rucy_value () const
@@ -418,17 +365,6 @@ namespace Rucy
 
 		protected:
 
-			enum
-			{
-
-				OVERRIDE_ID_UNKNOWN = 0,
-
-				OVERRIDE_ID_LAST,
-
-				OVERRIDE_ID_MAX = N
-
-			};
-
 			virtual ushort refc_aux () const
 			{
 				return RucyWrapped::refc_aux();
@@ -441,67 +377,7 @@ namespace Rucy
 
 		private:
 
-			class OverrideFlags : public std::bitset<OVERRIDE_ID_MAX * 2>
-			{
-
-				public:
-
-					void resize (size_t size)
-					{
-						rucy_error(__FILE__, __LINE__, "override flags overflow.");
-					}
-
-			};// OverrideFlags
-
-			mutable OverrideFlags override_flags;
-
 			mutable bool overridable;
-
-			bool check_overridden (const Symbol& name) const
-			{
-				RUCY_SYM(method);
-				RUCY_SYM(owner);
-				RUCY_SYM(instance_methods);
-				RUCY_SYM_Q(include);
-				RUCY_SYM(clear_override_flags);
-				return !value
-					.call(method, name.value())
-					.call(owner)
-					.call(instance_methods, false)
-					.call(include, clear_override_flags.value());
-			}
-
-			void get_override_flag (bool* checked, bool* overridden, uint id) const
-			{
-				assert(checked || overridden);
-
-				int checked_pos    = id2index(id);
-				int overridden_pos = checked_pos + 1;
-				bool valid = 0 <= checked_pos && overridden_pos < (int) override_flags.size();
-				if (checked)    *checked    = valid ? override_flags[checked_pos]    : false;
-				if (overridden) *overridden = valid ? override_flags[overridden_pos] : false;
-			}
-
-			bool set_override_flag (uint id, bool checked, bool overridden) const
-			{
-				assert(id < OVERRIDE_ID_MAX);
-
-				int checked_pos = id2index(id);
-				if (checked_pos < 0) return true;
-
-				int overridden_pos = checked_pos + 1;
-				if (overridden_pos >= (int) override_flags.size())
-					override_flags.resize(overridden_pos + 1);
-
-				override_flags[checked_pos]    = checked;
-				override_flags[overridden_pos] = overridden;
-				return true;
-			}
-
-			int id2index (uint id) const
-			{
-				return (id - 1) * 2;
-			}
 
 	};// ClassWrapper
 

@@ -22,10 +22,9 @@ namespace Reflex
 	class RubyTimer : public Rucy::ClassWrapper<T>
 	{
 
-		public:
+		typedef Rucy::ClassWrapper<T> Super;
 
-			RUCY_OVERRIDE_BEGIN(Rucy::ClassWrapper<T>)
-			RUCY_OVERRIDE_END
+		public:
 
 			virtual void fire ()
 			{

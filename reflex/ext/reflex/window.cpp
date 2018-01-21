@@ -17,7 +17,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Window)
 
 #define CHECK     RUCY_CHECK_OBJECT(Reflex::Window, self)
 
-#define CALL(fun) RUCY_WRAPPER_CALL(Reflex::Window, THIS, fun)
+#define CALL(fun) RUCY_CALL_SUPER(THIS, fun)
 
 
 static
@@ -253,9 +253,6 @@ RUCY_DEF1(on_wheel, event)
 }
 RUCY_END
 
-static
-RUCY_DEF_clear_override_flags(cof, Reflex::Window);
-
 
 static Class cWindow;
 
@@ -293,7 +290,6 @@ Init_window ()
 	cWindow.define_method("on_pointer_up",   on_pointer_up);
 	cWindow.define_method("on_pointer_move", on_pointer_move);
 	cWindow.define_method("on_wheel", on_wheel);
-	cWindow.define_clear_override_flags(cof);
 }
 
 

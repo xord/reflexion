@@ -20,44 +20,17 @@ namespace Reflex
 
 
 	template <typename T>
-	class RubyView : public Rucy::ClassWrapper<T, 24>
+	class RubyView : public Rucy::ClassWrapper<T>
 	{
 
-		typedef Rucy::ClassWrapper<T, 24> Wrapper;
+		typedef Rucy::ClassWrapper<T> Super;
 
 		public:
-
-			RUCY_OVERRIDE_BEGIN(Wrapper)
-
-			RUCY_OVERRIDE_ID(content_size)
-			RUCY_OVERRIDE_ID(on_update)
-			RUCY_OVERRIDE_ID(on_draw)
-			RUCY_OVERRIDE_ID(on_move)
-			RUCY_OVERRIDE_ID(on_resize)
-			RUCY_OVERRIDE_ID(on_rotate)
-			RUCY_OVERRIDE_ID(on_scroll)
-			RUCY_OVERRIDE_ID(on_focus)
-			RUCY_OVERRIDE_ID(on_blur)
-			RUCY_OVERRIDE_ID(on_key)
-			RUCY_OVERRIDE_ID(on_key_down)
-			RUCY_OVERRIDE_ID(on_key_up)
-			RUCY_OVERRIDE_ID(on_pointer)
-			RUCY_OVERRIDE_ID(on_pointer_down)
-			RUCY_OVERRIDE_ID(on_pointer_up)
-			RUCY_OVERRIDE_ID(on_pointer_move)
-			RUCY_OVERRIDE_ID(on_wheel)
-			RUCY_OVERRIDE_ID(on_capture)
-			RUCY_OVERRIDE_ID(on_timer)
-			RUCY_OVERRIDE_ID(on_contact)
-			RUCY_OVERRIDE_ID(on_contact_begin)
-			RUCY_OVERRIDE_ID(on_contact_end)
-
-			RUCY_OVERRIDE_END
 
 			virtual Point content_size () const
 			{
 				RUCY_SYM(content_size);
-				if (RUCY_IS_OVERRIDDEN(content_size))
+				if (this->is_overridable())
 				{
 					Rucy::Value ret = this->value.call(content_size);
 					return ret.is_nil() ? Super::content_size() : Rucy::to<Point>(ret);
@@ -69,7 +42,7 @@ namespace Reflex
 			virtual void on_attach (Event* e)
 			{
 				RUCY_SYM(on_attach);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(on_attach, Rucy::value(e));
 				else
 					Super::on_attach(e);
@@ -78,7 +51,7 @@ namespace Reflex
 			virtual void on_detach (Event* e)
 			{
 				RUCY_SYM(on_detach);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(on_detach, Rucy::value(e));
 				else
 					Super::on_detach(e);
@@ -87,7 +60,7 @@ namespace Reflex
 			virtual void on_show (Event* e)
 			{
 				RUCY_SYM(on_show);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(on_show, Rucy::value(e));
 				else
 					Super::on_show(e);
@@ -96,7 +69,7 @@ namespace Reflex
 			virtual void on_hide (Event* e)
 			{
 				RUCY_SYM(on_hide);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(on_hide, Rucy::value(e));
 				else
 					Super::on_hide(e);
@@ -105,7 +78,7 @@ namespace Reflex
 			virtual void on_update (UpdateEvent* e)
 			{
 				RUCY_SYM(on_update);
-				if (RUCY_IS_OVERRIDDEN(on_update))
+				if (this->is_overridable())
 					this->value.call(on_update, Rucy::value(e));
 				else
 					Super::on_update(e);
@@ -114,7 +87,7 @@ namespace Reflex
 			virtual void on_draw (DrawEvent* e)
 			{
 				RUCY_SYM(on_draw);
-				if (RUCY_IS_OVERRIDDEN(on_draw))
+				if (this->is_overridable())
 					this->value.call(on_draw, Rucy::value(e));
 				else
 					Super::on_draw(e);
@@ -123,7 +96,7 @@ namespace Reflex
 			virtual void on_move (FrameEvent* e)
 			{
 				RUCY_SYM(on_move);
-				if (RUCY_IS_OVERRIDDEN(on_move))
+				if (this->is_overridable())
 					this->value.call(on_move, Rucy::value(e));
 				else
 					Super::on_move(e);
@@ -132,7 +105,7 @@ namespace Reflex
 			virtual void on_resize (FrameEvent* e)
 			{
 				RUCY_SYM(on_resize);
-				if (RUCY_IS_OVERRIDDEN(on_resize))
+				if (this->is_overridable())
 					this->value.call(on_resize, Rucy::value(e));
 				else
 					Super::on_resize(e);
@@ -141,7 +114,7 @@ namespace Reflex
 			virtual void on_rotate (FrameEvent* e)
 			{
 				RUCY_SYM(on_rotate);
-				if (RUCY_IS_OVERRIDDEN(on_rotate))
+				if (this->is_overridable())
 					this->value.call(on_rotate, Rucy::value(e));
 				else
 					Super::on_rotate(e);
@@ -150,7 +123,7 @@ namespace Reflex
 			virtual void on_scroll (ScrollEvent* e)
 			{
 				RUCY_SYM(on_scroll);
-				if (RUCY_IS_OVERRIDDEN(on_scroll))
+				if (this->is_overridable())
 					this->value.call(on_scroll, Rucy::value(e));
 				else
 					Super::on_scroll(e);
@@ -159,7 +132,7 @@ namespace Reflex
 			virtual void on_focus (FocusEvent* e)
 			{
 				RUCY_SYM(on_focus);
-				if (RUCY_IS_OVERRIDDEN(on_focus))
+				if (this->is_overridable())
 					this->value.call(on_focus, Rucy::value(e));
 				else
 					Super::on_focus(e);
@@ -168,7 +141,7 @@ namespace Reflex
 			virtual void on_blur (FocusEvent* e)
 			{
 				RUCY_SYM(on_blur);
-				if (RUCY_IS_OVERRIDDEN(on_blur))
+				if (this->is_overridable())
 					this->value.call(on_blur, Rucy::value(e));
 				else
 					Super::on_blur(e);
@@ -177,7 +150,7 @@ namespace Reflex
 			virtual void on_key (KeyEvent* e)
 			{
 				RUCY_SYM(on_key);
-				if (RUCY_IS_OVERRIDDEN(on_key))
+				if (this->is_overridable())
 					this->value.call(on_key, Rucy::value(e));
 				else
 					Super::on_key(e);
@@ -186,7 +159,7 @@ namespace Reflex
 			virtual void on_key_down (KeyEvent* e)
 			{
 				RUCY_SYM(on_key_down);
-				if (RUCY_IS_OVERRIDDEN(on_key_down))
+				if (this->is_overridable())
 					this->value.call(on_key_down, Rucy::value(e));
 				else
 					Super::on_key_down(e);
@@ -195,7 +168,7 @@ namespace Reflex
 			virtual void on_key_up (KeyEvent* e)
 			{
 				RUCY_SYM(on_key_up);
-				if (RUCY_IS_OVERRIDDEN(on_key_up))
+				if (this->is_overridable())
 					this->value.call(on_key_up, Rucy::value(e));
 				else
 					Super::on_key_up(e);
@@ -204,7 +177,7 @@ namespace Reflex
 			virtual void on_pointer (PointerEvent* e)
 			{
 				RUCY_SYM(on_pointer);
-				if (RUCY_IS_OVERRIDDEN(on_pointer))
+				if (this->is_overridable())
 					this->value.call(on_pointer, Rucy::value(e));
 				else
 					Super::on_pointer(e);
@@ -213,7 +186,7 @@ namespace Reflex
 			virtual void on_pointer_down (PointerEvent* e)
 			{
 				RUCY_SYM(on_pointer_down);
-				if (RUCY_IS_OVERRIDDEN(on_pointer_down))
+				if (this->is_overridable())
 					this->value.call(on_pointer_down, Rucy::value(e));
 				else
 					Super::on_pointer_down(e);
@@ -222,7 +195,7 @@ namespace Reflex
 			virtual void on_pointer_up (PointerEvent* e)
 			{
 				RUCY_SYM(on_pointer_up);
-				if (RUCY_IS_OVERRIDDEN(on_pointer_up))
+				if (this->is_overridable())
 					this->value.call(on_pointer_up, Rucy::value(e));
 				else
 					Super::on_pointer_up(e);
@@ -231,7 +204,7 @@ namespace Reflex
 			virtual void on_pointer_move (PointerEvent* e)
 			{
 				RUCY_SYM(on_pointer_move);
-				if (RUCY_IS_OVERRIDDEN(on_pointer_move))
+				if (this->is_overridable())
 					this->value.call(on_pointer_move, Rucy::value(e));
 				else
 					Super::on_pointer_move(e);
@@ -240,7 +213,7 @@ namespace Reflex
 			virtual void on_wheel (WheelEvent* e)
 			{
 				RUCY_SYM(on_wheel);
-				if (RUCY_IS_OVERRIDDEN(on_wheel))
+				if (this->is_overridable())
 					this->value.call(on_wheel, Rucy::value(e));
 				else
 					Super::on_wheel(e);
@@ -249,7 +222,7 @@ namespace Reflex
 			virtual void on_capture (CaptureEvent* e)
 			{
 				RUCY_SYM(on_capture);
-				if (RUCY_IS_OVERRIDDEN(on_capture))
+				if (this->is_overridable())
 					this->value.call(on_capture, Rucy::value(e));
 				else
 					Super::on_capture(e);
@@ -258,7 +231,7 @@ namespace Reflex
 			virtual void on_timer (TimerEvent* e)
 			{
 				RUCY_SYM(on_timer);
-				if (RUCY_IS_OVERRIDDEN(on_timer))
+				if (this->is_overridable())
 					this->value.call(on_timer, Rucy::value(e));
 				else
 					Super::on_timer(e);
@@ -267,7 +240,7 @@ namespace Reflex
 			virtual void on_contact (ContactEvent* e)
 			{
 				RUCY_SYM(on_contact);
-				if (RUCY_IS_OVERRIDDEN(on_contact))
+				if (this->is_overridable())
 					this->value.call(on_contact, Rucy::value(e));
 				else
 					Super::on_contact(e);
@@ -276,7 +249,7 @@ namespace Reflex
 			virtual void on_contact_begin (ContactEvent* e)
 			{
 				RUCY_SYM(on_contact_begin);
-				if (RUCY_IS_OVERRIDDEN(on_contact_begin))
+				if (this->is_overridable())
 					this->value.call(on_contact_begin, Rucy::value(e));
 				else
 					Super::on_contact_begin(e);
@@ -285,7 +258,7 @@ namespace Reflex
 			virtual void on_contact_end (ContactEvent* e)
 			{
 				RUCY_SYM(on_contact_end);
-				if (RUCY_IS_OVERRIDDEN(on_contact_end))
+				if (this->is_overridable())
 					this->value.call(on_contact_end, Rucy::value(e));
 				else
 					Super::on_contact_end(e);

@@ -23,18 +23,14 @@ namespace Reflex
 	class RubyApplication : public Rucy::ClassWrapper<T>
 	{
 
+		typedef Rucy::ClassWrapper<T> Super;
+
 		public:
-
-			RUCY_OVERRIDE_BEGIN(Rucy::ClassWrapper<T>)
-
-			RUCY_OVERRIDE_ID(on_motion)
-
-			RUCY_OVERRIDE_END
 
 			virtual void start ()
 			{
 				RUCY_SYM(start);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(start);
 				else
 					return Super::start();
@@ -43,7 +39,7 @@ namespace Reflex
 			virtual void quit ()
 			{
 				RUCY_SYM(quit);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(quit);
 				else
 					return Super::quit();
@@ -52,7 +48,7 @@ namespace Reflex
 			virtual void on_start (Event* e)
 			{
 				RUCY_SYM(on_start);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(on_start, Rucy::value(e));
 				else
 					return Super::on_start(e);
@@ -61,7 +57,7 @@ namespace Reflex
 			virtual void on_quit (Event* e)
 			{
 				RUCY_SYM(on_quit);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(on_quit, Rucy::value(e));
 				else
 					return Super::on_quit(e);
@@ -70,7 +66,7 @@ namespace Reflex
 			virtual void on_motion (MotionEvent* e)
 			{
 				RUCY_SYM(on_motion);
-				if (RUCY_IS_OVERRIDDEN(on_motion))
+				if (this->is_overridable())
 					this->value.call(on_motion, Rucy::value(e));
 				else
 					Super::on_motion(e);
@@ -79,7 +75,7 @@ namespace Reflex
 			virtual void on_preference (Event* e)
 			{
 				RUCY_SYM(on_preference);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(on_preference, Rucy::value(e));
 				else
 					return Super::on_preference(e);
@@ -88,7 +84,7 @@ namespace Reflex
 			virtual void on_about (Event* e)
 			{
 				RUCY_SYM(on_about);
-				if (RUCY_IS_OVERRIDABLE())
+				if (this->is_overridable())
 					this->value.call(on_about, Rucy::value(e));
 				else
 					return Super::on_about(e);

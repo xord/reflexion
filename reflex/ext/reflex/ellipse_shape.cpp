@@ -14,7 +14,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::EllipseShape)
 
 #define CHECK     RUCY_CHECK_OBJ(Reflex::EllipseShape, self)
 
-#define CALL(fun) RUCY_WRAPPER_CALL(Reflex::EllipseShape, THIS, fun)
+#define CALL(fun) RUCY_CALL_SUPER(THIS, fun)
 
 
 static
@@ -94,9 +94,6 @@ RUCY_DEF0(get_nsegment)
 }
 RUCY_END
 
-static
-RUCY_DEF_clear_override_flags(cof, Reflex::EllipseShape);
-
 
 static Class cEllipseShape;
 
@@ -115,7 +112,6 @@ Init_ellipse_shape ()
 	cEllipseShape.define_method("hole_size",  get_hole_size);
 	cEllipseShape.define_method("nsegment=", set_nsegment);
 	cEllipseShape.define_method("nsegment",  get_nsegment);
-	cEllipseShape.define_clear_override_flags(cof);
 }
 
 

@@ -35,11 +35,6 @@ class Base : public Xot::RefCountable<>
 			return "Base::name_overridable";
 		}
 
-		virtual const char* name_overridable_faster () const
-		{
-			return "Base::name_overridable_faster";
-		}
-
 };// Base
 
 
@@ -66,11 +61,6 @@ class Sub : public Base
 		virtual const char* name_overridable () const
 		{
 			return "Sub::name_overridable";
-		}
-
-		virtual const char* name_overridable_faster () const
-		{
-			return "Sub::name_overridable_faster";
 		}
 
 };// Sub

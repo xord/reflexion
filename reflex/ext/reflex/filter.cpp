@@ -16,7 +16,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Filter)
 
 #define CHECK     RUCY_CHECK_OBJ(Reflex::Filter, self)
 
-#define CALL(fun) RUCY_WRAPPER_CALL(Reflex::Filter, THIS, fun)
+#define CALL(fun) RUCY_CALL_SUPER(THIS, fun)
 
 
 static
@@ -59,9 +59,6 @@ RUCY_DEF0(get_shader)
 }
 RUCY_END
 
-static
-RUCY_DEF_clear_override_flags(cof, Reflex::Filter);
-
 
 static Class cFilter;
 
@@ -76,7 +73,6 @@ Init_filter ()
 	cFilter.define_method("apply", apply);
 	cFilter.define_method("shader=", set_shader);
 	cFilter.define_method("shader",  get_shader);
-	cFilter.define_clear_override_flags(cof);
 }
 
 

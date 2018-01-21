@@ -15,7 +15,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::LineShape)
 
 #define CHECK     RUCY_CHECK_OBJ(Reflex::LineShape, self)
 
-#define CALL(fun) RUCY_WRAPPER_CALL(Reflex::LineShape, THIS, fun)
+#define CALL(fun) RUCY_CALL_SUPER(THIS, fun)
 
 
 static
@@ -77,9 +77,6 @@ RUCY_DEF0(get_loop)
 }
 RUCY_END
 
-static
-RUCY_DEF_clear_override_flags(cof, Reflex::LineShape);
-
 
 static Class cLineShape;
 
@@ -94,7 +91,6 @@ Init_line_shape ()
 	cLineShape.define_method("add_points", add_points);
 	cLineShape.define_method("loop=", set_loop);
 	cLineShape.define_method("loop",  get_loop);
-	cLineShape.define_clear_override_flags(cof);
 }
 
 

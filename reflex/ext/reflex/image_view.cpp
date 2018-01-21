@@ -44,9 +44,6 @@ RUCY_DEF1(set_image, image)
 }
 RUCY_END
 
-static
-RUCY_DEF_clear_override_flags(cof, Reflex::ImageView);
-
 
 static Class cImageView;
 
@@ -59,7 +56,6 @@ Init_image_view ()
 	cImageView.define_alloc_func(alloc);
 	cImageView.define_private_method("set_image", set_image);
 	cImageView.define_method(            "image", get_image);
-	cImageView.define_clear_override_flags(cof);
 }
 
 

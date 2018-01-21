@@ -14,7 +14,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::RectShape)
 
 #define CHECK     RUCY_CHECK_OBJ(Reflex::RectShape, self)
 
-#define CALL(fun) RUCY_WRAPPER_CALL(Reflex::RectShape, THIS, fun)
+#define CALL(fun) RUCY_CALL_SUPER(THIS, fun)
 
 
 static
@@ -140,9 +140,6 @@ RUCY_DEF0(get_nsegment)
 }
 RUCY_END
 
-static
-RUCY_DEF_clear_override_flags(cof, Reflex::RectShape);
-
 
 static Class cRectShape;
 
@@ -165,7 +162,6 @@ Init_rect_shape ()
 	cRectShape.define_method("round_right_bottom",  get_round_right_bottom);
 	cRectShape.define_method("nsegment=", set_nsegment);
 	cRectShape.define_method("nsegment",  get_nsegment);
-	cRectShape.define_clear_override_flags(cof);
 }
 
 

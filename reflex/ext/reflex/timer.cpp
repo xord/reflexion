@@ -17,7 +17,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Timer)
 
 #define CHECK     RUCY_CHECK_OBJ(Reflex::Timer, self)
 
-#define CALL(fun) RUCY_WRAPPER_CALL(Reflex::Timer, THIS, fun)
+#define CALL(fun) RUCY_CALL_SUPER(THIS, fun)
 
 
 static
@@ -77,9 +77,6 @@ RUCY_DEF0(is_finished)
 }
 RUCY_END
 
-static
-RUCY_DEF_clear_override_flags(cof, Reflex::Timer);
-
 
 static Class cTimer;
 
@@ -96,7 +93,6 @@ Init_timer ()
 	cTimer.define_method("count=", set_count);
 	cTimer.define_method("count",  get_count);
 	cTimer.define_method("finish?", is_finished);
-	cTimer.define_clear_override_flags(cof);
 
 	define_selector_methods<Reflex::Timer>(cTimer);
 }

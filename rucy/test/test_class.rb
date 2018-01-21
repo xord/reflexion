@@ -14,10 +14,6 @@ class Temp < Rucy::Tester::Sub
     "Temp::name_overridable"
   end
 
-  def name_overridable_faster ()
-    "Temp::name_overridable_faster"
-  end
-
 end# Temp
 
 
@@ -94,7 +90,7 @@ class TestClass < Test::Unit::TestCase
     assert_equal "Base::name", base_raw.call_name
     assert_equal "Sub::name",  sub     .call_name
     assert_equal "Sub::name",  sub_raw .call_name
-    assert_equal "Sub::name",  temp    .call_name # returns "Sub" not "Temp"!
+    assert_equal "Sub::name",  temp    .call_name# "Sub" instead of "Temp"!
   end
 
   def test_call_name_overridable ()
@@ -103,34 +99,6 @@ class TestClass < Test::Unit::TestCase
     assert_equal "Sub::name_overridable",  sub     .call_name_overridable
     assert_equal "Sub::name_overridable",  sub_raw .call_name_overridable
     assert_equal "Temp::name_overridable", temp    .call_name_overridable
-  end
-
-  class X < Sub; end
-
-  def test_is_overridden ()
-    m = :name_overridable_faster
-    def is_overridden (o) o.is_name_overridable_faster_overridden; end
-
-    assert_equal true, is_overridden(temp)
-
-    o = X.new
-    assert_equal false, is_overridden(o)
-    def o.name_overridable_faster () end
-    assert_equal true,  is_overridden(o)
-
-    o = X.new
-    assert_equal false, is_overridden(o)
-    eval "class X; def #{m}; end; end"
-    assert_equal true,  is_overridden(o)
-    eval "class X; remove_method :#{m}; end"
-    assert_equal false, is_overridden(o)
-
-    o = X.new
-    assert_equal false, is_overridden(o)
-    X.send(:define_method, m) {}
-    assert_equal true,  is_overridden(o)
-    X.send :remove_method, m
-    assert_equal false, is_overridden(o)
   end
 
   def test_gc ()

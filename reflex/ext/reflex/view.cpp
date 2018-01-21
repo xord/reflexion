@@ -25,7 +25,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::View)
 
 #define CHECK     RUCY_CHECK_OBJECT(Reflex::View, self)
 
-#define CALL(fun) RUCY_WRAPPER_CALL(Reflex::View, THIS, fun)
+#define CALL(fun) RUCY_CALL_SUPER(THIS, fun)
 
 
 template <typename T>
@@ -985,9 +985,6 @@ RUCY_DEF1(on_contact_end, event)
 }
 RUCY_END
 
-static
-RUCY_DEF_clear_override_flags(cof, Reflex::View);
-
 
 static Class cView;
 
@@ -1108,7 +1105,6 @@ Init_view ()
 	cView.define_method("on_contact",       on_contact);
 	cView.define_method("on_contact_begin", on_contact_begin);
 	cView.define_method("on_contact_end",   on_contact_end);
-	cView.define_clear_override_flags(cof);
 
 	cView.define_const("CAPTURE_NONE",    Reflex::View::CAPTURE_NONE);
 	cView.define_const("CAPTURE_KEY",     Reflex::View::CAPTURE_KEY);

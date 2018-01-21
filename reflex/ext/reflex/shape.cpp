@@ -17,7 +17,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Shape)
 
 #define CHECK     RUCY_CHECK_OBJ(Reflex::Shape, self)
 
-#define CALL(fun) RUCY_WRAPPER_CALL(Reflex::Shape, THIS, fun)
+#define CALL(fun) RUCY_CALL_SUPER(THIS, fun)
 
 
 static
@@ -186,9 +186,6 @@ RUCY_DEF1(on_contact_end, event)
 }
 RUCY_END
 
-static
-RUCY_DEF_clear_override_flags(cof, Reflex::Shape);
-
 
 static Class cShape;
 
@@ -218,7 +215,6 @@ Init_shape ()
 	cShape.define_method("on_contact",       on_contact);
 	cShape.define_method("on_contact_begin", on_contact_begin);
 	cShape.define_method("on_contact_end",   on_contact_end);
-	cShape.define_clear_override_flags(cof);
 
 	define_selector_methods<Reflex::Shape>(cShape);
 }

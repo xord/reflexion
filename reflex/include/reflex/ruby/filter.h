@@ -22,18 +22,14 @@ namespace Reflex
 	class RubyFilter : public Rucy::ClassWrapper<T>
 	{
 
+		typedef Rucy::ClassWrapper<T> Super;
+
 		public:
-
-			RUCY_OVERRIDE_BEGIN(Rucy::ClassWrapper<T>)
-
-			RUCY_OVERRIDE_ID(apply)
-
-			RUCY_OVERRIDE_END
 
 			virtual void apply (Painter* painter, const Image& image) const
 			{
 				RUCY_SYM(apply);
-				if (RUCY_IS_OVERRIDDEN(apply))
+				if (this->is_overridable())
 					this->value.call(apply, Rucy::value(painter), Rucy::value(image));
 				else
 					Super::apply(painter, image);

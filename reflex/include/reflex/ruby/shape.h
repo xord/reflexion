@@ -32,21 +32,14 @@ namespace Reflex
 	class RubyShape : public Rucy::ClassWrapper<T>
 	{
 
+		typedef Rucy::ClassWrapper<T> Super;
+
 		public:
-
-			RUCY_OVERRIDE_BEGIN(Rucy::ClassWrapper<T>)
-
-			RUCY_OVERRIDE_ID(on_draw)
-			RUCY_OVERRIDE_ID(on_contact)
-			RUCY_OVERRIDE_ID(on_contact_begin)
-			RUCY_OVERRIDE_ID(on_contact_end)
-
-			RUCY_OVERRIDE_END
 
 			virtual void on_draw (DrawEvent* e)
 			{
 				RUCY_SYM(on_draw);
-				if (RUCY_IS_OVERRIDDEN(on_draw))
+				if (this->is_overridable())
 					this->value.call(on_draw, Rucy::value(e));
 				else
 					Super::on_draw(e);
@@ -55,7 +48,7 @@ namespace Reflex
 			virtual void on_contact (ContactEvent* e)
 			{
 				RUCY_SYM(on_contact);
-				if (RUCY_IS_OVERRIDDEN(on_contact))
+				if (this->is_overridable())
 					this->value.call(on_contact, Rucy::value(e));
 				else
 					Super::on_contact(e);
@@ -64,7 +57,7 @@ namespace Reflex
 			virtual void on_contact_begin (ContactEvent* e)
 			{
 				RUCY_SYM(on_contact_begin);
-				if (RUCY_IS_OVERRIDDEN(on_contact_begin))
+				if (this->is_overridable())
 					this->value.call(on_contact_begin, Rucy::value(e));
 				else
 					Super::on_contact_begin(e);
@@ -73,7 +66,7 @@ namespace Reflex
 			virtual void on_contact_end (ContactEvent* e)
 			{
 				RUCY_SYM(on_contact_end);
-				if (RUCY_IS_OVERRIDDEN(on_contact_end))
+				if (this->is_overridable())
 					this->value.call(on_contact_end, Rucy::value(e));
 				else
 					Super::on_contact_end(e);
