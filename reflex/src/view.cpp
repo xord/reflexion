@@ -5,7 +5,6 @@
 #include <memory>
 #include <algorithm>
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
-#include <Box2D/Collision/Shapes/b2ChainShape.h>
 #include "reflex/window.h"
 #include "reflex/timer.h"
 #include "reflex/filter.h"

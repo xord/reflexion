@@ -38,9 +38,9 @@ win = Reflex::Window.new do
       on :draw do |e|
         p, b = e.painter, e.bounds
         p.fill *c
-        #p.rect *b.to_a
-        p.arc *b.to_a, angle, angle + 90
-        p.arc *b.to_a, angle + 180, angle + 270
+        #p.rect b
+        p.ellipse b, angle, angle + 90
+        p.ellipse b, angle + 180, angle + 270
       end
     }
     update_count
@@ -80,7 +80,7 @@ win = Reflex::Window.new do
   root.on :draw do |e|
     p = e.painter
     p.fill 1
-    p.text "draw on root view.", 10, 30
+    p.text "draw on root view. (#{e.fps.to_i} FPS)", 10, 30
   end
 
   #100.times {spawn *frame.move_to(0).center.to_a}

@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "rucy/function.h"
 #include "rucy/exception.h"
+#include "rucy/debug.h"
 
 
 namespace Rucy
@@ -597,7 +598,7 @@ namespace Rucy
 	{
 		return Value(size, array);
 	}
-%	(1..10).each do |n|
+%	(1..16).each do |n|
 
 	Value
 	array (<%= params(n, ', ') {|i| "Value v#{i}"} %>)

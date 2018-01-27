@@ -68,13 +68,13 @@ namespace Reflex
 
 			if (!pfixtures)
 			{
-				Body* b    = View_get_body(owner);
-				Fixture* f = (b && !Body_is_temporary(b))
+				Body* body   = View_get_body(owner);
+				Fixture* fix = (body && !Body_is_temporary(body))
 					? shape->create_fixtures()
 					: Fixture_create_temporary();
-				assert(f);
+				assert(fix);
 
-				pfixtures.reset(f);
+				pfixtures.reset(fix);
 			}
 			return pfixtures.get();
 		}
@@ -97,6 +97,15 @@ namespace Reflex
 
 	};// Shape::Data
 
+
+	static Fixture*
+	create_empty_fixture (Shape* shape)
+	{
+		assert(shape);
+
+		b2CircleShape b2shape;
+		return FixtureBuilder(shape, &b2shape).fixtures();
+	}
 
 	bool
 	Shape_set_owner (Shape* shape, View* owner)
@@ -469,7 +478,8 @@ namespace Reflex
 		if (!view)
 			invalid_state_error(__FILE__, __LINE__);
 
-		if (self->points.size() <= 1) return NULL;
+		if (self->points.size() < 2)
+			return create_empty_fixture(this);
 
 		float ppm = view->meter2pixel();
 
@@ -647,7 +657,10 @@ namespace Reflex
 		if (!view)
 			invalid_state_error(__FILE__, __LINE__);
 
-		Bounds f  = frame();
+		Bounds f = frame();
+		if (f.size() == 0)
+			return create_empty_fixture(this);
+
 		float ppm = view->meter2pixel();
 		b2Vec2 pos( to_b2coord(f.x, ppm), to_b2coord(f.y, ppm));
 		b2Vec2 size(to_b2coord(f.w, ppm), to_b2coord(f.h, ppm));
@@ -998,7 +1011,10 @@ namespace Reflex
 		if (!view)
 			invalid_state_error(__FILE__, __LINE__);
 
-		Bounds f    = frame();
+		Bounds f = frame();
+		if (f.size() == 0)
+			return create_empty_fixture(this);
+
 		float ppm   = view->meter2pixel();
 		bool angled = self->has_angle();
 		bool holed  = self->has_hole();
