@@ -54,7 +54,7 @@ module Reflex
     def initialize (options = nil, &block)
       super()
       set options if options
-      @show_block = block
+      Xot::BlockUtil.instance_eval_or_block_call self, &block if block
     end
 
     def paint (&block)
@@ -64,14 +64,6 @@ module Reflex
     def self.show (*args, &block)
       new(*args, &block).show
     end
-
-    private
-
-      def call_show_block ()
-        return unless @show_block
-        Xot::BlockUtil.instance_eval_or_block_call self, &@show_block
-        @show_block = nil
-      end
 
   end# Window
 
