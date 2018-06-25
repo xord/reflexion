@@ -374,6 +374,12 @@ namespace Rucy
 		return get_length(*this, size);
 	}
 
+	bool
+	Value::empty () const
+	{
+		return size() <= 0;
+	}
+
 
 	GlobalValue::GlobalValue ()
 	{
