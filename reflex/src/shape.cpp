@@ -798,7 +798,8 @@ namespace Reflex
 
 		if (nseg <= 0)
 		{
-			nseg = Painter::NSEGMENT_ELLIPSE / 2;
+			static const int NSEGMENT_ELLIPSE = 8;// TODO
+			nseg = NSEGMENT_ELLIPSE / 2;
 
 			if (self->has_angle())
 			{

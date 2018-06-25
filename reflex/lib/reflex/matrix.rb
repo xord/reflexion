@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 
-require 'rays/texture'
+require 'rays/matrix'
 
 
 module Reflex
 
 
-  Texture = Rays::Texture
+  Matrix = Rays::Matrix
 
 
 end# Reflex

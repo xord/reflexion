@@ -64,7 +64,7 @@ module Xot
     end
 
     def src_exts ()
-      env_array(:SRCEXTS, []) + %w[c cpp m mm]
+      env_array(:SRCEXTS, []) + %w[c cc cpp m mm]
     end
 
     def excludes ()
