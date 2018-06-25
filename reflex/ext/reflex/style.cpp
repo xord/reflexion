@@ -591,6 +591,20 @@ RUCY_DEFN(set_foreground_stroke)
 RUCY_END
 
 static
+RUCY_DEF1(set_foreground_stroke_width, width)
+{
+	CHECK;
+
+	if (width.is_nil())
+		THIS->clear_foreground_stroke_width();
+	else
+		THIS->set_foreground_stroke_width(to<coord>(width));
+
+	return width;
+}
+RUCY_END
+
+static
 RUCY_DEFN(set_background_fill)
 {
 	CHECK;
@@ -639,6 +653,20 @@ RUCY_DEFN(set_background_stroke)
 RUCY_END
 
 static
+RUCY_DEF1(set_background_stroke_width, width)
+{
+	CHECK;
+
+	if (width.is_nil())
+		THIS->clear_background_stroke_width();
+	else
+		THIS->set_background_stroke_width(to<coord>(width));
+
+	return width;
+}
+RUCY_END
+
+static
 RUCY_DEF0(get_foreground_fill)
 {
 	CHECK;
@@ -655,6 +683,14 @@ RUCY_DEF0(get_foreground_stroke)
 RUCY_END
 
 static
+RUCY_DEF0(get_foreground_stroke_width)
+{
+	CHECK;
+	return value(THIS->foreground_stroke_width());
+}
+RUCY_END
+
+static
 RUCY_DEF0(get_background_fill)
 {
 	CHECK;
@@ -667,6 +703,14 @@ RUCY_DEF0(get_background_stroke)
 {
 	CHECK;
 	return value(THIS->background_stroke());
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_background_stroke_width)
+{
+	CHECK;
+	return value(THIS->background_stroke_width());
 }
 RUCY_END
 
@@ -762,14 +806,18 @@ Init_style ()
 	cStyle.define_method("center=",   set_center);
 	cStyle.define_method("center",    get_center);
 
-	cStyle.define_method("foreground_fill=",   set_foreground_fill);
-	cStyle.define_method("foreground_fill",    get_foreground_fill);
-	cStyle.define_method("foreground_stroke=", set_foreground_stroke);
-	cStyle.define_method("foreground_stroke",  get_foreground_stroke);
-	cStyle.define_method("background_fill=",   set_background_fill);
-	cStyle.define_method("background_fill",    get_background_fill);
-	cStyle.define_method("background_stroke=", set_background_stroke);
-	cStyle.define_method("background_stroke",  get_background_stroke);
+	cStyle.define_method("foreground_fill=",         set_foreground_fill);
+	cStyle.define_method("foreground_fill",          get_foreground_fill);
+	cStyle.define_method("foreground_stroke=",       set_foreground_stroke);
+	cStyle.define_method("foreground_stroke",        get_foreground_stroke);
+	cStyle.define_method("foreground_stroke_width=", set_foreground_stroke_width);
+	cStyle.define_method("foreground_stroke_width",  get_foreground_stroke_width);
+	cStyle.define_method("background_fill=",         set_background_fill);
+	cStyle.define_method("background_fill",          get_background_fill);
+	cStyle.define_method("background_stroke=",       set_background_stroke);
+	cStyle.define_method("background_stroke",        get_background_stroke);
+	cStyle.define_method("background_stroke_width=", set_background_stroke_width);
+	cStyle.define_method("background_stroke_width",  get_background_stroke_width);
 
 	cStyle.define_method("image=", set_image);
 	cStyle.define_method("image",  get_image);

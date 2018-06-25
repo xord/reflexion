@@ -21,7 +21,7 @@ namespace Reflex
 
 	void View_set_frame (View* view, const Bounds& frame);
 
-	const Style& View_get_style (View* view);
+	const Style& View_get_style (const View* view);
 
 	Body* View_get_body (View* view, bool create = true);
 

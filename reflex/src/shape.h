@@ -4,6 +4,7 @@
 #define __REFLEX_SRC_SHAPE_H__
 
 
+#include <xot/util.h>
 #include <reflex/shape.h>
 
 
@@ -14,31 +15,48 @@ namespace Reflex
 {
 
 
-	class FixtureBuilder
+	class WallShape : public Shape
 	{
 
 		public:
 
-			FixtureBuilder (Shape* shape, const b2Shape* head = NULL);
+			enum Position
+			{
 
-			void add (const b2Shape* b2shape);
+				LEFT   = Xot::bit(0),
 
-			Fixture* fixtures () const;
+				TOP    = Xot::bit(1),
+
+				RIGHT  = Xot::bit(2),
+
+				BOTTOM = Xot::bit(3),
+
+				ALL    = LEFT | TOP | RIGHT | BOTTOM
+
+			};// Position
+
+			enum {DEFAULT_THICKNESS = 100};
+
+			WallShape (uint positions, coord thickness = DEFAULT_THICKNESS);
+
+			virtual void on_draw (DrawEvent* e);
+
+		protected:
+
+			virtual Polygon update_polygon () const;
 
 		private:
 
-			Shape* shape;
+			uint positions;
 
-			Fixture *head, *tail;
+			coord thickness;
 
-			void append (Fixture* fixture);
-
-	};// FixtureBuilder
+	};// WallShape
 
 
 	bool Shape_set_owner (Shape* shape, View* owner);
 
-	void Shape_update_fixtures (Shape* shape, bool force = false);
+	void Shape_update_polygon (Shape* shape, bool force = false);
 
 	void Shape_call_contact_event (Shape* shape, const ContactEvent& event);
 

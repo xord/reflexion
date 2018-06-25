@@ -75,7 +75,7 @@ namespace Reflex
 
 			virtual void on_detach (Event* e);
 
-			virtual void on_draw   (DrawEvent* e) = 0;
+			virtual void on_draw   (DrawEvent* e);
 
 			virtual void on_resize (FrameEvent* e);
 
@@ -91,11 +91,41 @@ namespace Reflex
 
 		protected:
 
-			virtual Fixture* create_fixtures () = 0;
-
 			virtual SelectorPtr* get_selector_ptr ();
 
+			virtual Fixture* create_fixtures ();
+
+			virtual Polygon update_polygon () const = 0;
+
+			virtual Polygon get_polygon_for_fixtures () const;
+
 	};// Shape
+
+
+	class PolygonShape : public Shape
+	{
+
+		typedef Shape Super;
+
+		public:
+
+			PolygonShape (const char* name = NULL);
+
+			virtual ~PolygonShape ();
+
+			virtual void       set_polygon (const Polygon& polygon);
+
+			virtual const Polygon& polygon () const;
+
+			struct Data;
+
+			Xot::PImpl<Data> self;
+
+		protected:
+
+			virtual Polygon update_polygon () const;
+
+	};// PolygonShape
 
 
 	class LineShape : public Shape
@@ -119,15 +149,13 @@ namespace Reflex
 
 			virtual bool     loop () const;
 
-			virtual void on_draw (DrawEvent* e);
-
 			struct Data;
 
 			Xot::PImpl<Data> self;
 
 		protected:
 
-			virtual Fixture* create_fixtures ();
+			virtual Polygon update_polygon () const;
 
 	};// LineShape
 
@@ -168,15 +196,15 @@ namespace Reflex
 
 			virtual uint     nsegment () const;
 
-			virtual void on_draw (DrawEvent* e);
-
 			struct Data;
 
 			Xot::PImpl<Data> self;
 
 		protected:
 
-			virtual Fixture* create_fixtures ();
+			virtual Polygon update_polygon () const;
+
+			virtual Polygon get_polygon_for_fixtures () const;
 
 	};// RectShape
 
@@ -210,8 +238,6 @@ namespace Reflex
 
 			virtual uint     nsegment() const;
 
-			virtual void on_draw (DrawEvent* e);
-
 			struct Data;
 
 			Xot::PImpl<Data> self;
@@ -219,6 +245,10 @@ namespace Reflex
 		protected:
 
 			virtual Fixture* create_fixtures ();
+
+			virtual Polygon update_polygon () const;
+
+			virtual Polygon get_polygon_for_fixtures () const;
 
 	};// EllipseShape
 

@@ -192,6 +192,12 @@ namespace Reflex
 
 			const Color& foreground_stroke () const;
 
+			void     set_foreground_stroke_width (coord width);
+
+			void   clear_foreground_stroke_width ();
+
+			coord        foreground_stroke_width () const;
+
 			void     set_background_fill (const Color& fill);
 
 			void   clear_background_fill ();
@@ -203,6 +209,12 @@ namespace Reflex
 			void   clear_background_stroke ();
 
 			const Color& background_stroke () const;
+
+			void     set_background_stroke_width (coord width);
+
+			void   clear_background_stroke_width ();
+
+			coord        background_stroke_width () const;
 
 			void     set_image (const Image& image);
 

@@ -114,7 +114,8 @@ module Xot
     end
 
     def get_env (name, defval = nil)
-      (ENV[name.to_s] || Object.const_get(name) rescue defval).dup
+      val = ENV[name.to_s] || Object.const_get(name) rescue defval
+      val.dup rescue val
     end
 
     def env (name, defval = nil)
@@ -165,7 +166,7 @@ module Xot
 
     def make_cflags (flags = '')
       s  = flags.dup
-      s << ' -Wno-unknown-pragmas'
+      s << ' -Wno-unknown-pragmas -Wno-reserved-user-defined-literal'
       s << ' -std=c++11'                                          if gcc?
       s << ' -std=c++11 -stdlib=libc++ -mmacosx-version-min=10.7' if clang?
       s << ' ' + RbConfig::CONFIG['debugflags']                   if debug?
@@ -226,6 +227,20 @@ module Xot
 
     def ar ()
       env :AR, RbConfig::CONFIG['AR']  || 'ar'
+    end
+
+    def cppflags ()
+      flags = env :CPPFLAGS, RbConfig::CONFIG['CPPFLAGS']
+      make_cppflags flags, defs, inc_dirs
+    end
+
+    def cxxflags ()
+      flags = env :CXXFLAGS, RbConfig::CONFIG['CXXFLAGS']
+      make_cflags flags
+    end
+
+    def arflags ()
+      env :ARFLAGS, RbConfig::CONFIG['ARFLAGS'] || 'crs'
     end
 
 

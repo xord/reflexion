@@ -38,6 +38,7 @@ require 'reflex/timer_event'
 require 'reflex/contact_event'
 
 require 'reflex/shape'
+require 'reflex/polygon_shape'
 require 'reflex/line_shape'
 require 'reflex/rect_shape'
 require 'reflex/ellipse_shape'

@@ -2,7 +2,7 @@
 
 
 require 'xot/universal_accessor'
-require 'reflex/ext'
+require 'reflex/shape'
 
 
 module Reflex

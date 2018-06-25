@@ -271,6 +271,8 @@ namespace Reflex
 
 		typedef StyleValue<double>      FloatValue;
 
+		typedef StyleValue<coord>       CoordValue;
+
 		typedef StyleValue<Color>       ColorValue;
 
 		typedef StyleValue<Image>       ImageValue;
@@ -296,6 +298,8 @@ namespace Reflex
 		StyleValue<Color, WhiteColor>       fore_fill;
 
 		StyleValue<Color, TransparentColor> fore_stroke, back_fill, back_stroke;
+
+		CoordValue fore_stroke_width, back_stroke_width;
 
 		ImageValue image;
 
@@ -414,8 +418,10 @@ namespace Reflex
 		clear_inherited_value(&self->center_y);
 		clear_inherited_value(&self->fore_fill);
 		clear_inherited_value(&self->fore_stroke);
+		clear_inherited_value(&self->fore_stroke_width);
 		clear_inherited_value(&self->back_fill);
 		clear_inherited_value(&self->back_stroke);
+		clear_inherited_value(&self->back_stroke_width);
 		clear_inherited_value(&self->image);
 	}
 
@@ -428,28 +434,30 @@ namespace Reflex
 		Style::Data* to    = overridden->self.get();
 		if (!from || !to) return;
 
-		to->flow          .override(from->flow);
-		to->width         .override(from->width);
-		to->height        .override(from->height);
-		to->left          .override(from->left);
-		to->top           .override(from->top);
-		to->right         .override(from->right);
-		to->bottom        .override(from->bottom);
-		to->margin_left   .override(from->margin_left);
-		to->margin_top    .override(from->margin_top);
-		to->margin_right  .override(from->margin_right);
-		to->margin_bottom .override(from->margin_bottom);
-		to->padding_left  .override(from->padding_left);
-		to->padding_top   .override(from->padding_top);
-		to->padding_right .override(from->padding_right);
-		to->padding_bottom.override(from->padding_bottom);
-		to->center_x      .override(from->center_x);
-		to->center_y      .override(from->center_y);
-		to->fore_fill     .override(from->fore_fill);
-		to->fore_stroke   .override(from->fore_stroke);
-		to->back_fill     .override(from->back_fill);
-		to->back_stroke   .override(from->back_stroke);
-		to->image         .override(from->image);
+		to->flow             .override(from->flow);
+		to->width            .override(from->width);
+		to->height           .override(from->height);
+		to->left             .override(from->left);
+		to->top              .override(from->top);
+		to->right            .override(from->right);
+		to->bottom           .override(from->bottom);
+		to->margin_left      .override(from->margin_left);
+		to->margin_top       .override(from->margin_top);
+		to->margin_right     .override(from->margin_right);
+		to->margin_bottom    .override(from->margin_bottom);
+		to->padding_left     .override(from->padding_left);
+		to->padding_top      .override(from->padding_top);
+		to->padding_right    .override(from->padding_right);
+		to->padding_bottom   .override(from->padding_bottom);
+		to->center_x         .override(from->center_x);
+		to->center_y         .override(from->center_y);
+		to->fore_fill        .override(from->fore_fill);
+		to->fore_stroke      .override(from->fore_stroke);
+		to->fore_stroke_width.override(from->fore_stroke_width);
+		to->back_fill        .override(from->back_fill);
+		to->back_stroke      .override(from->back_stroke);
+		to->back_stroke_width.override(from->back_stroke_width);
+		to->image            .override(from->image);
 	}
 
 	bool
@@ -972,6 +980,13 @@ namespace Reflex
 	}
 
 	void
+	Style::set_foreground_stroke_width (coord width)
+	{
+		if (self->fore_stroke_width.set(width))
+			update_owner(*this);
+	}
+
+	void
 	Style::set_background_fill (const Color& fill)
 	{
 		if (self->back_fill.set(fill))
@@ -982,6 +997,13 @@ namespace Reflex
 	Style::set_background_stroke (const Color& stroke)
 	{
 		if (self->back_stroke.set(stroke))
+			update_owner(*this);
+	}
+
+	void
+	Style::set_background_stroke_width (coord width)
+	{
+		if (self->back_stroke_width.set(width))
 			update_owner(*this);
 	}
 
@@ -1000,6 +1022,13 @@ namespace Reflex
 	}
 
 	void
+	Style::clear_foreground_stroke_width ()
+	{
+		if (self->fore_stroke_width.clear())
+			update_owner(*this);
+	}
+
+	void
 	Style::clear_background_fill ()
 	{
 		if (self->back_fill.clear())
@@ -1010,6 +1039,13 @@ namespace Reflex
 	Style::clear_background_stroke ()
 	{
 		if (self->back_stroke.clear())
+			update_owner(*this);
+	}
+
+	void
+	Style::clear_background_stroke_width ()
+	{
+		if (self->back_stroke_width.clear())
 			update_owner(*this);
 	}
 
@@ -1025,6 +1061,12 @@ namespace Reflex
 		return self->fore_stroke.get();
 	}
 
+	coord
+	Style::foreground_stroke_width () const
+	{
+		return self->fore_stroke_width.get();
+	}
+
 	const Color&
 	Style::background_fill () const
 	{
@@ -1035,6 +1077,12 @@ namespace Reflex
 	Style::background_stroke () const
 	{
 		return self->back_stroke.get();
+	}
+
+	coord
+	Style::background_stroke_width () const
+	{
+		return self->back_stroke_width.get();
 	}
 
 	void

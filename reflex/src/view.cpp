@@ -26,102 +26,6 @@ namespace Reflex
 	static const char* WALL_NAME = "__WALL__";
 
 
-	class WallShape : public Shape
-	{
-
-		public:
-
-			enum Position
-			{
-
-				LEFT   = Xot::bit(1),
-
-				TOP    = Xot::bit(2),
-
-				RIGHT  = Xot::bit(3),
-
-				BOTTOM = Xot::bit(4),
-
-				ALL    = LEFT | TOP | RIGHT | BOTTOM
-
-			};// Position
-
-			enum {DEFAULT_THICKNESS = 100};
-
-			WallShape (uint positions, coord thickness = DEFAULT_THICKNESS)
-			:	positions(positions), thickness(thickness)
-			{
-			}
-
-			virtual void on_draw (DrawEvent* e)
-			{
-			}
-
-		protected:
-
-			virtual Fixture* create_fixtures ()
-			{
-				FixtureBuilder builder(this);
-				if (positions & LEFT)   add_wall(&builder, LEFT);
-				if (positions & TOP)    add_wall(&builder, TOP);
-				if (positions & RIGHT)  add_wall(&builder, RIGHT);
-				if (positions & BOTTOM) add_wall(&builder, BOTTOM);
-				return builder.fixtures();
-			}
-
-			void add_wall (FixtureBuilder* builder, Position pos)
-			{
-				assert(builder);
-
-				View* view = owner();
-				if (!view)
-					invalid_state_error(__FILE__, __LINE__);
-
-				Bounds f  = frame();
-				float ppm = view->meter2pixel();
-				coord x1  = to_b2coord(0,         ppm);
-				coord y1  = to_b2coord(0,         ppm);
-				coord x2  = to_b2coord(f.width,   ppm);
-				coord y2  = to_b2coord(f.height,  ppm);
-				coord t   = to_b2coord(thickness, ppm);
-
-				switch (pos)
-				{
-					case LEFT:   add_wall(builder, x1 - t, y1 - t, x1,     y2 + t); break;
-					case TOP:    add_wall(builder, x1 - t, y1 - t, x2 + t, y1);     break;
-					case RIGHT:  add_wall(builder, x2,     y1 - t, x2 + t, y2 + t); break;
-					case BOTTOM: add_wall(builder, x1 - t, y2,     x2 + t, y2 + t); break;
-				}
-			}
-
-			void add_wall (
-				FixtureBuilder* builder, coord x1, coord y1, coord x2, coord y2)
-			{
-				assert(builder);
-
-				coord w = (x2 - x1) / 2;
-				coord h = (y2 - y1) / 2;
-
-				b2PolygonShape b2shape;
-				b2shape.SetAsBox(w, h);
-				for (int i = 0; i < 4; ++i)
-				{
-					b2shape.m_vertices[i].x += x1 + w;
-					b2shape.m_vertices[i].y += y1 + h;
-				}
-
-				builder->add(&b2shape);
-			}
-
-		private:
-
-			uint positions;
-
-			coord thickness;
-
-	};// WallShape
-
-
 	struct View::Data
 	{
 
@@ -255,12 +159,12 @@ namespace Reflex
 		void update_shapes (bool force = false)
 		{
 			if (pshape)
-				Shape_update_fixtures(pshape.get(), force);
+				Shape_update_polygon(pshape.get(), force);
 
 			if (pshapes)
 			{
 				for (auto& shape : *pshapes)
-					Shape_update_fixtures(shape.get(), force);
+					Shape_update_polygon(shape.get(), force);
 			}
 		}
 
@@ -796,7 +700,7 @@ namespace Reflex
 	}
 
 	const Style&
-	View_get_style (View* view)
+	View_get_style (const View* view)
 	{
 		assert(view);
 

@@ -8,11 +8,11 @@ require 'reflex/shape'
 module Reflex
 
 
-  class EllipseShape
+  class PolygonShape
 
-    universal_accessor :angle_from, :angle_to, :hole_size, :nsegment
+    universal_accessor :polygon
 
-  end# EllipseShape
+  end# PolygonShape
 
 
 end# Reflex

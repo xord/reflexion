@@ -46,20 +46,6 @@ module Xot
       env_array :DEFS, []
     end
 
-    def cppflags ()
-      flags = env :CPPFLAGS, RbConfig::CONFIG['CPPFLAGS']
-      make_cppflags flags, defs, inc_dirs
-    end
-
-    def cxxflags ()
-      flags = env :CXXFLAGS, RbConfig::CONFIG['CXXFLAGS']
-      make_cflags flags
-    end
-
-    def arflags ()
-      env :ARFLAGS, 'crs'
-    end
-
     def test_alones ()
       env :TESTS_ALONE, []
     end

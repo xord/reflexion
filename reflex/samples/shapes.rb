@@ -16,6 +16,7 @@ Reflex::Window.new do
     e.painter.push do
       fill :pink
       stroke 1
+      stroke_width 2
 
       x, y, y2, w, h = 10, 10, 100, 50, 50
 

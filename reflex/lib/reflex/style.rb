@@ -53,8 +53,9 @@ module Reflex
        :margin_left,  :margin_top,  :margin_right,  :margin_bottom, :margin,
       :padding_left, :padding_top, :padding_right, :padding_bottom, :padding,
       :center, :center_x, :center_y,
-      :foreground_fill, :foreground_stroke, :foreground,
-      :background_fill, :background_stroke, :background,
+      :foreground_fill, :foreground_stroke, :foreground_stroke_width,
+      :background_fill, :background_stroke, :background_stroke_width,
+      :foreground, :background,
       :image
 
     alias x=   left=
@@ -68,20 +69,31 @@ module Reflex
     alias pos= position=
     alias pos  position
 
-    alias fore_fill=   foreground_fill=
-    alias fore_fill    foreground_fill
-    alias fore_stroke= foreground_stroke=
-    alias fore_stroke  foreground_stroke
+    alias fore_fill=         foreground_fill=
+    alias fore_fill          foreground_fill
+    alias fore_stroke=       foreground_stroke=
+    alias fore_stroke        foreground_stroke
+    alias fore_stroke_width= foreground_stroke_width=
+    alias fore_stroke_width  foreground_stroke_width
 
-    alias back_fill=   background_fill=
-    alias back_fill    background_fill
-    alias back_stroke= background_stroke=
-    alias back_stroke  background_stroke
+    alias back_fill=         background_fill=
+    alias back_fill          background_fill
+    alias back_stroke=       background_stroke=
+    alias back_stroke        background_stroke
+    alias back_stroke_width= background_stroke_width=
+    alias back_stroke_width  background_stroke_width
 
-    alias fill=   foreground_fill=
-    alias fill    foreground_fill
-    alias stroke= foreground_stroke=
-    alias stroke  foreground_stroke
+    alias fore= foreground_fill=
+    alias fore  foreground_fill
+    alias back= background_fill=
+    alias back  background_fill
+
+    alias fill=         foreground_fill=
+    alias fill          foreground_fill
+    alias stroke=       foreground_stroke=
+    alias stroke        foreground_stroke
+    alias stroke_width= foreground_stroke_width=
+    alias stroke_width  foreground_stroke_width
 
     def inspect ()
       attrs = {

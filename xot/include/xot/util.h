@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <math.h>
+#include <assert.h>
 #include <xot/defs.h>
 #include <xot/time.h>
 
@@ -28,16 +29,9 @@ namespace Xot
 
 	template <typename T = uint>
 	inline constexpr T
-	bit (int nth, T base)
+	bit (int nth, T base = 0x1)
 	{
 		return (T) (base << nth);
-	}
-
-	template <typename T = uint>
-	inline constexpr T
-	bit (int nth)
-	{
-		return bit(nth, 0x1);
 	}
 
 	template <typename T>

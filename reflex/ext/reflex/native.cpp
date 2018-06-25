@@ -24,6 +24,7 @@ void Init_timer_event ();
 void Init_contact_event ();
 
 void Init_shape ();
+void Init_polygon_shape ();
 void Init_line_shape ();
 void Init_rect_shape ();
 void Init_ellipse_shape ();
@@ -69,6 +70,7 @@ extern "C" void
 	Init_contact_event();
 
 	Init_shape();
+	Init_polygon_shape();
 	Init_line_shape();
 	Init_rect_shape();
 	Init_ellipse_shape();

@@ -24,20 +24,27 @@ module Reflex
     extend Forwardable
 
     def_delegators :style,
-      :flow=,              :flow,
-      :foreground_fill=,   :foreground_fill,
-      :foreground_stroke=, :foreground_stroke,
-      :background_fill=,   :background_fill,
-      :background_stroke=, :background_stroke,
-      :foreground=,        :foreground,
-      :background=,        :background,
-      :fore_fill=,         :fore_fill,
-      :fore_stroke=,       :fore_stroke,
-      :back_fill=,         :back_fill,
-      :back_stroke=,       :back_stroke,
-      :fill=,              :fill,
-      :stroke=,            :stroke,
-      :image=,             :image
+      :flow=,                    :flow,
+      :foreground_fill=,         :foreground_fill,
+      :foreground_stroke=,       :foreground_stroke,
+      :foreground_stroke_width=, :foreground_stroke_width,
+      :background_fill=,         :background_fill,
+      :background_stroke=,       :background_stroke,
+      :background_stroke_width=, :background_stroke_width,
+      :foreground=,              :foreground,
+      :background=,              :background,
+      :fore_fill=,               :fore_fill,
+      :fore_stroke=,             :fore_stroke,
+      :fore_stroke_width=,       :fore_stroke_width,
+      :back_fill=,               :back_fill,
+      :back_stroke=,             :back_stroke,
+      :back_stroke_width=,       :back_stroke_width,
+      :fore=,                    :fore,
+      :back=,                    :back,
+      :fill=,                    :fill,
+      :stroke=,                  :stroke,
+      :stroke_width=,            :stroke_width,
+      :image=,                   :image
 
     bit_flag_accessor :capture do
       flag :key,     CAPTURE_KEY
