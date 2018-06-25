@@ -332,13 +332,13 @@ namespace Rucy
 	}
 
 	Value&
-	Value::operator [] (int i)
+	Value::operator [] (size_t i)
 	{
 		return as_array()[i];
 	}
 
 	const Value&
-	Value::operator [] (int i) const
+	Value::operator [] (size_t i) const
 	{
 		return const_cast<Value*>(this)->operator[](i);
 	}

@@ -1069,7 +1069,6 @@ namespace Reflex
 	use_cache (View* view)
 	{
 		assert(view);
-
 		View::Data* self = view->self.get();
 
 		return
@@ -1081,7 +1080,6 @@ namespace Reflex
 	reset_cache_image (View* view, const Painter& painter)
 	{
 		assert(view && use_cache(view));
-
 		View::Data* self = view->self.get();
 
 		Image* image = self->pcache_image.get();
@@ -1158,7 +1156,6 @@ namespace Reflex
 		View* view, DrawEvent* event, const Point& offset, const Bounds& clip)
 	{
 		assert(view && event && event->painter);
-
 		View::Data* self = view->self.get();
 
 		Painter* p = event->painter;
@@ -1215,7 +1212,6 @@ namespace Reflex
 		bool redraw)
 	{
 		assert(view && event && event->painter);
-
 		View::Data* self = view->self.get();
 
 		if (!use_cache(view))
@@ -1254,9 +1250,9 @@ namespace Reflex
 		View* view, const DrawEvent& event, const Point& offset, const Bounds& clip)
 	{
 		assert(view);
-
 		View::Data* self = view->self.get();
-		bool redraw      = self->check_and_remove_flag(View::Data::REDRAW);
+
+		bool redraw = self->check_and_remove_flag(View::Data::REDRAW);
 
 		if (event.is_blocked() || view->hidden())
 			return;
