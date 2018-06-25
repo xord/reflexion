@@ -21,33 +21,33 @@ Reflex::Window.new do
 
       push do
         rect x, y, w, h
-        line Rays::Polygon.rect x, y2, w, h
+        polygon Rays::Polygon.rect x, y2, w, h
 
         translate 100, 0
         rect x, y, w, h, 5
-        line Rays::Polygon.rect x, y2, w, h, 5
+        polygon Rays::Polygon.rect x, y2, w, h, 5
 
         translate 100, 0
         rect x, y, w, h, 5, 10, 15, 20
-        line Rays::Polygon.rect x, y2, w, h, 5, 10, 15, 20
+        polygon Rays::Polygon.rect x, y2, w, h, 5, 10, 15, 20
       end
 
       translate 0, 200
       push do
         ellipse x, y, w, h
-        line Rays::Polygon.ellipse x, y2, w, h
+        polygon Rays::Polygon.ellipse x, y2, w, h
 
         translate 100, 0
         ellipse x, y, w, h, from: 45, to: 180
-        line Rays::Polygon.ellipse x, y2, w, h, from: 45, to: 180
+        polygon Rays::Polygon.ellipse x, y2, w, h, from: 45, to: 180
 
         translate 100, 0
         ellipse x, y, w, h, hole: 10
-        line Rays::Polygon.ellipse x, y2, w, h, hole: 10
+        polygon Rays::Polygon.ellipse x, y2, w, h, hole: 10
 
         translate 100, 0
         ellipse x, y, w, h, hole: 10, from: 200, to: 300
-        line Rays::Polygon.ellipse x, y2, w, h, hole: 10, from: 200, to: 300
+        polygon Rays::Polygon.ellipse x, y2, w, h, hole: 10, from: 200, to: 300
       end
 
       translate 0, 200
