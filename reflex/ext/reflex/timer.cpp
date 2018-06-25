@@ -1,14 +1,10 @@
 #include "reflex/ruby/timer.h"
 
 
-#include <rucy.h>
 #include "reflex/ruby/view.h"
 #include "reflex/ruby/selector.h"
 #include "defs.h"
 #include "selector.h"
-
-
-using namespace Rucy;
 
 
 RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Timer)

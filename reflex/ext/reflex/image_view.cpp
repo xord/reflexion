@@ -1,13 +1,9 @@
 #include "reflex/ruby/image_view.h"
 
 
-#include <rucy.h>
 #include <rays/ruby/point.h>
 #include "reflex/ruby/view.h"
 #include "defs.h"
-
-
-using namespace Rucy;
 
 
 RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::ImageView)

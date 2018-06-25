@@ -1,13 +1,9 @@
 #include "reflex/ruby/event.h"
 
 
-#include <rucy.h>
 #include "reflex/ruby/shape.h"
 #include "reflex/ruby/view.h"
 #include "defs.h"
-
-
-using namespace Rucy;
 
 
 RUCY_DEFINE_VALUE_FROM_TO(Reflex::ContactEvent)

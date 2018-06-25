@@ -1,15 +1,11 @@
 #include "reflex/ruby/style.h"
 
 
-#include <rucy.h>
 #include "rays/ruby/color.h"
 #include "rays/ruby/image.h"
 #include "reflex/ruby/selector.h"
 #include "defs.h"
 #include "selector.h"
-
-
-using namespace Rucy;
 
 
 RUCY_DEFINE_VALUE_FROM_TO(Reflex::Style)

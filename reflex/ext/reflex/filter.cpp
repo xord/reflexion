@@ -1,13 +1,9 @@
 #include "reflex/ruby/filter.h"
 
 
-#include <rucy.h>
 #include <rays/ruby/painter.h>
 #include <rays/ruby/image.h>
 #include "defs.h"
-
-
-using namespace Rucy;
 
 
 RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Filter)

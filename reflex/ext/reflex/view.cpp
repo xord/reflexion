@@ -2,7 +2,6 @@
 
 
 #include <vector>
-#include <rucy.h>
 #include <rays/ruby/point.h>
 #include <rays/ruby/bounds.h>
 #include "reflex/ruby/selector.h"
@@ -13,9 +12,6 @@
 #include "reflex/ruby/window.h"
 #include "defs.h"
 #include "selector.h"
-
-
-using namespace Rucy;
 
 
 RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::View)

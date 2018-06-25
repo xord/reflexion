@@ -61,7 +61,7 @@ class Ring
 
   def fin (p, angle, width)
     angle += @angle
-    p.ellipse @x, @y, @width, @height, angle, angle + width, @min
+    p.ellipse @x, @y, @width, @height, from: angle, to: angle + width, hole: @min
   end
 
 end# Ring

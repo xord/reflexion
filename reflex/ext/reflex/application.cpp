@@ -1,11 +1,7 @@
 #include "reflex/ruby/application.h"
 
 
-#include <rucy.h>
 #include "defs.h"
-
-
-using namespace Rucy;
 
 
 RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Application)

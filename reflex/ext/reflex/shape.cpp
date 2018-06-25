@@ -1,14 +1,11 @@
 #include "reflex/ruby/shape.h"
 
 
-#include <rucy.h>
 #include <rays/ruby/bounds.h>
+#include "reflex/exception.h"
 #include "reflex/ruby/view.h"
 #include "defs.h"
 #include "selector.h"
-
-
-using namespace Rucy;
 
 
 RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Shape)
@@ -23,7 +20,7 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Shape)
 static
 RUCY_DEF_ALLOC(alloc, klass)
 {
-	reflex_error(__FILE__, __LINE__, "can not instantiate Shape class.");
+	Reflex::reflex_error(__FILE__, __LINE__, "can not instantiate Shape class.");
 }
 RUCY_END
 

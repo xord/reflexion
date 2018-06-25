@@ -133,13 +133,15 @@ namespace Reflex
 
 		Shape::Data* self = shape->self.get();
 
-		bool update = Xot::check_and_remove_flag(&self->flags, Shape::Data::UPDATE_FIXTURES);
+		bool update =
+			Xot::check_and_remove_flag(&self->flags, Shape::Data::UPDATE_FIXTURES);
+
 		if (update || force)
 			self->update_fixtures(shape);
 	}
 
-	void
-	Shape_update_fixtures_on_next_update (Shape* shape)
+	static void
+	update_fixtures_on_next_update (Shape* shape)
 	{
 		assert(shape);
 
@@ -207,7 +209,7 @@ namespace Reflex
 		else
 			self->pframe.reset(new Bounds(frame));
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	static Bounds
@@ -322,7 +324,7 @@ namespace Reflex
 	{
 		assert(owner());
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	void
@@ -337,7 +339,7 @@ namespace Reflex
 	Shape::on_resize (FrameEvent* e)
 	{
 		if (!self->pframe)
-			Shape_update_fixtures_on_next_update(this);
+			update_fixtures_on_next_update(this);
 	}
 
 	void
@@ -397,7 +399,7 @@ namespace Reflex
 	{
 		self->points.emplace_back(point);
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	void
@@ -405,7 +407,7 @@ namespace Reflex
 	{
 		self->points.insert(self->points.begin(), points, points + size);
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	void
@@ -533,7 +535,7 @@ namespace Reflex
 		self->round_left_bottom  = left_bottom;
 		self->round_right_bottom = right_bottom;
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	void
@@ -541,7 +543,7 @@ namespace Reflex
 	{
 		self->round_left_top = round;
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	coord
@@ -555,7 +557,7 @@ namespace Reflex
 	{
 		self->round_right_top = round;
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	coord
@@ -569,7 +571,7 @@ namespace Reflex
 	{
 		self->round_left_bottom = round;
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	coord
@@ -583,7 +585,7 @@ namespace Reflex
 	{
 		self->round_right_bottom = round;
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	coord
@@ -597,7 +599,7 @@ namespace Reflex
 	{
 		self->nsegment = nsegment;
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	uint
@@ -611,11 +613,13 @@ namespace Reflex
 	{
 		assert(e && e->painter);
 
+		e->painter->push_state();
+		e->painter->set_nsegment(self->nsegment);
 		e->painter->rect(
 			frame(),
 			self->round_left_top,    self->round_right_top,
-			self->round_left_bottom, self->round_right_bottom,
-			self->nsegment);
+			self->round_left_bottom, self->round_right_bottom);
+		e->painter->pop_state();
 	}
 
 	static Fixture*
@@ -681,9 +685,9 @@ namespace Reflex
 			DEFAULT_ANGLE_TO   = 360
 		};
 
-		float angle_from, angle_to;
-
 		Point hole_size;
+
+		float angle_from, angle_to;
 
 		uint nsegment;
 
@@ -692,16 +696,16 @@ namespace Reflex
 		{
 		}
 
+		bool has_hole () const
+		{
+			return hole_size.x != 0 && hole_size.y != 0;
+		}
+
 		bool has_angle () const
 		{
 			return
 				angle_from != DEFAULT_ANGLE_FROM ||
 				angle_to   != DEFAULT_ANGLE_TO;
-		}
-
-		bool has_hole () const
-		{
-			return hole_size.x != 0 && hole_size.y != 0;
 		}
 
 	};// EllipseShape::Data
@@ -717,39 +721,11 @@ namespace Reflex
 	}
 
 	void
-	EllipseShape::set_angle_from (float degree)
-	{
-		self->angle_from = degree;
-
-		Shape_update_fixtures_on_next_update(this);
-	}
-
-	float
-	EllipseShape::angle_from () const
-	{
-		return self->angle_from;
-	}
-
-	void
-	EllipseShape::set_angle_to (float degree)
-	{
-		self->angle_to = degree;
-
-		Shape_update_fixtures_on_next_update(this);
-	}
-
-	float
-	EllipseShape::angle_to () const
-	{
-		return self->angle_to;
-	}
-
-	void
 	EllipseShape::set_hole_size (coord width, coord height)
 	{
 		self->hole_size.reset(width, height);
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	void
@@ -765,11 +741,39 @@ namespace Reflex
 	}
 
 	void
+	EllipseShape::set_angle_from (float degree)
+	{
+		self->angle_from = degree;
+
+		update_fixtures_on_next_update(this);
+	}
+
+	float
+	EllipseShape::angle_from () const
+	{
+		return self->angle_from;
+	}
+
+	void
+	EllipseShape::set_angle_to (float degree)
+	{
+		self->angle_to = degree;
+
+		update_fixtures_on_next_update(this);
+	}
+
+	float
+	EllipseShape::angle_to () const
+	{
+		return self->angle_to;
+	}
+
+	void
 	EllipseShape::set_nsegment (uint num_of_segments)
 	{
 		self->nsegment = num_of_segments;
 
-		Shape_update_fixtures_on_next_update(this);
+		update_fixtures_on_next_update(this);
 	}
 
 	uint
@@ -783,9 +787,11 @@ namespace Reflex
 	{
 		assert(e && e->painter);
 
+		e->painter->push_state();
+		e->painter->set_nsegment(self->nsegment);
 		e->painter->ellipse(
-			frame(), self->angle_from, self->angle_to,
-			self->hole_size, self->nsegment);
+			frame(), self->hole_size, self->angle_from, self->angle_to);
+		e->painter->pop_state();
 	}
 
 	static uint

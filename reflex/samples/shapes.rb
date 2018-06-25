@@ -17,34 +17,49 @@ Reflex::Window.new do
       fill :pink
       stroke 1
 
-      x, y, w, h = 10, 10, 50, 50
-      rect x, y, w, h
+      x, y, y2, w, h = 10, 10, 100, 50, 50
 
-      x += 100
-      rect x, y, w, h, 5
+      push do
+        rect x, y, w, h
+        line Rays::Polygon.rect x, y2, w, h
 
-      x += 100
-      rect x, y, w, h, 5, 10, 15, 20
+        translate 100, 0
+        rect x, y, w, h, 5
+        line Rays::Polygon.rect x, y2, w, h, 5
 
-      x = 10
-      y += 100
-      ellipse x, y, w, h
+        translate 100, 0
+        rect x, y, w, h, 5, 10, 15, 20
+        line Rays::Polygon.rect x, y2, w, h, 5, 10, 15, 20
+      end
 
-      x += 100
-      ellipse x, y, w, h, 45, 180
+      translate 0, 200
+      push do
+        ellipse x, y, w, h
+        line Rays::Polygon.ellipse x, y2, w, h
 
-      x += 100
-      ellipse x, y, w, h, 0, 360, 10
+        translate 100, 0
+        ellipse x, y, w, h, from: 45, to: 180
+        line Rays::Polygon.ellipse x, y2, w, h, from: 45, to: 180
 
-      x += 100
-      ellipse x, y, w, h, 200, 300, 20
+        translate 100, 0
+        ellipse x, y, w, h, hole: 10
+        line Rays::Polygon.ellipse x, y2, w, h, hole: 10
 
-      x = 10
-      y += 100
-      line x, y, x + w, y + h
+        translate 100, 0
+        ellipse x, y, w, h, hole: 10, from: 200, to: 300
+        line Rays::Polygon.ellipse x, y2, w, h, hole: 10, from: 200, to: 300
+      end
 
-      x += 100
-      line x, y, x + w, y + h, x, y + h
+      translate 0, 200
+      push do
+        line x, y, x + w, y + h
+
+        x += 100
+        line x, y, x + w, y + h, x, y + h
+
+        x += 100
+        line x, y, x + w, y + h, x, y + h, loop: true
+      end
     end
   end
 end.show

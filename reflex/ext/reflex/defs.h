@@ -4,12 +4,13 @@
 #define __REFLEX_EXT_DEFS_H__
 
 
-#include <reflex/exception.h>
+#include <rucy.h>
+#include <reflex/defs.h>
 
+
+using namespace Rucy;
 
 using Reflex::coord;
-
-using Reflex::reflex_error;
 
 
 #endif//EOH

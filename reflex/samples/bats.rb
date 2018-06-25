@@ -39,8 +39,8 @@ win = Reflex::Window.new do
         p, b = e.painter, e.bounds
         p.fill *c
         #p.rect b
-        p.ellipse b, angle, angle + 90
-        p.ellipse b, angle + 180, angle + 270
+        p.ellipse b, from: angle,       to: angle + 90
+        p.ellipse b, from: angle + 180, to: angle + 270
       end
     }
     update_count

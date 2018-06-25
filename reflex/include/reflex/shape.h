@@ -192,6 +192,12 @@ namespace Reflex
 
 			virtual ~EllipseShape ();
 
+			virtual void     set_hole_size (coord width, coord height);
+
+			virtual void     set_hole_size (const Point& size);
+
+			virtual const Point& hole_size () const;
+
 			virtual void set_angle_from (float degree);
 
 			virtual float    angle_from () const;
@@ -199,12 +205,6 @@ namespace Reflex
 			virtual void set_angle_to (float degree);
 
 			virtual float    angle_to () const;
-
-			virtual void     set_hole_size (coord width, coord height);
-
-			virtual void     set_hole_size (const Point& size);
-
-			virtual const Point& hole_size () const;
 
 			virtual void set_nsegment (uint num_of_segments);
 

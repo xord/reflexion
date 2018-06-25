@@ -1,13 +1,9 @@
-#include <rucy.h>
 #include "reflex/reflex.h"
 #include "reflex/ruby/view.h"
 #include "reflex/ruby/timer.h"
 #include "../../src/window.h"
 #include "../../src/timer.h"
 #include "defs.h"
-
-
-using namespace Rucy;
 
 
 static Reflex::View*

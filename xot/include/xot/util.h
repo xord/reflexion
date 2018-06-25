@@ -48,18 +48,16 @@ namespace Xot
 	}
 
 
-	template <typename T>
-	inline constexpr T
-	deg2rad (T degree)
+	inline constexpr double
+	deg2rad (double degree)
 	{
-		return degree / (T) 180 * M_PI;
+		return degree / 180.0 * M_PI;
 	}
 
-	template <typename T>
-	inline constexpr T
-	rad2deg (T radian)
+	inline constexpr double
+	rad2deg (double radian)
 	{
-		return radian / M_PI * (T) 180;
+		return radian / M_PI * 180.0;
 	}
 
 

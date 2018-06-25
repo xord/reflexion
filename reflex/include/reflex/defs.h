@@ -11,18 +11,23 @@ namespace Rays
 {
 
 
+	struct Coord2;
+	struct Coord3;
+	struct Coord4;
+	struct Point;
 	struct Bounds;
 	struct Color;
 	struct Matrix;
-	struct Point;
 
-	class Bitmap;
 	class ColorSpace;
-	class Font;
+	class Polyline;
+	class Polygon;
+	class Bitmap;
 	class Image;
-	class Painter;
+	class Font;
 	class Shader;
-	class Texture;
+
+	class Painter;
 
 
 }// Rays
@@ -36,19 +41,26 @@ namespace Reflex
 
 	using Rays::String;
 
+
 	using Rays::coord;
 
-	using Rays::Bitmap;
+	using Rays::Coord2;
+	using Rays::Coord3;
+	using Rays::Coord4;
+	using Rays::Point;
 	using Rays::Bounds;
 	using Rays::Color;
-	using Rays::ColorSpace;
-	using Rays::Font;
-	using Rays::Image;
 	using Rays::Matrix;
-	using Rays::Painter;
-	using Rays::Point;
+
+	using Rays::ColorSpace;
+	using Rays::Polyline;
+	using Rays::Polygon;
+	using Rays::Bitmap;
+	using Rays::Image;
+	using Rays::Font;
 	using Rays::Shader;
-	using Rays::Texture;
+
+	using Rays::Painter;
 
 
 	enum KeyCode
