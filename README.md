@@ -1,7 +1,7 @@
 
 # Reflexion - A Tiny Creative Coding Framework for Ruby.
 
- by snori@xord.org
+ by xordog@gmail.com
 
 ## How To Use
 

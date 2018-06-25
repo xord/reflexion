@@ -1,7 +1,7 @@
 
 # Rucy - A Ruby C++ Extension Helper Library.
 
- by snori@xord.org
+ by xordog@gmail.com
 
 
 ## What is this library?
@@ -28,4 +28,4 @@ see ext/rucy/tester.cpp.
 ## Contact information.
 
 Web:  http://blog.xord.org/
-Mail: snori@xord.org
+Mail: xordog@gmail.com

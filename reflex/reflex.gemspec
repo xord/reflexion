@@ -21,8 +21,8 @@ Gem::Specification.new do |s|
   s.description = 'This library helps you to develop interactive graphical user interface.'
   s.version     = mod.version
 
-  s.authors  = %w[snori]
-  s.email    = 'snori@xord.org'
+  s.authors  = %w[xordog]
+  s.email    = 'xordog@gmail.com'
   s.homepage = "https://github.com/xord/reflex"
 
   s.platform              = Gem::Platform::RUBY

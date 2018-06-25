@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
                    END
   s.license      = "MIT"
   s.source       = {:git => "https://github.com/xord/reflexion"}
-  s.author       = {"snori" => "snori@xord.org"}
+  s.author       = {"xordog" => "xordog@gmail.com"}
   s.homepage     = "https://github.com/xord"
 
   s.osx.deployment_target = "10.7"
