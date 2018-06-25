@@ -2,28 +2,30 @@
 
 
 %w[../xot ../rucy ../rays .]
-  .map  {|s| File.expand_path "../#{s}/lib", __FILE__}
+  .map  {|s| File.expand_path "#{s}/lib", __dir__}
   .each {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 
-require 'xot/rake'
+require 'rucy/rake'
+
 require 'xot/module'
 require 'rucy/module'
 require 'rays/module'
 require 'reflex/module'
 
-include Xot::Rake
 
-
-MODULES     = [Xot, Rucy, Rays, Reflex].map {|m| m.const_get :Module}
-MODULE      = MODULES.last
+MODULES     = [Xot, Rucy, Rays, Reflex]
 GEMNAME     = 'reflexion'
-INCDIRS     = ['src/physics']
 TESTS_ALONE = ['test/test_reflex.rb']
 
+use_external_library 'https://github.com/erincatto/Box2D',
+  tag:    'v2.3.1',
+  incdir: 'Box2D',
+  srcdir: 'Box2D/Box2D'
 
-task :default => :build
+build_native_library
+build_ruby_extension
+test_ruby_extension
+generate_documents
+build_ruby_gem
 
-task :build => :ext
-
-
-MODULES.each {|m| m.load_tasks :lib, :ext, :test, :doc, :gem, :box2d}
+task :default => :test

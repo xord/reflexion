@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
 
-require 'erb'
 require 'rbconfig'
+require 'rake/loaders/makefile'
+require 'rake/testtask'
+require 'xot/rake/alias_task'
+require 'xot/rake/util'
+require 'xot/rake/escalation'
 
 
 module Xot
@@ -11,161 +15,347 @@ module Xot
   module Rake
 
 
-    def empty_task (*names)
-      names.each do |name|
-        task name => '.'
-      end
+    def srcs_map ()
+      paths = glob("#{src_dir}/**/*.{#{src_exts.join ','}}") +
+        erbs_map.values.grep(/\.(#{src_exts.join '|'})$/)
+      paths.reject! {|path| excluded? path}
+      paths.reject! {|path| path =~ %r(/win32/)} unless win32?
+      paths.reject! {|path| path =~ %r(/osx/)}   unless osx?
+      paths.reject! {|path| path =~ %r(/ios/)}   unless ios?
+      make_path_map paths, src_ext_map
     end
 
-    def glob (*patterns)
-      paths = []
-      patterns.each do |pattern|
-        paths.concat Dir.glob(pattern)
-      end
-      paths
+    def erbs_map ()
+      paths = glob *[inc_dir, src_dir].map {|s| "#{s}/**/*.erb"}
+      paths.reject! {|path| excluded? path}
+      make_path_map paths, {".erb" => ""}
     end
 
-    def erb (str)
-      ERB.new(str, nil, '%').result binding
+    def vendor_srcs_map (*dirs)
+      dirs  = src_dirs if dirs.empty?
+      paths = dirs.map {|dir| glob "#{dir}/**/*.{#{src_exts.join ','}}"}.flatten
+      paths.reject! {|path| excluded? path}
+      make_path_map paths.flatten, src_ext_map
     end
 
-    def compile (path, out)
-      open(path) do |input|
-        open(out, 'w') do |output|
-          output.write erb(input.read)
+    def src_ext_map (to = '.o')
+      Hash[*src_exts.map {|ext| [".#{ext}", to]}.flatten]
+    end
+
+    def defs ()
+      env_array :DEFS, []
+    end
+
+    def cppflags ()
+      flags = env :CPPFLAGS, RbConfig::CONFIG['CPPFLAGS']
+      make_cppflags flags, defs, inc_dirs
+    end
+
+    def cxxflags ()
+      flags = env :CXXFLAGS, RbConfig::CONFIG['CXXFLAGS']
+      make_cflags flags
+    end
+
+    def arflags ()
+      env :ARFLAGS, 'crs'
+    end
+
+    def test_alones ()
+      env :TESTS_ALONE, []
+    end
+
+    def test_excludes ()
+      env :TESTS_EXCLUDE, []
+    end
+
+    def build_native_library ()
+      outname = "lib#{target_name}.a"
+      out     = File.join lib_dir, outname
+      erbs    = erbs_map
+      srcs    = srcs_map
+      depend  = 'depend.mf'
+
+      alias_task :lib   => out
+      alias_task :clean => 'lib:clean'
+
+      namespace :lib do
+        desc "compile sources"
+        alias_task :compile => srcs.values
+
+        desc "convert erb sources"
+        alias_task :erb => erbs.values
+
+        desc "link #{out}"
+        file out => srcs.values do
+          next if srcs.values.empty?
+          objs = srcs.values + vendor_srcs_map.values
+          sh %( rm -f #{out} )
+          sh %( #{ar} #{arflags} #{out} #{objs.join " "} )
+        end
+
+        desc "create #{depend}"
+        file depend => erbs.values do
+          sh %( #{cxx} -M #{cppflags} #{srcs.keys.join ' '} > #{depend} )
+          input = open(depend) {|f| f.read}
+          open(depend, 'w') do |output|
+            output << input.gsub(/\w+\.o/, src_dir + '/\0')
+          end
+        end
+
+        import depend if File.exist? depend
+
+        srcs.each do |src, obj|
+          desc "compile #{src}"
+          file obj => [:vendor, depend, src] + erbs.values do
+            sh %( #{cxx} -c #{cppflags} #{cxxflags} -o #{obj} #{src} )
+          end
+        end
+
+        erbs.each do |erb, to|
+          desc "compile #{erb}"
+          file to => erb do
+            print "#{erb}: compiling to #{to} ..."
+            compile_erb erb, to
+            puts "ok"
+          end
+        end
+
+        task :clean do
+          tmps = srcs.values + erbs.values
+          sh %( rm -rf #{out} #{depend} #{tmps.join ' '} )
         end
       end
-    #rescue
     end
 
-    def params (max, sep = '', &block)
-      raise 'block not given.' unless block
-      return '' if max == 0
-      (1..max).map(&block).join(sep)
-    end
+    def build_ruby_extension (dlname: 'native', dlext: 'so')
+      dlname = env :DLNAME, dlname
+      dlext  = env :DLEXT,  RbConfig::CONFIG['DLEXT'] || dlext
 
-    def convertions (paths, convs)
-      raise 'empty conversion.' if convs.empty?
-      paths = paths.map do |path|
-        convpath = path
-        convs.each do |from, to|
-          convpath = convpath.sub(/#{from.gsub('.', '\.')}$/, to)
+      extconf  = File.join ext_dir, 'extconf.rb'
+      makefile = File.join ext_dir, 'Makefile'
+      depend   = File.join ext_dir, 'depend.mf'
+
+      outname = "#{dlname}.#{dlext}"
+      extout  = File.join ext_dir, outname
+      libout  = File.join ext_lib_dir, outname
+
+      srcs = FileList["#{ext_dir}/**/*.cpp"]
+      libs = modules.map {|m| m.name.downcase}.map {|s| "../#{s}/lib/lib#{s}.a"}
+
+      alias_task :ext     => libout
+      alias_task :clean   => 'ext:clean'
+      alias_task :clobber => 'ext:clobber'
+
+      namespace :ext do
+        desc "build #{libout}"
+        file libout => extout do
+          sh %( cp #{extout} #{libout} )
         end
-        [path, convpath]
+
+        desc "build #{extout}"
+        file extout => [:lib, makefile] do
+          sh %( cd #{ext_dir} && make )
+        end
+
+        desc "create #{makefile}"
+        file makefile => [extconf, depend] + libs do
+          sh %( cd #{ext_dir} && ruby #{File.basename extconf} )
+        end
+
+        desc "create #{depend}"
+        file depend => srcs do
+          inc = inc_dirs.map {|s| " -I#{s}"}.join
+          src = srcs.map {|cpp| File.basename cpp}.join ' '
+          dep = File.basename depend
+          sh %( cd #{ext_dir} && #{cxx} -M #{cppflags} #{inc} #{src} > #{dep} )
+        end
+
+        task :clean do
+          sh %( cd #{ext_dir} && make clean ) if File.exist? makefile
+          sh %( rm -rf #{libout} )
+        end
+
+        task :clobber do
+          sh %( cd #{ext_dir} && make distclean ) if File.exist? makefile
+          sh %( rm -rf #{makefile} #{depend} )
+        end
       end
-      Hash[*paths.flatten]
     end
 
-    def env (name, defval = nil, to = nil)
-      case val = (ENV[name.to_s] || Object.const_get(name) rescue defval)
-      when /^\d+$/        then val.to_i
-      when 'true',  true  then true
-      when 'false', false then false
-      when nil            then nil
-      when Numeric        then val
-      else
-        val = val.split /\s+/ if to == :array && val.respond_to?(:split)
-        val.dup
+    def test_ruby_extension ()
+      alias_task :test => [:ext, 'test:full', 'test:alones']
+
+      namespace :test do
+        ::Rake::TestTask.new :full do |t|
+          t.libs << lib_dir
+          t.test_files = FileList["#{test_dir}/test_*.rb"] - test_alones - test_excludes
+          t.verbose = true
+        end
+
+        task :alones do
+          test_alones.each do |rb|
+            next if test_excludes.include? rb
+            sh %( ruby #{rb} )
+          end
+        end
       end
     end
 
-    def ruby_incdirs ()
-      root = RbConfig::CONFIG['rubyhdrdir']
-      [root, RbConfig::CONFIG['rubyarchhdrdir'] || "#{root}/#{RUBY_PLATFORM}"]
+    def build_ruby_gem ()
+      gemspec = "#{target_name}.gemspec"
+      gemname = env :GEMNAME,    target_name
+      gemver  = env :GEMVERSION, target.version
+      gemfile = "#{gemname}-#{gemver}.gem"
+
+      alias_task :gem   => gemfile
+      alias_task :clean => 'gem:clean'
+
+      namespace :gem do
+        file gemfile => [:ext, :doc, gemspec] do
+          sh %( gem build #{gemspec} )
+        end
+
+        desc "test gem"
+        alias_task :test => [:install, :uninstall]
+
+        desc "install gem"
+        task :install => gemfile do
+          sh %( gem install #{gemfile} )
+        end
+
+        desc "uninstall gem"
+        task :uninstall do
+          sh %( gem uninstall -x --version #{gemver} #{gemname} )
+        end
+
+        desc "upload gem"
+        task :upload => :install do
+          sh %( gem push #{gemfile} )
+        end
+
+        task :clean do
+          sh %( rm -f #{gemfile} )
+        end
+      end
     end
 
-    def cppflags (flags = '', defs = [], incdirs = [])
-      s = flags.dup
-      s << cppflags_defs(defs)      .map {|s| " -D#{s}"}.join
-      s << cppflags_incdirs(incdirs).map {|s| " -I#{s}"}.join
-      s
+    def build_application ()
+      bindir    = env :BINDIR, 'bin'
+      bin       = "#{bindir}/#{target_name}"
+      appdir    = "#{target.name}.app"
+      appbindir = "#{appdir}/Contents/MacOS"
+      out       = "#{appbindir}/#{target.name}"
+      tmps      = [appdir]
+
+      alias_task :app   => out
+      alias_task :clean => 'app:clean'
+
+      namespace :app do
+        task :run => :app do
+          sh %( ruby #{bin} )
+        end
+
+        file out => [bin, appbindir] do
+          sh %( cp #{bin} #{appbindir} )
+        end
+
+        directory appbindir
+
+        task :clean do
+          sh %( rm -rf #{tmps.join ' '} )
+        end
+      end
     end
 
-    def cppflags_defs (defs = [])
-      a = defs
-      a << $~[0].upcase if RUBY_PLATFORM =~ /mswin|ming|cygwin|darwin/i
-      a << (debug? ? '_DEBUG' : 'NDEBUG')
-      a << 'WIN32' if win32?
-      a << 'OSX'   if osx?
-      a << 'IOS'   if ios?
-      a
+    def use_external_library (
+      repos, branch: nil, tag: nil,
+      incdir: nil, srcdir: nil, excludes: [],
+      submodules: [], post_submodules: nil)
+
+      excludes = [excludes].flatten
+
+      name   = repos[%r{/([^/]+?)(:?\.git)?$}, 1]
+      dir    = "#{vendor_dir}/#{name}"
+      incdir = dir + (incdir ? "/#{incdir}" : '')
+      srcdir = dir + (srcdir ? "/#{srcdir}" : '')
+
+      append_env 'INCDIRS',  incdir
+      append_env 'SRCDIRS',  srcdir
+      append_env 'EXCLUDES', excludes unless excludes.empty?
+
+      alias_task :vendor  => "vendor:#{name}"
+      alias_task :clobber => "vendor:#{name}:clobber"
+
+      namespace :vendor do
+        desc "setup #{name} library"
+        alias_task name => dir
+
+        namespace name do
+          desc "clone #{name}"
+          file dir do
+            opts  = '--depth=1'
+            opts += " --branch=#{branch || tag}" if branch || tag
+            opts += " --recursive"               if submodules.empty?
+            sh %( git clone #{opts} #{repos} #{dir} )
+            unless submodules.empty?
+              Dir.chdir dir do
+                submodules.each do |path|
+                  sh %( git submodule init #{path} )
+                end
+                sh %( git submodule update --depth=1 )
+                sh post_submodules if post_submodules
+              end
+            end
+            vendor_srcs_map(srcdir).each do |src, obj|
+              sh %( #{cxx} -c #{cppflags} #{cxxflags} -o #{obj} #{src} )
+            end
+          end
+
+          desc "update #{name} library"
+          task :update => ["vendor:#{name}:clobber", "vendor:#{name}"]
+
+          desc "delete #{name} library"
+          task :clobber do
+            sh %( rm -rf #{dir} )
+          end
+        end
+      end
     end
 
-    def cppflags_incdirs (dirs = [])
-      a = dirs.dup
-      a += ruby_incdirs
-      a
+    def use_boost_library (modules = [], branch: nil, tag: nil)
+      default_modules = %w[tools/build libs/config]
+      use_external_library 'https://github.com/boostorg/boost',
+        branch:          branch,
+        tag:             tag,
+        srcdir:          'NOSRC',
+        submodules:      default_modules | modules.map {|mod| "libs/#{mod}"},
+        post_submodules: './bootstrap.sh && ./b2 headers'
     end
 
-    def cflags (flags = '')
-      s = flags.dup
-      s << ' -Wno-unknown-pragmas'
-      s << ' ' << RbConfig::CONFIG['debugflags'] if debug?
-      s << ' -std=c++11' if gcc?
-      s << ' -std=c++11 -stdlib=libc++ -mmacosx-version-min=10.7' if clang?
-      s.gsub! /-O\d?\w*/, '-O0' if debug?
-      s
-    end
+    def define_placeholder_tasks ()
+      desc "delete temporary files"
+      alias_task :clean
 
-    def ldflags (flags = '', libdirs = [], frameworks = [])
-      s = flags.dup
-      s << libdirs.map    {|s| " -L#{s}"}.join
-      s << frameworks.map {|s| " -framework #{s}"}.join
-      s
-    end
+      desc "delete all generated files"
+      alias_task :clobber => :clean
 
-    def header (mod)
-      puts "-- #{mod.to_s.capitalize} " + '-' * 50
-    end
+      desc "build native library"
+      alias_task :lib
 
-    def debug (state)
-      ENV['DEBUG'] = state.to_s
-    end
+      desc "build ruby extension"
+      alias_task :ext
 
-    def debug? ()
-      env :DEBUG, false
-    end
+      desc "build ruby gem"
+      alias_task :gem
 
-    def win32? ()
-      RUBY_PLATFORM =~ /mswin|ming|cygwin/
-    end
+      desc "generate documentations"
+      alias_task :doc
 
-    def mswin? ()
-      RUBY_PLATFORM =~ /mswin/
-    end
+      desc "run all tests"
+      alias_task :test
 
-    def ming? ()
-      RUBY_PLATFORM =~ /ming/
-    end
-
-    def cygwin? ()
-      RUBY_PLATFORM =~ /cygwin/
-    end
-
-    def osx? ()
-      RUBY_PLATFORM =~ /darwin/
-    end
-
-    def ios? ()
-      false
-    end
-
-    def gcc? ()
-      RbConfig::CONFIG['CXX'] =~ /(^|\s)g\+\+/i
-    end
-
-    def clang? ()
-      RbConfig::CONFIG['CXX'] =~ /(^|\s)clang/i
-    end
-
-    def ruby (*args)
-      bin = ENV['RUBY'] || 'ruby'
-      "#{bin} #{args.join ' '}"
-    end
-
-    def rake (*args)
-      bin = ENV['RAKE'] || 'rake'
-      "#{bin} #{args.join ' '}"
+      desc "setup all external libraries"
+      alias_task :vendor
     end
 
 
@@ -175,29 +365,6 @@ module Xot
 end# Xot
 
 
-if Kernel.const_defined? :Rake
-  module Rake
-    class Application
-      alias invoke_task_org invoke_task
+include Xot::Rake
 
-      def invoke_task (*args, &block)
-        invoke_task_org *args, &block
-      rescue RuntimeError => e
-        if e.message =~ /don't\s+know\s+.*\s+task\s+/i
-          escalate_tasks
-        else
-          raise
-        end
-      end
-
-      def escalate_tasks ()
-        Dir.chdir '..' do
-          cmd = Xot::Rake.rake *ARGV
-          $stderr.puts "(in #{Dir.pwd}) #{cmd}"
-          system cmd
-        end
-        exit 0
-      end
-    end
-  end
-end
+define_placeholder_tasks

@@ -2,28 +2,23 @@
 
 
 %w[../xot .]
-  .map  {|s| File.expand_path "../#{s}/lib", __FILE__}
+  .map  {|s| File.expand_path "#{s}/lib", __dir__}
   .each {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 
-require 'xot/rake'
+require 'rucy/rake'
+
 require 'xot/module'
 require 'rucy/module'
 
-include Xot::Rake
 
-
-MODULES    = [Xot, Rucy].map {|m| m.const_get :Module}
-MODULE     = MODULES.last
-DLNAME     = 'tester'
-INCDIRS    = ruby_incdirs
-RUCY2RDOC  = 'bin/rucy2rdoc'
+MODULES    = [Xot, Rucy]
 NPARAM_MAX = 8
 NTIMES     = (0..NPARAM_MAX)
 
+build_native_library
+build_ruby_extension dlname: :tester
+test_ruby_extension
+generate_documents
+build_ruby_gem
 
-task :default => :build
-
-task :build => :lib
-
-
-MODULES.each {|m| m.load_tasks :lib, :ext, :test, :doc, :gem}
+task :default => :test

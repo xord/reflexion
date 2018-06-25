@@ -2,17 +2,17 @@
 
 
 %w[xot rucy beeps rays reflex]
-  .map  {|s| File.expand_path "../#{s}/lib", __FILE__}
+  .map  {|s| File.expand_path "#{s}/lib", __dir__}
   .each {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 
 
-require 'xot/rake'
+require 'xot/rake/util'
 
 include Xot::Rake
 
 
-MODULES = %w[xot rucy beeps rays reflex].map &:intern
-TASKS   = %w[erb lib ext test clean gem install uninstall upload].map &:intern
+MODULES = %i[xot rucy beeps rays reflex]
+TASKS   = %i[erb lib ext test gem install uninstall upload clean clobber]
 
 TARGETS = []
 
@@ -32,7 +32,7 @@ end
 
 def sh_each_targets (cmd)
   each_target do |target|
-    cd_sh File.expand_path("../#{target}", __FILE__), cmd
+    cd_sh File.expand_path(target.to_s, __dir__), cmd
   end
 end
 
@@ -41,12 +41,12 @@ task :default
 
 task :run do
   raise unless name = env(:sample)
-  sh ruby "reflex/samples/#{name}.rb"
+  sh %{ ruby reflex/samples/#{name}.rb }
 end
 
 TASKS.each do |name|
   task name do
-    sh_each_targets rake name
+    sh_each_targets "rake #{name}"
   end
 end
 
