@@ -21,13 +21,18 @@ namespace Reflex
 	bool initialized ();
 
 
-	static Application* instance = NULL;
+	namespace global
+	{
+
+		static Application* instance = NULL;
+
+	}// global
 
 
 	Application*
 	app ()
 	{
-		return instance;
+		return global::instance;
 	}
 
 
@@ -36,7 +41,7 @@ namespace Reflex
 		if (!initialized())
 			reflex_error(__FILE__, __LINE__, "not initialized.");
 
-		if (instance)
+		if (global::instance)
 			reflex_error(__FILE__, __LINE__, "multiple application instances.");
 
 		instance = this;
@@ -50,8 +55,10 @@ namespace Reflex
 	void
 	Application::start ()
 	{
-		UIApplicationMain(
-			*_NSGetArgc(), *_NSGetArgv(), nil, NSStringFromClass(AppDelegate.class));
+		NSString class_name = NSClassFromString(@"AppDelegate")
+			? @"AppDelegate"
+			: @"ReflexAppDelegate";
+		UIApplicationMain(*_NSGetArgc(), *_NSGetArgv(), nil, class_name);
 	}
 
 	void

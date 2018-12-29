@@ -25,6 +25,15 @@ namespace Reflex
 		return global::pool;
 	}
 
+	static Class
+	get_app_delegate_class ()
+	{
+		id klass = NSClassFromString(@"AppDelegate");
+		if (klass) return klass;
+
+		return ReflexAppDelegate.class;
+	}
+
 	void
 	init ()
 	{
@@ -33,7 +42,8 @@ namespace Reflex
 
 		global::pool = [[NSAutoreleasePool alloc] init];
 
-		[[NSApplication sharedApplication] setDelegate: [[[AppDelegate alloc] init] autorelease]];
+		id app_delegate = [[[get_app_delegate_class() alloc] init] autorelease];
+		[[NSApplication sharedApplication] setDelegate: app_delegate];
 	}
 
 	void

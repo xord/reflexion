@@ -23,6 +23,12 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 @implementation NativeWindow
 
+	{
+		Reflex::Window *pinstance, *ptr_for_rebind;
+		OpenGLView* view;
+		NSTimer* timer;
+	}
+
 	- (id) init
 	{
 		self = [super
@@ -32,10 +38,9 @@ static const NSUInteger WINDOW_STYLE_MASK =
 			defer: NO];
 		if (!self) return nil;
 
-		pinstance      =
-		ptr_for_rebind = NULL;
-		view           = nil;
-		timer          = nil;
+		pinstance = ptr_for_rebind = NULL;
+		view      = nil;
+		timer     = nil;
 
 		[self setDelegate: self];
 		[self setupContentView];
@@ -63,7 +68,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 		instance->self->native = [self retain];
 
-		// Reflex::Application is not constructed completely,
+		// Reflex::Window is not constructed completely,
 		// so can not call ClassWrapper::retain().
 		instance->Xot::template RefCountable<>::retain();
 
@@ -168,7 +173,8 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		double dt  = now - ptr->self->prev_time_draw;
 		double fps = 1. / dt;
 
-		fps                       = ptr->self->prev_fps * 0.9 + fps * 0.1;// LPF
+		fps = ptr->self->prev_fps * 0.9 + fps * 0.1;// LPF
+
 		ptr->self->prev_time_draw = now;
 		ptr->self->prev_fps       = fps;
 

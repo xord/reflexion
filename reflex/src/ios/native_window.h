@@ -8,9 +8,7 @@
 
 @interface NativeWindow : UIWindow
 
-	- (void) bind:   (Reflex::Window*) instance;
-
-	- (void) unbind: (Reflex::Window*) instance;
+	- (void) bind: (Reflex::Window*) instance;
 
 	- (void) update;
 

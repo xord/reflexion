@@ -4,18 +4,16 @@
 
 #include <assert.h>
 #import  <CoreMotion/CoreMotion.h>
+#include "reflex/application.h"
 #include "reflex/event.h"
 #include "reflex/exception.h"
 #include "application_data.h"
 
 
-#define REF (*pref)
-
-
-@implementation AppDelegate
+@implementation ReflexAppDelegate
 
 	{
-		Reflex::Application::Ref* pref;
+		Reflex::Application *pinstance;
 		CMMotionManager* motion_manager;
 	}
 
@@ -24,47 +22,48 @@
 		self = [super init];
 		if (!self) return nil;
 
-		pref = new Reflex::Application::Ref;
+		pinstance = NULL;
 
 		return self;
 	}
 
 	- (void) dealloc
 	{
-		assert(pref && !REF);
+		assert(!pinstance);
 
 		[self stopUpdateDeviceMotion];
-		delete pref;
 
 		[super dealloc];
 	}
 
 	- (void) bind: (Reflex::Application*) instance
 	{
-		assert(pref);
-
-		if (instance && instance->self->delegate)
+		if (!instance)
 			Reflex::argument_error(__FILE__, __LINE__);
 
-		if (REF)
+		if (instance && instance->self->delegate)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		REF = instance;
-		if (REF) REF->self->delegate = [self retain];
+		instance->self->delegate = [self retain];
+		instance->retain();
+
+		pinstance = instance;
 	}
 
-	- (void) unbind: (Reflex::Application*) instance
+	- (void) unbind
 	{
-		assert(pref);
+		if (!pinstance) return;
 
-		if (!REF) return;
+		if (pinstance->self->delegate) [pinstance->self->delegate release];
+		pinstance->self->delegate = nil;
 
-		if (instance && instance != REF.get())
-			Reflex::invalid_state_error(__FILE__, __LINE__);
+		pinstance->release();
+		pinstance = NULL;
+	}
 
-		if (REF->self->delegate) [REF->self->delegate release];
-		REF->self->delegate = nil;
-		REF.reset();
+	- (Reflex::Application*) instance
+	{
+		return pinstance;
 	}
 
 	- (BOOL) application: (UIApplication*) application
@@ -81,10 +80,11 @@
 
 		[self startUpdateDeviceMotion];
 
-		if (REF)
+		Reflex::Application* ptr = [self instance];
+		if (ptr)
 		{
 			Reflex::Event e;
-			REF->on_start(&e);
+			ptr->on_start(&e);
 			if (e.is_blocked())
 			{
 				return NO;
@@ -105,11 +105,12 @@
 			startDeviceMotionUpdatesToQueue: NSOperationQueue.currentQueue
 			withHandler: ^(CMDeviceMotion* motion, NSError* error)
 			{
-				if (!REF) return;
+				Reflex::Application* ptr = instance;
+				if (!ptr) return;
 
 				Reflex::MotionEvent e(
 					Reflex::Point(motion.gravity.x, -motion.gravity.y, motion.gravity.z));
-				REF->on_motion(&e);
+				ptr->on_motion(&e);
 			}
 		];
 
@@ -144,10 +145,11 @@
 
 	- (void) applicationWillTerminate: (UIApplication*) application
 	{
-		if (REF)
+		Reflex::Application* ptr = [self instance];
+		if (ptr)
 		{
 			Reflex::Event e;
-			REF->on_quit(&e);
+			ptr->on_quit(&e);
 			if (e.is_blocked())
 			{
 				Reflex::not_implemented_error(
@@ -155,7 +157,7 @@
 			}
 		}
 
-		[self unbind: NULL];
+		[self unbind];
 	}
 
-@end// AppDelegate
+@end// ReflexAppDelegate

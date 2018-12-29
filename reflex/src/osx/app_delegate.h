@@ -3,14 +3,8 @@
 #include <reflex/application.h>
 
 
-@interface AppDelegate : NSObject <NSApplicationDelegate>
-
-	{
-		Reflex::Application *pinstance, *ptr_for_rebind;
-	}
+@interface ReflexAppDelegate : NSObject <NSApplicationDelegate>
 
 	- (void) bind: (Reflex::Application*) instance;
 
-	- (void) unbind;
-
-@end// AppDelegate
+@end// ReflexAppDelegate

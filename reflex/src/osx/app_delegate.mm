@@ -9,7 +9,11 @@
 #include "application_data.h"
 
 
-@implementation AppDelegate
+@implementation ReflexAppDelegate
+
+	{
+		Reflex::Application *pinstance, *ptr_for_rebind;
+	}
 
 	- (id) init
 	{
@@ -277,4 +281,4 @@
 		return YES;
 	}
 
-@end// AppDelegate
+@end// ReflexAppDelegate

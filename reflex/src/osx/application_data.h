@@ -7,7 +7,7 @@
 #include <reflex/application.h>
 
 
-@class AppDelegate;
+@class ReflexAppDelegate;
 
 
 namespace Reflex
@@ -17,7 +17,7 @@ namespace Reflex
 	struct Application::Data
 	{
 
-		AppDelegate* delegate = nil;
+		ReflexAppDelegate* delegate = nil;
 
 		String name;
 

@@ -16,13 +16,18 @@ namespace Reflex
 	bool initialized ();
 
 
-	static Application* instance = NULL;
+	namespace global
+	{
+
+		static Application* instance = NULL;
+
+	}// global
 
 
 	Application*
 	app ()
 	{
-		return instance;
+		return global::instance;
 	}
 
 
@@ -31,21 +36,21 @@ namespace Reflex
 		if (!initialized() || !NSApp)
 			reflex_error(__FILE__, __LINE__, "not initialized.");
 
-		if (instance)
+		if (global::instance)
 			reflex_error(__FILE__, __LINE__, "multiple application instances.");
 
-		AppDelegate* delegate = (AppDelegate*) [NSApp delegate];
+		ReflexAppDelegate* delegate = (ReflexAppDelegate*) [NSApp delegate];
 		if (!delegate)
 			invalid_state_error(__FILE__, __LINE__);
 
 		[delegate bind: this];
 
-		instance = this;
+		global::instance = this;
 	}
 
 	Application::~Application ()
 	{
-		instance = NULL;
+		global::instance = NULL;
 	}
 
 	void

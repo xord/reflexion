@@ -3,10 +3,8 @@
 #include <reflex/application.h>
 
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate>
+@interface ReflexAppDelegate : UIResponder <UIApplicationDelegate>
 
-	- (void) bind:   (Reflex::Application*) instance;
+	- (void) bind: (Reflex::Application*) instance;
 
-	- (void) unbind: (Reflex::Application*) instance;
-
-@end// AppDelegate
+@end// ReflexAppDelegate
