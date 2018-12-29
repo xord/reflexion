@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <memory>
 #include <algorithm>
-#include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include "reflex/window.h"
 #include "reflex/timer.h"
 #include "reflex/filter.h"
@@ -149,31 +148,42 @@ namespace Reflex
 			return *pshapes;
 		}
 
-		void update_shapes (bool force = false)
+		template <typename FUN>
+		void each_shape (FUN fun)
 		{
 			if (pshape)
-				Shape_update_polygon(pshape.get(), force);
+				fun(pshape.get());
 
 			if (pshapes)
 			{
 				for (auto& shape : *pshapes)
-					Shape_update_polygon(shape.get(), force);
+					fun(shape.get());
 			}
+		}
+
+		template <typename FUN>
+		void each_shape (FUN fun) const
+		{
+			const_cast<Data*>(this)->each_shape(fun);
+		}
+
+		void update_shapes (bool force = false)
+		{
+			each_shape([=](Shape* shape)
+			{
+				Shape_update(shape, force);
+			});
 		}
 
 		void resize_shapes (FrameEvent* e)
 		{
-			if (pshape)
-				pshape->on_resize(e);
-
-			if (pshapes)
+			each_shape([=](Shape* shape)
 			{
-				for (auto& shape : *pshapes)
-					shape->on_resize(e);
-			}
+				shape->on_resize(e);
+			});
 		}
 
-		Body* body ()
+		Body& body ()
 		{
 			if (!pbody)
 			{
@@ -186,7 +196,7 @@ namespace Reflex
 				pbody.reset(b);
 				update_body_frame();
 			}
-			return pbody.get();
+			return *pbody;
 		}
 
 		void update_body_frame ()
@@ -196,16 +206,16 @@ namespace Reflex
 			pbody->set_transform(frame.x, frame.y, angle);
 		}
 
-		void update_body_and_shapes (bool force = false)
+		void update_body_and_shapes ()
 		{
 			std::unique_ptr<Body> old_body;
 			if (pbody)
 			{
 				old_body = std::move(pbody);
-				Body_copy_attributes(old_body.get(), body());
+				Body_copy_attributes(&body(), *old_body);
 			}
 
-			update_shapes(force);
+			update_shapes(true);
 		}
 
 		World* parent_world (bool create = true)
@@ -587,10 +597,7 @@ namespace Reflex
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		Window* current = view->self->window;
-		if (current == window) return;
-
-		if (current)
+		if (view->self->window)
 		{
 			Event e;
 			view->on_detach(&e);
@@ -598,7 +605,7 @@ namespace Reflex
 		}
 
 		view->self->window = window;
-		view->self->update_body_and_shapes(!window);
+		view->self->update_body_and_shapes();
 
 		View::ChildList* pchildren = view->self->pchildren.get();
 		if (pchildren)
@@ -706,7 +713,7 @@ namespace Reflex
 	{
 		if (!view) return NULL;
 
-		return create ? view->self->body() : view->self->pbody.get();
+		return create ? &view->self->body() : view->self->pbody.get();
 	}
 
 	bool
@@ -773,6 +780,21 @@ namespace Reflex
 		Timers* timers = view->self->ptimers.get();
 		if (timers)
 			timers->fire(now);
+	}
+
+	static void
+	update_view_shapes (View* view)
+	{
+		assert(view);
+		View::Data* self = view->self.get();
+
+		bool create_shape = self->pbody && !self->pshape;
+		if (create_shape)
+			view->shape();
+
+		bool update = self->check_and_remove_flag(View::Data::UPDATE_SHAPES);
+		if (update || create_shape)
+			self->update_shapes(create_shape);
 	}
 
 	static void
@@ -915,19 +937,6 @@ namespace Reflex
 
 			view->set_frame(frame);
 		}
-	}
-
-	static void
-	update_view_shapes (View* view)
-	{
-		assert(view);
-		View::Data* self = view->self.get();
-
-		if (self->pbody && !self->pshape)
-			view->shape();
-
-		if (self->check_and_remove_flag(View::Data::UPDATE_SHAPES))
-			self->update_shapes();
 	}
 
 	void
@@ -1501,18 +1510,27 @@ namespace Reflex
 		assert(view);
 		View::Data* self = view->self.get();
 
-		View* current = self->parent;
-		if (current == parent) return;
-
-		if (current && parent)
-		{
-			reflex_error(__FILE__, __LINE__,
-				"view '%s' already belongs to another parent '%s'.",
-				view->name(), self->parent->name());
-		}
+		if (parent == self->parent) return;
 
 		self->parent = parent;
 		View_set_window(view, parent ? parent->window() : NULL);
+	}
+
+	static void
+	erase_child_from_children (View* parent, View* child)
+	{
+		assert(parent && child);
+
+		View::ChildList* children = parent->self->pchildren.get();
+		if (!children) return;
+
+		auto end = children->end();
+		auto it  = std::find(children->begin(), end, child);
+		assert(it != end);
+
+		children->erase(it);
+		if (children->empty())
+			parent->self->pchildren.reset();
 	}
 
 	void
@@ -1528,10 +1546,13 @@ namespace Reflex
 		else if (found != belong)
 			invalid_state_error(__FILE__, __LINE__);
 
-		child->self->add_flag(Data::ACTIVE);
-
 		self->children().push_back(child);
+
+		View* prev_parent = child->parent();
 		set_parent(child, this);
+
+		if (prev_parent)
+			erase_child_from_children(prev_parent, child);
 
 		update_view_layout(this);
 	}
@@ -1542,28 +1563,16 @@ namespace Reflex
 		if (!child || child == this)
 			argument_error(__FILE__, __LINE__);
 
-		if (!self->pchildren) return;
-
-		auto end = child_end();
-		auto it  = std::find(child_begin(), end, child);
-		if (it == end) return;
-
-		child->self->remove_flag(Data::ACTIVE);
-
-		if (self->has_flag(Data::UPDATING_WORLD))
-		{
-			child->self->add_flag(Data::REMOVE_SELF);
+		bool found  = std::find(child_begin(), child_end(), child) != child_end();
+		bool belong = child->parent() == this;
+		if (!found && !belong)
 			return;
-		}
-
-		if (child->parent() != this)
+		else if (found != belong)
 			invalid_state_error(__FILE__, __LINE__);
 
 		set_parent(child, NULL);
 
-		self->pchildren->erase(it);
-		if (self->pchildren->empty())
-			self->pchildren.reset();
+		erase_child_from_children(this, child);
 
 		update_view_layout(this);
 	}
@@ -1956,43 +1965,19 @@ namespace Reflex
 		return self->frame;
 	}
 
-	template <typename FUN>
-	static void
-	each_shape (const View& view, FUN fun)
-	{
-		View::Data* self = view.self.get();
-
-		if (self->pshape)
-			fun(*self->pshape);
-
-		if (self->pshapes)
-		{
-			for (const auto& pshape : *self->pshapes)
-			{
-				if (pshape)
-					fun(*pshape);
-			}
-		}
-	}
-
-	static void
-	include_shape_frames (Bounds* result, const View& view)
-	{
-		each_shape(view, [&](const Shape& shape) {
-			if (!Shape_has_frame(shape))
-				return;
-
-			Bounds frame = shape.frame();
-			if (frame) *result |= frame;
-		});
-	}
-
 	Bounds
 	View::content_bounds () const
 	{
-		Bounds b = Rays::invalid_bounds();
-		include_shape_frames(&b, *this);
-		return b;
+		Bounds bounds = Rays::invalid_bounds();
+		self->each_shape([&](const Shape* shape)
+		{
+			if (!shape || !Shape_has_frame(*shape))
+				return;
+
+			Bounds frame = shape->frame();
+			if (frame) bounds |= frame;
+		});
+		return bounds;
 	}
 
 	void
@@ -2144,37 +2129,37 @@ namespace Reflex
 	void
 	View::apply_force (coord x, coord y)
 	{
-		self->body()->apply_force(x, y);
+		self->body().apply_force(x, y);
 	}
 
 	void
 	View::apply_force (const Point& force)
 	{
-		self->body()->apply_force(force);
+		self->body().apply_force(force);
 	}
 
 	void
 	View::apply_torque (float torque)
 	{
-		self->body()->apply_torque(torque);
+		self->body().apply_torque(torque);
 	}
 
 	void
 	View::apply_linear_impulse (coord x, coord y)
 	{
-		self->body()->apply_linear_impulse(x, y);
+		self->body().apply_linear_impulse(x, y);
 	}
 
 	void
 	View::apply_linear_impulse (const Point& impulse)
 	{
-		self->body()->apply_linear_impulse(impulse);
+		self->body().apply_linear_impulse(impulse);
 	}
 
 	void
 	View::apply_angular_impulse (float impulse)
 	{
-		self->body()->apply_angular_impulse(impulse);
+		self->body().apply_angular_impulse(impulse);
 	}
 
 	void
@@ -2192,11 +2177,11 @@ namespace Reflex
 	void
 	View::set_dynamic (bool state)
 	{
-		Body* b = self->body();
-		if (!b || state == b->is_dynamic())
+		Body& b = self->body();
+		if (state == b.is_dynamic())
 			return;
 
-		b->set_dynamic(state);
+		b.set_dynamic(state);
 	}
 
 	bool
@@ -2310,13 +2295,13 @@ namespace Reflex
 	void
 	View::set_linear_velocity (coord x, coord y)
 	{
-		self->body()->set_linear_velocity(x, y);
+		self->body().set_linear_velocity(x, y);
 	}
 
 	void
 	View::set_linear_velocity (const Point& velocity)
 	{
-		self->body()->set_linear_velocity(velocity);
+		self->body().set_linear_velocity(velocity);
 	}
 
 	Point
@@ -2329,7 +2314,7 @@ namespace Reflex
 	void
 	View::set_angular_velocity (float velocity)
 	{
-		self->body()->set_angular_velocity(velocity);
+		self->body().set_angular_velocity(velocity);
 	}
 
 	float
@@ -2342,7 +2327,7 @@ namespace Reflex
 	void
 	View::set_gravity_scale (float scale)
 	{
-		self->body()->set_gravity_scale(scale);
+		self->body().set_gravity_scale(scale);
 	}
 
 	float

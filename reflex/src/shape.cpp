@@ -295,53 +295,51 @@ namespace Reflex
 			View_update_shapes(owner);
 		}
 
-		void update_polygon (Shape* shape)
+		void update_polygon (Shape* shape, bool force = false)
 		{
 			assert(shape);
 
-			Polygon poly = get_polygon_for_shape();
-			if (poly.self == polygon.self)
-				return;
+			if (!owner || !View_is_active(*owner))
+				polygon = Polygon();
+			else
+			{
+				Polygon poly = get_polygon_for_shape();
+				if (!force && poly.self == polygon.self)
+					return;
 
-			polygon = poly;
+				polygon = poly;//clip_polygon(poly);
+			}
 
-			//clip_polygon();
 			update_fixtures(shape);
 		}
 
-		void clip_polygon ()
+		Polygon clip_polygon (const Polygon& polygon)
 		{
 			if (!pframe || !polygon)
-				return;
+				return polygon;
 
-			polygon = polygon & Rays::create_rect(0, 0, pframe->width, pframe->height);
+			return polygon & Rays::create_rect(0, 0, pframe->width, pframe->height);
 		}
 
 		void update_fixtures (Shape* shape)
 		{
-			assert(shape);
-
-			Body* body = View_get_body(owner, false);
-			if (!pfixtures && !body)
-				return;
-
-			Fixture* fix = get_fixtures(shape);
-			if (Fixture_is_temporary(fix) && Body_is_temporary(body))
-				return;
-
-			std::unique_ptr<Fixture> old = std::move(pfixtures);
-			Fixture_copy_attributes(old.get(), get_fixtures(shape));
+			if (pfixtures)
+			{
+				std::unique_ptr<Fixture> old_fix = std::move(pfixtures);
+				Fixture_copy_attributes(&fixtures(shape), *old_fix);
+			}
+			else if (has_body())
+				fixtures(shape);
 		}
 
-		Fixture* get_fixtures (Shape* shape)
+		Fixture& fixtures (Shape* shape)
 		{
 			assert(shape);
 
 			if (!pfixtures)
 			{
-				Body* body = View_get_body(owner);
 				Fixture* fix;
-				if (body && !Body_is_temporary(body))
+				if (has_body())
 				{
 					fix = create_fixtures(shape);
 					if (!fix) fix = create_empty_fixture(shape);
@@ -352,7 +350,13 @@ namespace Reflex
 				assert(fix);
 				pfixtures.reset(fix);
 			}
-			return pfixtures.get();
+			return *pfixtures;
+		}
+
+		bool has_body () const
+		{
+			Body* body = View_get_body(owner, false);
+			return body && !Body_is_temporary(*body);
 		}
 
 		virtual Fixture* create_fixtures (Shape* shape)
@@ -415,7 +419,7 @@ namespace Reflex
 	}
 
 	void
-	Shape_update_polygon (Shape* shape, bool force)
+	Shape_update (Shape* shape, bool force)
 	{
 		if (!shape)
 			argument_error(__FILE__, __LINE__);
@@ -424,7 +428,7 @@ namespace Reflex
 			&shape->self->flags, Shape::Data::UPDATE_POLYGON);
 
 		if (update || force)
-			shape->self->update_polygon(shape);
+			shape->self->update_polygon(shape, force);
 	}
 
 	void
@@ -495,7 +499,7 @@ namespace Reflex
 	{
 		if (density == this->density()) return;
 
-		self->get_fixtures(this)->set_density(density);
+		self->fixtures(this).set_density(density);
 	}
 
 	float
@@ -510,7 +514,7 @@ namespace Reflex
 	{
 		if (friction == this->friction()) return;
 
-		self->get_fixtures(this)->set_friction(friction);
+		self->fixtures(this).set_friction(friction);
 	}
 
 	float
@@ -525,7 +529,7 @@ namespace Reflex
 	{
 		if (restitution == this->restitution()) return;
 
-		self->get_fixtures(this)->set_restitution(restitution);
+		self->fixtures(this).set_restitution(restitution);
 	}
 
 	float
@@ -540,7 +544,7 @@ namespace Reflex
 	{
 		if (state == is_sensor()) return;
 
-		self->get_fixtures(this)->set_sensor(state);
+		self->fixtures(this).set_sensor(state);
 	}
 
 	bool
@@ -555,7 +559,7 @@ namespace Reflex
 	{
 		if (bits == category_bits()) return;
 
-		self->get_fixtures(this)->set_category_bits(bits);
+		self->fixtures(this).set_category_bits(bits);
 	}
 
 	uint
@@ -570,7 +574,7 @@ namespace Reflex
 	{
 		if (mask == collision_mask()) return;
 
-		self->get_fixtures(this)->set_collision_mask(mask);
+		self->fixtures(this).set_collision_mask(mask);
 	}
 
 	uint
@@ -584,24 +588,12 @@ namespace Reflex
 	Shape::on_attach (Event* e)
 	{
 		assert(owner());
-
-		self->update_polygon_on_next_update();
-	}
-
-	static void
-	make_fixtures_inactive (Shape* shape)
-	{
-		assert(shape);
-
-		shape->self->update_fixtures(shape);
 	}
 
 	void
 	Shape::on_detach (Event* e)
 	{
 		assert(!owner());
-
-		make_fixtures_inactive(this);
 	}
 
 	void

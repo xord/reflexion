@@ -50,7 +50,7 @@ namespace Reflex
 
 	bool Shape_has_frame (const Shape& shape);
 
-	void Shape_update_polygon (Shape* shape, bool force = false);
+	void Shape_update (Shape* shape, bool force = false);
 
 	void Shape_call_contact_event (Shape* shape, const ContactEvent& event);
 

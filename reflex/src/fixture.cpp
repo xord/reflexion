@@ -170,7 +170,7 @@ namespace Reflex
 	Fixture::set_next (Fixture* fixture)
 	{
 		if (fixture)
-			Fixture_copy_attributes(this, fixture);
+			Fixture_copy_attributes(fixture, *this);
 
 		pnext.reset(fixture);
 	}
@@ -189,17 +189,17 @@ namespace Reflex
 
 
 	void
-	Fixture_copy_attributes (const Fixture* from, Fixture* to)
+	Fixture_copy_attributes (Fixture* to, const Fixture& from)
 	{
-		if (!from || !to)
+		if (!to)
 			return;
 
-		to->set_density(       from->density());
-		to->set_friction(      from->friction());
-		to->set_restitution(   from->restitution());
-		to->set_sensor(        from->is_sensor());
-		to->set_category_bits( from->category_bits());
-		to->set_collision_mask(from->collision_mask());
+		to->set_density(       from.density());
+		to->set_friction(      from.friction());
+		to->set_restitution(   from.restitution());
+		to->set_sensor(        from.is_sensor());
+		to->set_category_bits( from.category_bits());
+		to->set_collision_mask(from.collision_mask());
 	}
 
 	static Body*
@@ -224,10 +224,9 @@ namespace Reflex
 	}
 
 	bool
-	Fixture_is_temporary (const Fixture* fixture)
+	Fixture_is_temporary (const Fixture& fixture)
 	{
-		if (!fixture) return false;
-		return fixture->b2ptr()->GetBody() == Body_get_b2ptr(get_temporary_body());
+		return fixture.b2ptr()->GetBody() == Body_get_b2ptr(get_temporary_body());
 	}
 
 

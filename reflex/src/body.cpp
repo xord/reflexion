@@ -254,17 +254,17 @@ namespace Reflex
 
 
 	void
-	Body_copy_attributes (const Body* from, Body* to)
+	Body_copy_attributes (Body* to, const Body& from)
 	{
-		if (!from || !to)
+		if (!to)
 			return;
 
-		if (from->self->ppm != to->self->ppm)
+		if (to->self->ppm != from.self->ppm)
 			physics_error(__FILE__, __LINE__);
 
-		const b2Body* b2from = Body_get_b2ptr(from);
 		      b2Body* b2to   = Body_get_b2ptr(to);
-		assert(b2from && b2to);
+		const b2Body* b2from = Body_get_b2ptr(&from);
+		assert(b2to && b2from);
 
 		b2to->SetType(           b2from->GetType());
 		b2to->SetTransform(      b2from->GetPosition(), b2from->GetAngle());
@@ -283,9 +283,9 @@ namespace Reflex
 	}
 
 	bool
-	Body_is_temporary (const Body* body)
+	Body_is_temporary (const Body& body)
 	{
-		const b2Body* b2body = Body_get_b2ptr(body);
+		const b2Body* b2body = Body_get_b2ptr(&body);
 		if (!b2body) return false;
 
 		return b2body->GetWorld() == World_get_b2ptr(World_get_temporary());
