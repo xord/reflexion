@@ -27,7 +27,7 @@ namespace Reflex
 
 		if (current)
 		{
-			current->on_blur(&e);
+			current->on_focus(&e);
 			current->redraw();
 		}
 

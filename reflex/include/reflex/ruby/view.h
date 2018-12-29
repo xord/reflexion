@@ -27,16 +27,16 @@ namespace Reflex
 
 		public:
 
-			virtual Point content_size () const
+			virtual Bounds content_bounds () const
 			{
-				RUCY_SYM(content_size);
+				RUCY_SYM(content_bounds);
 				if (this->is_overridable())
 				{
-					Rucy::Value ret = this->value.call(content_size);
-					return ret.is_nil() ? Super::content_size() : Rucy::to<Point>(ret);
+					Rucy::Value ret = this->value.call(content_bounds);
+					return ret.is_nil() ? Super::content_bounds() : Rucy::to<Bounds>(ret);
 				}
 				else
-					return Super::content_size();
+					return Super::content_bounds();
 			}
 
 			virtual void on_attach (Event* e)
@@ -136,15 +136,6 @@ namespace Reflex
 					this->value.call(on_focus, Rucy::value(e));
 				else
 					Super::on_focus(e);
-			}
-
-			virtual void on_blur (FocusEvent* e)
-			{
-				RUCY_SYM(on_blur);
-				if (this->is_overridable())
-					this->value.call(on_blur, Rucy::value(e));
-				else
-					Super::on_blur(e);
 			}
 
 			virtual void on_key (KeyEvent* e)

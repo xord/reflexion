@@ -15,7 +15,7 @@ module Reflex
 
     attr_accessor :font
 
-    def content_size ()
+    def content_bounds ()
       s = string
       return 0, 0 unless s && window
       font = @font || window.painter.font

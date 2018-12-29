@@ -18,6 +18,8 @@ namespace Reflex
 	class WallShape : public Shape
 	{
 
+		typedef Shape Super;
+
 		public:
 
 			enum Position
@@ -41,20 +43,12 @@ namespace Reflex
 
 			virtual void on_draw (DrawEvent* e);
 
-		protected:
-
-			virtual Polygon update_polygon () const;
-
-		private:
-
-			uint positions;
-
-			coord thickness;
-
 	};// WallShape
 
 
 	bool Shape_set_owner (Shape* shape, View* owner);
+
+	bool Shape_has_frame (const Shape& shape);
 
 	void Shape_update_polygon (Shape* shape, bool force = false);
 

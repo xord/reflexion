@@ -10,9 +10,8 @@ require 'reflex'
 
 class V < Reflex::View
 
-  def initialize (offset = [0, 0])
-    super()
-    frame *offset, 400, 200
+  def initialize (offset = 0)
+    super position: offset, size: [400, 200]
   end
 
   def on_update (e)
@@ -24,16 +23,13 @@ class V < Reflex::View
       b = e.bounds.to_a
 
       fill 0.2
-      stroke 0.1
+      stroke 1
+      stroke_width 2
       rect *b
 
       fill :green
       stroke :red
       text e.fps.to_i.to_s + " FPS."
-
-      fill :none
-      stroke 1, 0, 0, 0.4
-      rect *b
     end
   end
 
@@ -44,7 +40,7 @@ class W < Reflex::Window
 
   def initialize ()
     set :title, "View Tree Sample"
-    set :frame, 100, 100, 320, 240
+    set :frame, 100, 100, 800, 600
 
     painter.background 0
     painter.fill 1
@@ -61,7 +57,7 @@ end# W
 def setup (parent, level)
   return unless level > 0
   1.times do |i|
-    v = V.new [i * 10] * 2
+    v = V.new i * 10
     parent.add v
     setup v, level - 1
   end

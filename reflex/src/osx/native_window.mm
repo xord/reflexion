@@ -274,6 +274,11 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		REF->on_key(&e);
 	}
 
+	- (void) flagsChanged: (NSEvent*) event
+	{
+		// TODO: implement later.
+	}
+
 	- (void) mouseDown: (NSEvent*) event
 	{
 		assert(pref);

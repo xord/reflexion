@@ -27,7 +27,7 @@ module Reflex
     end
 
     def inspect ()
-      "#<Reflex::FocusEvent type:#{type} focus:#{focus} last:#{last}>"
+      "#<Reflex::FocusEvent type:#{type} current:#{current} last:#{last}>"
     end
 
   end# FocusEvent

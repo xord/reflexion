@@ -22,7 +22,9 @@ module Reflex
 
     def_delegators :root,
       :timeout, :interval,
-      :add_child, :remove_child, :find_children,
+      :add_child,     :add,
+      :remove_child,  :remove,
+      :find_child,    :find, :find_children,
       :style, :styles, :scroll_to, :scroll_by, :scroll,
       :meter2pixel, :meter, :wall,
       :zoom=,              :zoom,
@@ -47,10 +49,6 @@ module Reflex
       :restitution=, :restitution
 
     universal_accessor :title, :frame
-
-    alias add    add_child
-    alias remove remove_child
-    alias find   find_children
 
     def initialize (options = nil, &block)
       super()

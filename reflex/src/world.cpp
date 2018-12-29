@@ -204,7 +204,7 @@ namespace Reflex
 	void
 	World::set_debug (bool state)
 	{
-		if (state == debugging()) return;
+		if (state == debug()) return;
 
 		if (state)
 		{
@@ -218,7 +218,7 @@ namespace Reflex
 	}
 
 	bool
-	World::debugging () const
+	World::debug () const
 	{
 		return !!self->debug_draw;
 	}

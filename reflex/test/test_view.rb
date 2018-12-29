@@ -127,6 +127,32 @@ class TestView < Test::Unit::TestCase
     assert_raise(Rucy::NativeError) {v.density = 3}
   end
 
+  def test_content_bounds_with_shapes ()
+    v = view
+    assert_equal Reflex::Bounds.invalid, v.content_bounds
+
+    v.shape.resize_to 10, 20
+    assert_equal [10, 20],               v.content_bounds.size.to_a
+
+    v.shape = shape size: [30, 40]
+    assert_equal [30, 40],               v.content_bounds.size.to_a
+
+    v.shape = nil
+    assert_equal Reflex::Bounds.invalid, v.content_bounds
+
+    v.add_shape shape
+    assert_equal Reflex::Bounds.invalid, v.content_bounds
+
+    v.add_shape shape size: [50, 60]
+    assert_equal [50, 60],               v.content_bounds.size.to_a
+
+    v.add_shape shape size: [100, 10]
+    assert_equal [100, 60],              v.content_bounds.size.to_a
+
+    v.add_shape shape frame: [-10, -20, 200, 210]
+    assert_equal [-10, -20, 200, 210],   v.content_bounds.to_a
+  end
+
   def test_add_remove_shape ()
     s = shape name: :S
     s.density =  1
@@ -143,6 +169,11 @@ class TestView < Test::Unit::TestCase
     v.remove_shape s
     assert_equal 0,     v.shapes.to_a.size
     assert_not_includes v.find_shapes(selector name: :S), s
+
+    v.add_shape s
+    assert_equal 1,     v.shapes.to_a.size
+    v.clear_shapes
+    assert_equal 0,     v.shapes.to_a.size
   end
 
   def test_name ()

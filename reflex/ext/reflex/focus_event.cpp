@@ -20,13 +20,13 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEF3(initialize, type, focus, last)
+RUCY_DEF3(initialize, type, current, last)
 {
 	CHECK;
 
-	THIS->focus = to<Reflex::View*>(focus);
-	THIS->focus = to<Reflex::View*>(focus);
-	THIS->last  = to<Reflex::View*>(last);
+	THIS->type    = (Reflex::FocusEvent::Type) to<uint>(type);
+	THIS->current = to<Reflex::View*>(current);
+	THIS->last    = to<Reflex::View*>(last);
 
 	return rb_call_super(0, NULL);
 }
@@ -50,10 +50,10 @@ RUCY_DEF0(type)
 RUCY_END
 
 static
-RUCY_DEF0(focus)
+RUCY_DEF0(current)
 {
 	CHECK;
-	return THIS->focus ? value(THIS->focus) : nil();
+	return THIS->current ? value(THIS->current) : nil();
 }
 RUCY_END
 
@@ -78,7 +78,7 @@ Init_focus_event ()
 	cFocusEvent.define_private_method("initialize",      initialize);
 	cFocusEvent.define_private_method("initialize_copy", initialize_copy);
 	cFocusEvent.define_method("type", type);
-	cFocusEvent.define_method("focus", focus);
+	cFocusEvent.define_method("current", current);
 	cFocusEvent.define_method("last", last);
 	cFocusEvent.define_const("TYPE_NONE",  Reflex::FocusEvent::NONE);
 	cFocusEvent.define_const("TYPE_FOCUS", Reflex::FocusEvent::FOCUS);

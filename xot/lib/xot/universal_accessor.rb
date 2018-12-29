@@ -6,15 +6,14 @@ module Xot
 
   module UniversalAccessor
 
-    def universal_accessor (*names, **options)
-      names.each do |name|
-        define_universal_accessor name, options
-      end
+    def universal_accessor (*names, **names_with_options)
+      names.each              {|name|       define_universal_accessor name}
+      names_with_options.each {|name, opts| define_universal_accessor name, opts}
     end
 
     private
 
-      def define_universal_accessor (name, options)
+      def define_universal_accessor (name, options = {})
         set = "ua_set_#{name}__"
         get = "ua_get_#{name}__"
         class_eval <<-END

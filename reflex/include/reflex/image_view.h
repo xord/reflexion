@@ -28,7 +28,7 @@ namespace Reflex
 
 			virtual Image get_image () const;
 
-			virtual Point content_size () const;
+			virtual Bounds content_bounds () const;
 
 			virtual void on_draw (DrawEvent* e);
 

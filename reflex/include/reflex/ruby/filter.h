@@ -7,6 +7,8 @@
 #include <rucy/rucy.h>
 #include <rucy/class.h>
 #include <rucy/extension.h>
+#include <rays/ruby/image.h>
+#include <rays/ruby/painter.h>
 #include <reflex/filter.h>
 
 

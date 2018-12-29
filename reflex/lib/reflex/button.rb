@@ -19,7 +19,7 @@ module Reflex
       self.text = self.name unless self.text
     end
 
-    def content_size ()
+    def content_bounds ()
       f = window.painter.font
       return f.width(@text) + 2, f.height + 2
     end

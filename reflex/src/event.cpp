@@ -122,8 +122,8 @@ namespace Reflex
 	{
 	}
 
-	FocusEvent::FocusEvent (Type type, View* focus, View* last)
-	:	type(type), focus(focus), last(last)
+	FocusEvent::FocusEvent (Type type, View* current, View* last)
+	:	type(type), current(current), last(last)
 	{
 	}
 

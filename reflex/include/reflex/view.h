@@ -59,11 +59,15 @@ namespace Reflex
 			enum Flag
 			{
 
-				FLAG_CLIP  = Xot::bit(0),
+				FLAG_CLIP           = Xot::bit(0),
 
-				FLAG_CACHE = Xot::bit(1),
+				FLAG_CACHE          = Xot::bit(1),
 
-				FLAG_LAST  = FLAG_CACHE
+				FLAG_RESIZE_TO_FIT  = Xot::bit(2),
+
+				FLAG_SCROLL_TO_FIT  = Xot::bit(3),
+
+				FLAG_LAST           = FLAG_SCROLL_TO_FIT
 
 			};// Flag
 
@@ -121,7 +125,7 @@ namespace Reflex
 			virtual void           clear_children ();
 
 			virtual ChildList       find_children (
-				const Selector& selector, bool recursive = false) const;
+				const Selector& selector, bool recursive = true) const;
 
 			virtual       child_iterator child_begin ();
 
@@ -201,9 +205,9 @@ namespace Reflex
 
 			virtual const Bounds& frame () const;
 
-			virtual Point content_size () const;
+			virtual Bounds      content_bounds () const;
 
-			virtual void resize_to_fit ();
+			virtual void fit_to_content ();
 
 			virtual void set_angle (float degree);
 
@@ -227,6 +231,12 @@ namespace Reflex
 
 			virtual uint     capture () const;
 
+			virtual void    add_flag (uint flags);
+
+			virtual void remove_flag (uint flags);
+
+			virtual bool    has_flag (uint flags) const;
+
 			virtual       View* parent ();
 
 			virtual const View* parent () const;
@@ -234,12 +244,6 @@ namespace Reflex
 			virtual       Window* window ();
 
 			virtual const Window* window () const;
-
-			virtual void    add_flag (uint flags);
-
-			virtual void remove_flag (uint flags);
-
-			virtual bool    has_flag (uint flags) const;
 
 			//
 			// for physics body
@@ -327,7 +331,7 @@ namespace Reflex
 
 			virtual void set_debug (bool debug = true);
 
-			virtual bool     debugging () const;
+			virtual bool     debug () const;
 
 			//
 			// event handlers
@@ -353,8 +357,6 @@ namespace Reflex
 			virtual void on_scroll (ScrollEvent* e);
 
 			virtual void on_focus (FocusEvent* e);
-
-			virtual void on_blur (FocusEvent* e);
 
 			virtual void on_key      (KeyEvent* e);
 

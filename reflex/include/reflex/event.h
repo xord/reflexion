@@ -147,11 +147,11 @@ namespace Reflex
 
 		Type type;
 
-		View *focus, *last;
+		View *current, *last;
 
 		FocusEvent ();
 
-		FocusEvent (Type type, View* focus, View* last);
+		FocusEvent (Type type, View* current, View* last);
 
 	};// FocusEvent
 

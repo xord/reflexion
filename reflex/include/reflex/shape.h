@@ -33,15 +33,13 @@ namespace Reflex
 
 			typedef Xot::Ref<This> Ref;
 
-			Shape (const char* name = NULL);
-
 			virtual ~Shape ();
 
 			virtual       View* owner ();
 
 			virtual const View* owner () const;
 
-			virtual void set_frame (coord x, coord y, coord width, coord height);
+			        void set_frame (coord x, coord y, coord width, coord height);
 
 			virtual void set_frame (const Bounds& frame);
 
@@ -91,13 +89,9 @@ namespace Reflex
 
 		protected:
 
+			Shape (Data* data, const char* name = NULL);
+
 			virtual SelectorPtr* get_selector_ptr ();
-
-			virtual Fixture* create_fixtures ();
-
-			virtual Polygon update_polygon () const = 0;
-
-			virtual Polygon get_polygon_for_fixtures () const;
 
 	};// Shape
 
@@ -116,14 +110,6 @@ namespace Reflex
 			virtual void       set_polygon (const Polygon& polygon);
 
 			virtual const Polygon& polygon () const;
-
-			struct Data;
-
-			Xot::PImpl<Data> self;
-
-		protected:
-
-			virtual Polygon update_polygon () const;
 
 	};// PolygonShape
 
@@ -148,14 +134,6 @@ namespace Reflex
 			virtual void set_loop (bool loop = true);
 
 			virtual bool     loop () const;
-
-			struct Data;
-
-			Xot::PImpl<Data> self;
-
-		protected:
-
-			virtual Polygon update_polygon () const;
 
 	};// LineShape
 
@@ -196,16 +174,6 @@ namespace Reflex
 
 			virtual uint     nsegment () const;
 
-			struct Data;
-
-			Xot::PImpl<Data> self;
-
-		protected:
-
-			virtual Polygon update_polygon () const;
-
-			virtual Polygon get_polygon_for_fixtures () const;
-
 	};// RectShape
 
 
@@ -237,18 +205,6 @@ namespace Reflex
 			virtual void set_nsegment (uint num_of_segments);
 
 			virtual uint     nsegment() const;
-
-			struct Data;
-
-			Xot::PImpl<Data> self;
-
-		protected:
-
-			virtual Fixture* create_fixtures ();
-
-			virtual Polygon update_polygon () const;
-
-			virtual Polygon get_polygon_for_fixtures () const;
 
 	};// EllipseShape
 

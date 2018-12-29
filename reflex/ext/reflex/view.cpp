@@ -4,6 +4,7 @@
 #include <vector>
 #include <rays/ruby/point.h>
 #include <rays/ruby/bounds.h>
+#include <rays/ruby/polygon.h>
 #include "reflex/ruby/selector.h"
 #include "reflex/ruby/timer.h"
 #include "reflex/ruby/style.h"
@@ -153,7 +154,7 @@ RUCY_DEFN(find_children)
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "View#find_children", argc, 1, 2);
 
-	bool recursive = (argc >= 2) ? to<bool>(argv[1]) : false;
+	bool recursive = (argc >= 2) ? to<bool>(argv[1]) : true;
 
 	Reflex::View::ChildList children =
 		THIS->find_children(to<Reflex::Selector>(argv[0]), recursive);
@@ -234,11 +235,27 @@ RUCY_DEF0(each_style)
 }
 RUCY_END
 
+static Reflex::Shape::Ref
+to_shape (Value value)
+{
+	if (value.is_nil())
+		return NULL;
+
+	if (value.is_kind_of(Rays::polygon_class()))
+	{
+		Reflex::PolygonShape* shape = new Reflex::PolygonShape();
+		shape->set_polygon(to<Rays::Polygon&>(value));
+		return shape;
+	}
+	else
+		return to<Reflex::Shape*>(value);
+}
+
 static
 RUCY_DEF1(set_shape, shape)
 {
 	CHECK;
-	THIS->set_shape(shape ? to<Reflex::Shape*>(shape) : NULL);
+	THIS->set_shape(to_shape(shape));
 	return shape;
 }
 RUCY_END
@@ -255,7 +272,7 @@ static
 RUCY_DEF1(add_shape, shape)
 {
 	CHECK;
-	THIS->add_shape(to<Reflex::Shape*>(shape));
+	THIS->add_shape(to_shape(shape));
 	return shape;
 }
 RUCY_END
@@ -266,6 +283,15 @@ RUCY_DEF1(remove_shape, shape)
 	CHECK;
 	THIS->remove_shape(to<Reflex::Shape*>(shape));
 	return shape;
+}
+RUCY_END
+
+static
+RUCY_DEF0(clear_shapes)
+{
+	CHECK;
+	THIS->clear_shapes();
+	return self;
 }
 RUCY_END
 
@@ -329,18 +355,18 @@ RUCY_DEF0(get_frame)
 RUCY_END
 
 static
-RUCY_DEF0(content_size)
+RUCY_DEF0(content_bounds)
 {
 	CHECK;
-	return value(CALL(content_size()));
+	return value(CALL(content_bounds()));
 }
 RUCY_END
 
 static
-RUCY_DEF0(resize_to_fit)
+RUCY_DEF0(fit_to_content)
 {
 	CHECK;
-	THIS->resize_to_fit();
+	THIS->fit_to_content();
 	return self;
 }
 RUCY_END
@@ -446,28 +472,12 @@ RUCY_DEF0(get_capture)
 RUCY_END
 
 static
-RUCY_DEF0(parent)
-{
-	CHECK;
-	return value(THIS->parent());
-}
-RUCY_END
-
-static
-RUCY_DEF0(window)
-{
-	CHECK;
-	return value(THIS->window());
-}
-RUCY_END
-
-static
 RUCY_DEF1(set_clip, clip)
 {
 	CHECK;
 
 	if (clip)
-		THIS->add_flag(Reflex::View::FLAG_CLIP);
+		THIS->   add_flag(Reflex::View::FLAG_CLIP);
 	else
 		THIS->remove_flag(Reflex::View::FLAG_CLIP);
 
@@ -489,7 +499,7 @@ RUCY_DEF1(set_cache, cache)
 	CHECK;
 
 	if (cache)
-		THIS->add_flag(Reflex::View::FLAG_CACHE);
+		THIS->   add_flag(Reflex::View::FLAG_CACHE);
 	else
 		THIS->remove_flag(Reflex::View::FLAG_CACHE);
 
@@ -502,6 +512,66 @@ RUCY_DEF0(get_cache)
 {
 	CHECK;
 	return value(THIS->has_flag(Reflex::View::FLAG_CACHE));
+}
+RUCY_END
+
+static
+RUCY_DEF1(set_resize_to_fit, resize)
+{
+	CHECK;
+
+	if (resize)
+		THIS->   add_flag(Reflex::View::FLAG_RESIZE_TO_FIT);
+	else
+		THIS->remove_flag(Reflex::View::FLAG_RESIZE_TO_FIT);
+
+	return resize;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_resize_to_fit)
+{
+	CHECK;
+	return value(THIS->has_flag(Reflex::View::FLAG_RESIZE_TO_FIT));
+}
+RUCY_END
+
+static
+RUCY_DEF1(set_scroll_to_fit, scroll)
+{
+	CHECK;
+
+	if (scroll)
+		THIS->   add_flag(Reflex::View::FLAG_SCROLL_TO_FIT);
+	else
+		THIS->remove_flag(Reflex::View::FLAG_SCROLL_TO_FIT);
+
+	return scroll;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_scroll_to_fit)
+{
+	CHECK;
+	return value(THIS->has_flag(Reflex::View::FLAG_SCROLL_TO_FIT));
+}
+RUCY_END
+
+static
+RUCY_DEF0(parent)
+{
+	CHECK;
+	return value(THIS->parent());
+}
+RUCY_END
+
+static
+RUCY_DEF0(window)
+{
+	CHECK;
+	return value(THIS->window());
 }
 RUCY_END
 
@@ -804,10 +874,10 @@ RUCY_DEF1(set_debug, state)
 RUCY_END
 
 static
-RUCY_DEF0(is_debugging)
+RUCY_DEF0(get_debug)
 {
 	CHECK;
-	return value(THIS->debugging());
+	return value(THIS->debug());
 }
 RUCY_END
 
@@ -896,14 +966,6 @@ RUCY_DEF1(on_focus, event)
 {
 	CHECK;
 	CALL(on_focus(to<Reflex::FocusEvent*>(event)));
-}
-RUCY_END
-
-static
-RUCY_DEF1(on_blur, event)
-{
-	CHECK;
-	CALL(on_blur(to<Reflex::FocusEvent*>(event)));
 }
 RUCY_END
 
@@ -1046,6 +1108,7 @@ Init_view ()
 	cView.define_method("shape",        get_shape);
 	cView.define_method("add_shape",    add_shape);
 	cView.define_method("remove_shape", remove_shape);
+	cView.define_method("clear_shapes", clear_shapes);
 	cView.define_method("find_shapes",  find_shapes);
 	cView.define_method("each_shape",   each_shape);
 
@@ -1054,8 +1117,8 @@ Init_view ()
 
 	cView.define_method("frame=", set_frame);
 	cView.define_method("frame",  get_frame);
-	cView.define_method("content_size",  content_size);
-	cView.define_method("resize_to_fit", resize_to_fit);
+	cView.define_method("content_bounds", content_bounds);
+	cView.define_method("fit_to_content", fit_to_content);
 	cView.define_method("angle=", set_angle);
 	cView.define_method("angle",  get_angle);
 	cView.define_method("scroll_to", scroll_to);
@@ -1065,21 +1128,25 @@ Init_view ()
 	cView.define_method("zoom",  get_zoom);
 	cView.define_method("capture=", set_capture);
 	cView.define_method("capture",  get_capture);
+	cView.define_method("clip=", set_clip);
+	cView.define_method("clip?", get_clip);
+	cView.define_method("cache=", set_cache);
+	cView.define_method("cache?", get_cache);
+	cView.define_method("resize_to_fit=", set_resize_to_fit);
+	cView.define_method("resize_to_fit?", get_resize_to_fit);
+	cView.define_method("scroll_to_fit=", set_scroll_to_fit);
+	cView.define_method("scroll_to_fit?", get_scroll_to_fit);
 	cView.define_method("parent", parent);
 	cView.define_method("window", window);
-	cView.define_method("clip=", set_clip);
-	cView.define_method("clip",  get_clip);
-	cView.define_method("cache=", set_cache);
-	cView.define_method("cache",  get_cache);
 
 	cView.define_method("apply_force",           apply_force);
 	cView.define_method("apply_torque",          apply_torque);
 	cView.define_method("apply_linear_impulse",  apply_linear_impulse);
 	cView.define_method("apply_angular_impulse", apply_angular_impulse);
 	cView.define_method("static=",  set_static);
-	cView.define_method("static",    is_static);
+	cView.define_method("static?",   is_static);
 	cView.define_method("dynamic=", set_dynamic);
-	cView.define_method("dynamic",   is_dynamic);
+	cView.define_method("dynamic?",  is_dynamic);
 	cView.define_method("density=",     set_density);
 	cView.define_method("density",      get_density);
 	cView.define_method("friction=",    set_friction);
@@ -1087,7 +1154,7 @@ Init_view ()
 	cView.define_method("restitution=", set_restitution);
 	cView.define_method("restitution",  get_restitution);
 	cView.define_method("sensor=",      set_sensor);
-	cView.define_method("sensor",        is_sensor);
+	cView.define_method("sensor?",       is_sensor);
 	cView.define_private_method("set_category_bits",  set_category_bits);
 	cView.define_private_method("get_category_bits",  get_category_bits);
 	cView.define_private_method("set_collision_mask", set_collision_mask);
@@ -1107,7 +1174,7 @@ Init_view ()
 	cView.define_method("time_scale",  get_time_scale);
 	cView.define_method("wall", wall);
 	cView.define_method("debug=", set_debug);
-	cView.define_method("debug",   is_debugging);
+	cView.define_method("debug?", get_debug);
 
 	cView.define_method("on_attach", on_attach);
 	cView.define_method("on_detach", on_detach);
@@ -1120,7 +1187,6 @@ Init_view ()
 	cView.define_method("on_rotate", on_rotate);
 	cView.define_method("on_scroll", on_scroll);
 	cView.define_method("on_focus", on_focus);
-	cView.define_method("on_blur",  on_blur);
 	cView.define_method("on_key",      on_key);
 	cView.define_method("on_key_down", on_key_down);
 	cView.define_method("on_key_up",   on_key_up);

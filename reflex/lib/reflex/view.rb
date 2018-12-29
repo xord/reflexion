@@ -68,6 +68,10 @@ module Reflex
       timeout seconds, count: -1, &block
     end
 
+    def remove_self ()
+      parent.remove self if parent
+    end
+
     def find_child (*args)
       find_children(*args).first
     end
@@ -115,29 +119,28 @@ module Reflex
       args.all? {|type| cap.include? type}
     end
 
+    universal_accessor :shape, :name, :selector, :frame, :angle, :zoom, :capture,
+      :density, :friction, :restitution, :category, :collision,
+      :linear_velocity, :angular_velocity, :gravity_scale,
+      :gravity, :time_scale,
+      clip:          {reader: :clip?},
+      cache:         {reader: :cache?},
+      resize_to_fit: {reader: :resize_to_fit?},
+      scroll_to_fit: {reader: :scroll_to_fit?},
+      static:        {reader: :static?},
+      dynamic:       {reader: :dynamic?},
+      sensor:        {reader: :sensor?},
+      debug:         {reader: :debug?}
+
     alias add    add_child
     alias remove remove_child
     alias find   find_child
 
-    alias clip?  clip
-    alias cache? cache
-
     alias apply_impulse apply_linear_impulse
-    alias static?       static
-    alias dynamic?      dynamic
-    alias sensor?       sensor
     alias velocity=     linear_velocity=
     alias velocity      linear_velocity
 
     alias meter  meter2pixel
-    alias debug? debug
-
-    universal_accessor :shape, :name, :selector, :frame, :angle, :zoom,
-      :capture, :clip, :cache,
-      :static, :dynamic, :density, :friction, :restitution,
-      :sensor, :category, :collision,
-      :linear_velocity, :angular_velocity, :gravity_scale,
-      :gravity, :time_scale, :debug
 
     def self.has_model ()
       include ModelView

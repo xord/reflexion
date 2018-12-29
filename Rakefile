@@ -25,7 +25,7 @@ def cd_sh (dir, cmd)
 end
 
 def each_target (&block)
-  TARGETS.each do |target|
+  (TARGETS.empty? ? MODULES : TARGETS).each do |target|
     block.call target
   end
 end

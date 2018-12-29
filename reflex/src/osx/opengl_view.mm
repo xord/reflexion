@@ -131,7 +131,7 @@ make_pixelformat (int antialias_nsample = 0)
 
 	- (void) keyDown: (NSEvent*) event
 	{
-		[self interpretKeyEvents: [NSArray arrayWithObject: event]];
+		//[self interpretKeyEvents: [NSArray arrayWithObject: event]];
 
 		NativeWindow* win = (NativeWindow*) [self window];
 		if (!win) return;
@@ -145,6 +145,14 @@ make_pixelformat (int antialias_nsample = 0)
 		if (!win) return;
 
 		[win keyUp: event];
+	}
+
+	- (void) flagsChanged: (NSEvent*) event
+	{
+		NativeWindow* win = (NativeWindow*) [self window];
+		if (!win) return;
+
+		[win flagsChanged: event];
 	}
 
 	- (void) mouseDown: (NSEvent*) event

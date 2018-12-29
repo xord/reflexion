@@ -39,13 +39,13 @@ namespace Reflex
 		return self->image;
 	}
 
-	Point
-	ImageView::content_size () const
+	Bounds
+	ImageView::content_bounds () const
 	{
 		if (self->image)
-			return Point(self->image.width(), self->image.height());
+			return Bounds(self->image.width(), self->image.height());
 		else
-			return Super::content_size();
+			return Super::content_bounds();
 	}
 
 	void

@@ -52,7 +52,7 @@ namespace Reflex
 
 			void set_debug (bool state = true);
 
-			bool     debugging () const;
+			bool     debug () const;
 
 			virtual void on_update (float dt);
 

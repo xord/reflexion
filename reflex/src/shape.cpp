@@ -21,442 +21,6 @@ namespace Reflex
 {
 
 
-	class FixtureBuilder
-	{
-
-		public:
-
-			FixtureBuilder (Shape* shape, const b2Shape* head = NULL)
-			:	shape(shape), head(NULL), tail(NULL)
-			{
-				assert(shape);
-
-				if (head) add(head);
-			}
-
-			void add (const b2Shape* b2shape)
-			{
-				assert(b2shape);
-
-				Body* body = View_get_body(shape->owner());
-				if (!body)
-					invalid_state_error(__FILE__, __LINE__);
-
-				append(new Fixture(body, b2shape, shape));
-			}
-
-			Fixture* fixtures () const
-			{
-				return head;
-			}
-
-		private:
-
-			Shape* shape;
-
-			Fixture *head, *tail;
-
-			void append (Fixture* fixture)
-			{
-				if (!fixture) return;
-
-				if (tail)
-					tail->set_next(fixture);
-				else
-				{
-					assert(!head && !tail);
-					head = tail = fixture;
-				}
-
-				while (tail && tail->next())
-					tail = tail->next();
-			}
-
-	};// FixtureBuilder
-
-
-	static bool
-	triangulate (Polygon::TrianglePointList* triangles, const Polygon& polygon)
-	{
-		class TriangulatablePolygon : public Polygon
-		{
-			public:
-				using Polygon::triangulate;
-		};
-
-		return ((const TriangulatablePolygon&) polygon).triangulate(triangles);
-	}
-
-	static Fixture*
-	create_empty_fixture (Shape* shape)
-	{
-		assert(shape);
-
-		b2CircleShape b2shape;
-		return FixtureBuilder(shape, &b2shape).fixtures();
-	}
-
-
-	struct Shape::Data
-	{
-
-		enum Flags
-		{
-
-			UPDATE_POLYGON = Xot::bit(0),
-
-			DEFAULT_FLAGS  = 0
-
-		};// Flags
-
-		View* owner = NULL;
-
-		uint flags  = DEFAULT_FLAGS;
-
-		Polygon polygon;
-
-		SelectorPtr              pselector;
-
-		std::unique_ptr<Bounds>  pframe;
-
-		std::unique_ptr<Fixture> pfixtures;
-
-		void update_polygon (Shape* shape)
-		{
-			assert(shape);
-
-			Polygon poly = shape->update_polygon();
-			if (poly.self == polygon.self)
-				return;
-
-			polygon = poly;
-
-			//clip_polygon(shape);
-			update_fixtures(shape);
-		}
-
-		void update_fixtures (Shape* shape)
-		{
-			assert(shape);
-
-			Body* body = View_get_body(owner, false);
-			if (!pfixtures && !body)
-				return;
-
-			Fixture* fix = fixtures(shape);
-			if (Fixture_is_temporary(fix) && Body_is_temporary(body))
-				return;
-
-			std::unique_ptr<Fixture> old = std::move(pfixtures);
-			Fixture_copy_attributes(old.get(), fixtures(shape));
-		}
-
-		void clip_polygon (Shape* shape)
-		{
-			assert(shape);
-
-			if (!polygon) return;
-
-			Bounds f = shape->frame();
-			polygon = polygon & Rays::create_rect(0, 0, f.width, f.height);
-		}
-
-		Fixture* fixtures (Shape* shape)
-		{
-			assert(shape);
-
-			if (!pfixtures)
-			{
-				Body* body   = View_get_body(owner);
-				Fixture* fix = (body && !Body_is_temporary(body))
-					? create_shape_fixtures(shape)
-					: Fixture_create_temporary();
-				assert(fix);
-
-				pfixtures.reset(fix);
-			}
-			return pfixtures.get();
-		}
-
-		Fixture* create_shape_fixtures (Shape* shape)
-		{
-			Fixture* f = shape->create_fixtures();
-			return f ? f : create_empty_fixture(shape);
-		}
-
-	};// Shape::Data
-
-
-	bool
-	Shape_set_owner (Shape* shape, View* owner)
-	{
-		if (!shape)
-			argument_error(__FILE__, __LINE__);
-
-		Shape::Data* self = shape->self.get();
-
-		if (owner == self->owner)
-			return false;
-
-		if (owner && self->owner)
-			invalid_state_error(__FILE__, __LINE__);
-
-		self->owner = owner;
-		return true;
-	}
-
-	void
-	Shape_update_polygon (Shape* shape, bool force)
-	{
-		if (!shape)
-			argument_error(__FILE__, __LINE__);
-
-		bool update = Xot::check_and_remove_flag(
-			&shape->self->flags, Shape::Data::UPDATE_POLYGON);
-
-		if (update || force)
-			shape->self->update_polygon(shape);
-	}
-
-	static void
-	update_polygon_on_next_update (Shape* shape)
-	{
-		assert(shape);
-
-		if (!shape->owner()) return;
-
-		Xot::add_flag(&shape->self->flags, Shape::Data::UPDATE_POLYGON);
-		View_update_shapes(shape->owner());
-	}
-
-	void
-	Shape_call_contact_event (Shape* shape, const ContactEvent& event)
-	{
-		if (!shape)
-			argument_error(__FILE__, __LINE__);
-
-		ContactEvent e = event;
-		shape->on_contact(&e);
-
-		switch (e.type)
-		{
-			case ContactEvent::BEGIN: shape->on_contact_begin(&e); break;
-			case ContactEvent::END:   shape->on_contact_end(&e);   break;
-			case ContactEvent::NONE: break;
-		}
-
-		if (e.is_blocked())
-			return;
-
-		View_call_contact_event(shape->owner(), e);
-	}
-
-
-	Shape::Shape (const char* name)
-	{
-		if (name) set_name(name);
-	}
-
-	Shape::~Shape ()
-	{
-	}
-
-	View*
-	Shape::owner ()
-	{
-		return self->owner;
-	}
-
-	const View*
-	Shape::owner () const
-	{
-		return const_cast<Shape*>(this)->owner();
-	}
-
-	void
-	Shape::set_frame (coord x, coord y, coord width, coord height)
-	{
-		set_frame(Bounds(x, y, width, height));
-	}
-
-	void
-	Shape::set_frame (const Bounds& frame)
-	{
-		if (self->pframe)
-			*self->pframe = frame;
-		else
-			self->pframe.reset(new Bounds(frame));
-
-		update_polygon_on_next_update(this);
-	}
-
-	static Bounds
-	get_owner_frame (const Shape* shape)
-	{
-		assert(shape);
-
-		if (!shape->owner())
-			return 0;
-
-		return shape->owner()->frame().dup().move_to(0, 0);
-	}
-
-	Bounds
-	Shape::frame () const
-	{
-		return self->pframe ? *self->pframe : get_owner_frame(this);
-	}
-
-	void
-	Shape::set_density (float density)
-	{
-		if (density == this->density()) return;
-
-		self->fixtures(this)->set_density(density);
-	}
-
-	float
-	Shape::density () const
-	{
-		const Fixture* f = self->pfixtures.get();
-		return f ? f->density() : 0;
-	}
-
-	void
-	Shape::set_friction (float friction)
-	{
-		if (friction == this->friction()) return;
-
-		self->fixtures(this)->set_friction(friction);
-	}
-
-	float
-	Shape::friction () const
-	{
-		const Fixture* f = self->pfixtures.get();
-		return f ? f->friction() : 0;
-	}
-
-	void
-	Shape::set_restitution (float restitution)
-	{
-		if (restitution == this->restitution()) return;
-
-		self->fixtures(this)->set_restitution(restitution);
-	}
-
-	float
-	Shape::restitution () const
-	{
-		const Fixture* f = self->pfixtures.get();
-		return f ? f->restitution() : 0;
-	}
-
-	void
-	Shape::set_sensor (bool state)
-	{
-		if (state == is_sensor()) return;
-
-		self->fixtures(this)->set_sensor(state);
-	}
-
-	bool
-	Shape::is_sensor () const
-	{
-		const Fixture* f = self->pfixtures.get();
-		return f ? f->is_sensor() : false;
-	}
-
-	void
-	Shape::set_category_bits (uint bits)
-	{
-		if (bits == category_bits()) return;
-
-		self->fixtures(this)->set_category_bits(bits);
-	}
-
-	uint
-	Shape::category_bits () const
-	{
-		const Fixture* f = self->pfixtures.get();
-		return f ? f->category_bits() : 0x1;
-	}
-
-	void
-	Shape::set_collision_mask (uint mask)
-	{
-		if (mask == collision_mask()) return;
-
-		self->fixtures(this)->set_collision_mask(mask);
-	}
-
-	uint
-	Shape::collision_mask () const
-	{
-		const Fixture* f = self->pfixtures.get();
-		return f ? f->collision_mask() : 0xffff;
-	}
-
-	void
-	Shape::on_attach (Event* e)
-	{
-		assert(owner());
-
-		update_polygon_on_next_update(this);
-	}
-
-	static void
-	make_fixtures_inactive (Shape* shape)
-	{
-		assert(shape);
-
-		shape->self->update_fixtures(shape);
-	}
-
-	void
-	Shape::on_detach (Event* e)
-	{
-		assert(!owner());
-
-		make_fixtures_inactive(this);
-	}
-
-	void
-	Shape::on_draw (DrawEvent* e)
-	{
-		assert(e && e->painter);
-
-		e->painter->polygon(self->polygon);
-	}
-
-	void
-	Shape::on_resize (FrameEvent* e)
-	{
-		if (!self->pframe)
-			update_polygon_on_next_update(this);
-	}
-
-	void
-	Shape::on_contact (ContactEvent* e)
-	{
-	}
-
-	void
-	Shape::on_contact_begin (ContactEvent* e)
-	{
-	}
-
-	void
-	Shape::on_contact_end (ContactEvent* e)
-	{
-	}
-
-	SelectorPtr*
-	Shape::get_selector_ptr ()
-	{
-		return &self->pselector;
-	}
-
 	static const Style*
 	get_style (const Shape* shape)
 	{
@@ -520,6 +84,82 @@ namespace Reflex
 		assert(shape);
 
 		return get_stroke_width(shape) > 0;
+	}
+
+	static bool
+	triangulate (Polygon::TrianglePointList* triangles, const Polygon& polygon)
+	{
+		class TriangulatablePolygon : public Polygon
+		{
+			public:
+				using Polygon::triangulate;
+		};
+
+		return ((const TriangulatablePolygon&) polygon).triangulate(triangles);
+	}
+
+
+	class FixtureBuilder
+	{
+
+		public:
+
+			FixtureBuilder (Shape* shape, const b2Shape* head = NULL)
+			:	shape(shape), head(NULL), tail(NULL)
+			{
+				assert(shape);
+
+				if (head) add(head);
+			}
+
+			void add (const b2Shape* b2shape)
+			{
+				assert(b2shape);
+
+				Body* body = View_get_body(shape->owner());
+				if (!body)
+					invalid_state_error(__FILE__, __LINE__);
+
+				append(new Fixture(body, b2shape, shape));
+			}
+
+			Fixture* fixtures () const
+			{
+				return head;
+			}
+
+		private:
+
+			Shape* shape;
+
+			Fixture *head, *tail;
+
+			void append (Fixture* fixture)
+			{
+				if (!fixture) return;
+
+				if (tail)
+					tail->set_next(fixture);
+				else
+				{
+					assert(!head && !tail);
+					head = tail = fixture;
+				}
+
+				while (tail && tail->next())
+					tail = tail->next();
+			}
+
+	};// FixtureBuilder
+
+
+	static Fixture*
+	create_empty_fixture (Shape* shape)
+	{
+		assert(shape);
+
+		b2CircleShape b2shape;
+		return FixtureBuilder(shape, &b2shape).fixtures();
 	}
 
 	static Fixture*
@@ -590,50 +230,481 @@ namespace Reflex
 		return builder.fixtures();
 	}
 
-	Fixture*
-	Shape::create_fixtures ()
+
+	struct Shape::Data
 	{
-		View* view = owner();
-		if (!view)
-			invalid_state_error(__FILE__, __LINE__);
 
-		Polygon polygon = get_polygon_for_fixtures();
-		if (!polygon || polygon.empty())
-			return NULL;
-
-		float ppm = view->meter2pixel();
-
-		if (has_fill(this))
-			return create_solid_fixtures(this, polygon, ppm);
-		else if (has_stroke_width(this))
+		enum Flags
 		{
-			Polygon hole;
-			if (!polygon.expand(&hole, -get_stroke_width(this)))
+
+			UPDATE_POLYGON = Xot::bit(0),
+
+			DEFAULT_FLAGS  = 0
+
+		};// Flags
+
+		View* owner = NULL;
+
+		uint flags  = DEFAULT_FLAGS;
+
+		Polygon polygon;
+
+		SelectorPtr              pselector;
+
+		std::unique_ptr<Bounds>  pframe;
+
+		std::unique_ptr<Fixture> pfixtures;
+
+		virtual ~Data ()
+		{
+		}
+
+		virtual void set_frame (const Bounds& frame)
+		{
+			if (pframe && *pframe == frame)
+				return;
+
+			if (pframe)
+				*pframe = frame;
+			else
+				pframe.reset(new Bounds(frame));
+
+			update_polygon_on_next_update();
+		}
+
+		virtual Bounds get_frame () const
+		{
+			if (pframe)
+				return *pframe;
+			else if (owner)
+				return owner->frame().dup().move_to(0, 0);
+			else
+				return 0;
+		}
+
+		virtual bool has_frame () const
+		{
+			return (bool) pframe;
+		}
+
+		void update_polygon_on_next_update ()
+		{
+			if (!owner) return;
+
+			Xot::add_flag(&flags, UPDATE_POLYGON);
+			View_update_shapes(owner);
+		}
+
+		void update_polygon (Shape* shape)
+		{
+			assert(shape);
+
+			Polygon poly = get_polygon_for_shape();
+			if (poly.self == polygon.self)
+				return;
+
+			polygon = poly;
+
+			//clip_polygon();
+			update_fixtures(shape);
+		}
+
+		void clip_polygon ()
+		{
+			if (!pframe || !polygon)
+				return;
+
+			polygon = polygon & Rays::create_rect(0, 0, pframe->width, pframe->height);
+		}
+
+		void update_fixtures (Shape* shape)
+		{
+			assert(shape);
+
+			Body* body = View_get_body(owner, false);
+			if (!pfixtures && !body)
+				return;
+
+			Fixture* fix = get_fixtures(shape);
+			if (Fixture_is_temporary(fix) && Body_is_temporary(body))
+				return;
+
+			std::unique_ptr<Fixture> old = std::move(pfixtures);
+			Fixture_copy_attributes(old.get(), get_fixtures(shape));
+		}
+
+		Fixture* get_fixtures (Shape* shape)
+		{
+			assert(shape);
+
+			if (!pfixtures)
+			{
+				Body* body = View_get_body(owner);
+				Fixture* fix;
+				if (body && !Body_is_temporary(body))
+				{
+					fix = create_fixtures(shape);
+					if (!fix) fix = create_empty_fixture(shape);
+				}
+				else
+					fix = Fixture_create_temporary();
+
+				assert(fix);
+				pfixtures.reset(fix);
+			}
+			return pfixtures.get();
+		}
+
+		virtual Fixture* create_fixtures (Shape* shape)
+		{
+			if (!owner)
+				invalid_state_error(__FILE__, __LINE__);
+
+			Polygon polygon = get_polygon_for_fixtures();
+			if (!polygon || polygon.empty())
 				return NULL;
 
-			return create_solid_fixtures(this, polygon - hole, ppm);
+			float ppm = owner->meter2pixel();
+
+			if (has_fill(shape))
+				return create_solid_fixtures(shape, polygon, ppm);
+			else if (has_stroke_width(shape))
+			{
+				Polygon hole;
+				if (!polygon.expand(&hole, -get_stroke_width(shape)))
+					return NULL;
+
+				return create_solid_fixtures(shape, polygon - hole, ppm);
+			}
+			else
+				return create_line_fixtures(shape, polygon, ppm);
 		}
-		else
-			return create_line_fixtures(this, polygon, ppm);
-	}
 
-	Polygon
-	Shape::get_polygon_for_fixtures () const
+		virtual Polygon get_polygon_for_shape () const = 0;
+
+		virtual Polygon get_polygon_for_fixtures () const
+		{
+			return polygon;
+		}
+
+	};// Shape::Data
+
+
+	bool
+	Shape_set_owner (Shape* shape, View* owner)
 	{
-		return self->polygon;
+		if (!shape)
+			argument_error(__FILE__, __LINE__);
+
+		Shape::Data* self = shape->self.get();
+
+		if (owner == self->owner)
+			return false;
+
+		if (owner && self->owner)
+			invalid_state_error(__FILE__, __LINE__);
+
+		self->owner = owner;
+		return true;
+	}
+
+	bool
+	Shape_has_frame (const Shape& shape)
+	{
+		return shape.self->has_frame();
+	}
+
+	void
+	Shape_update_polygon (Shape* shape, bool force)
+	{
+		if (!shape)
+			argument_error(__FILE__, __LINE__);
+
+		bool update = Xot::check_and_remove_flag(
+			&shape->self->flags, Shape::Data::UPDATE_POLYGON);
+
+		if (update || force)
+			shape->self->update_polygon(shape);
+	}
+
+	void
+	Shape_call_contact_event (Shape* shape, const ContactEvent& event)
+	{
+		if (!shape)
+			argument_error(__FILE__, __LINE__);
+
+		ContactEvent e = event;
+		shape->on_contact(&e);
+
+		switch (e.type)
+		{
+			case ContactEvent::BEGIN: shape->on_contact_begin(&e); break;
+			case ContactEvent::END:   shape->on_contact_end(&e);   break;
+			case ContactEvent::NONE: break;
+		}
+
+		if (e.is_blocked())
+			return;
+
+		View_call_contact_event(shape->owner(), e);
 	}
 
 
-	struct PolygonShape::Data
+	Shape::Shape (Data* data, const char* name)
+	:	self(data)
+	{
+		if (name) set_name(name);
+	}
+
+	Shape::~Shape ()
+	{
+	}
+
+	View*
+	Shape::owner ()
+	{
+		return self->owner;
+	}
+
+	const View*
+	Shape::owner () const
+	{
+		return const_cast<Shape*>(this)->owner();
+	}
+
+	void
+	Shape::set_frame (coord x, coord y, coord width, coord height)
+	{
+		set_frame(Bounds(x, y, width, height));
+	}
+
+	void
+	Shape::set_frame (const Bounds& frame)
+	{
+		self->set_frame(frame);
+	}
+
+	Bounds
+	Shape::frame () const
+	{
+		return self->get_frame();
+	}
+
+	void
+	Shape::set_density (float density)
+	{
+		if (density == this->density()) return;
+
+		self->get_fixtures(this)->set_density(density);
+	}
+
+	float
+	Shape::density () const
+	{
+		const Fixture* f = self->pfixtures.get();
+		return f ? f->density() : 0;
+	}
+
+	void
+	Shape::set_friction (float friction)
+	{
+		if (friction == this->friction()) return;
+
+		self->get_fixtures(this)->set_friction(friction);
+	}
+
+	float
+	Shape::friction () const
+	{
+		const Fixture* f = self->pfixtures.get();
+		return f ? f->friction() : 0;
+	}
+
+	void
+	Shape::set_restitution (float restitution)
+	{
+		if (restitution == this->restitution()) return;
+
+		self->get_fixtures(this)->set_restitution(restitution);
+	}
+
+	float
+	Shape::restitution () const
+	{
+		const Fixture* f = self->pfixtures.get();
+		return f ? f->restitution() : 0;
+	}
+
+	void
+	Shape::set_sensor (bool state)
+	{
+		if (state == is_sensor()) return;
+
+		self->get_fixtures(this)->set_sensor(state);
+	}
+
+	bool
+	Shape::is_sensor () const
+	{
+		const Fixture* f = self->pfixtures.get();
+		return f ? f->is_sensor() : false;
+	}
+
+	void
+	Shape::set_category_bits (uint bits)
+	{
+		if (bits == category_bits()) return;
+
+		self->get_fixtures(this)->set_category_bits(bits);
+	}
+
+	uint
+	Shape::category_bits () const
+	{
+		const Fixture* f = self->pfixtures.get();
+		return f ? f->category_bits() : 0x1;
+	}
+
+	void
+	Shape::set_collision_mask (uint mask)
+	{
+		if (mask == collision_mask()) return;
+
+		self->get_fixtures(this)->set_collision_mask(mask);
+	}
+
+	uint
+	Shape::collision_mask () const
+	{
+		const Fixture* f = self->pfixtures.get();
+		return f ? f->collision_mask() : 0xffff;
+	}
+
+	void
+	Shape::on_attach (Event* e)
+	{
+		assert(owner());
+
+		self->update_polygon_on_next_update();
+	}
+
+	static void
+	make_fixtures_inactive (Shape* shape)
+	{
+		assert(shape);
+
+		shape->self->update_fixtures(shape);
+	}
+
+	void
+	Shape::on_detach (Event* e)
+	{
+		assert(!owner());
+
+		make_fixtures_inactive(this);
+	}
+
+	void
+	Shape::on_draw (DrawEvent* e)
+	{
+		assert(e && e->painter);
+
+		e->painter->polygon(self->polygon);
+	}
+
+	void
+	Shape::on_resize (FrameEvent* e)
+	{
+		if (!self->has_frame())
+			self->update_polygon_on_next_update();
+	}
+
+	void
+	Shape::on_contact (ContactEvent* e)
+	{
+	}
+
+	void
+	Shape::on_contact_begin (ContactEvent* e)
+	{
+	}
+
+	void
+	Shape::on_contact_end (ContactEvent* e)
+	{
+	}
+
+	SelectorPtr*
+	Shape::get_selector_ptr ()
+	{
+		return &self->pselector;
+	}
+
+
+	struct FixedFrameShapeData : public Shape::Data
+	{
+
+		void set_frame (const Bounds& frame) override
+		{
+			// updating frame for shape has fixed frame is not supported.
+			not_implemented_error(__FILE__, __LINE__);
+		}
+
+		Bounds get_frame () const override
+		{
+			return get_fixed_frame();
+		}
+
+		bool has_frame () const override
+		{
+			return has_fixed_frame();
+		}
+
+		virtual Bounds get_fixed_frame () const = 0;
+
+		virtual bool   has_fixed_frame () const = 0;
+
+	};// FixedFrameShapeData
+
+
+	struct PolygonShapeData : public FixedFrameShapeData
 	{
 
 		Polygon polygon;
 
-	};// PolygonShape
+		Polygon get_polygon_for_shape () const override
+		{
+			return polygon;
+		}
+
+		Bounds get_fixed_frame () const override
+		{
+			return polygon.bounds();
+		}
+
+		bool has_fixed_frame () const override
+		{
+			return !polygon.empty(true);
+		}
+
+	};// PolygonShapeData
+
+
+	static PolygonShapeData&
+	get_data (PolygonShape& shape)
+	{
+		return (PolygonShapeData&) *shape.self;
+	}
+
+	static const PolygonShapeData&
+	get_data (const PolygonShape& shape)
+	{
+		return get_data(const_cast<PolygonShape&>(shape));
+	}
 
 
 	PolygonShape::PolygonShape (const char* name)
-	:	Super(name)
+	:	Super(new PolygonShapeData, name)
 	{
 	}
 
@@ -644,36 +715,66 @@ namespace Reflex
 	void
 	PolygonShape::set_polygon (const Polygon& polygon)
 	{
-		self->polygon = polygon;
+		get_data(*this).polygon = polygon;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	const Polygon&
 	PolygonShape::polygon () const
 	{
-		return self->polygon;
-	}
-
-	Polygon
-	PolygonShape::update_polygon () const
-	{
-		return self->polygon;
+		return get_data(*this).polygon;
 	}
 
 
-	struct LineShape::Data
+	struct LineShapeData : public FixedFrameShapeData
 	{
 
 		std::vector<Point> points;
 
 		bool loop = false;
 
-	};// LineShape::Data
+		Polygon get_polygon_for_shape () const override
+		{
+			if (points.empty())
+				return Polygon();
+
+			return Rays::create_line(&points[0], points.size(), loop);
+		}
+
+		Bounds get_fixed_frame () const override
+		{
+			if (points.empty()) return Bounds(-1, -1, -1);
+
+			Bounds b(points[0], 0);
+			for (const auto& point : points)
+				b |= point;
+			return b;
+		}
+
+		bool has_fixed_frame () const override
+		{
+			return !points.empty();
+		}
+
+	};// LineShapeData
+
+
+	static LineShapeData&
+	get_data (LineShape& shape)
+	{
+		return (LineShapeData&) *shape.self;
+	}
+
+	static const LineShapeData&
+	get_data (const LineShape& shape)
+	{
+		return get_data(const_cast<LineShape&>(shape));
+	}
 
 
 	LineShape::LineShape (const char* name)
-	:	Super(name)
+	:	Super(new LineShapeData, name)
 	{
 	}
 
@@ -690,43 +791,37 @@ namespace Reflex
 	void
 	LineShape::add_point (const Point& point)
 	{
-		self->points.emplace_back(point);
+		get_data(*this).points.emplace_back(point);
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	void
 	LineShape::add_points (const Point* points, size_t size)
 	{
-		self->points.insert(self->points.begin(), points, points + size);
+		auto& array = get_data(*this).points;
+		array.insert(array.end(), points, points + size);
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	void
 	LineShape::set_loop (bool loop)
 	{
-		self->loop = loop;
+		get_data(*this).loop = loop;
 	}
 
 	bool
 	LineShape::loop () const
 	{
-		return self->loop;
-	}
-
-	Polygon
-	LineShape::update_polygon () const
-	{
-		if (self->points.empty())
-			return Polygon();
-
-		return Rays::create_line(&self->points[0], self->points.size(), self->loop);
+		return get_data(*this).loop;
 	}
 
 
-	struct RectShape::Data
+	struct RectShapeData : public Shape::Data
 	{
+
+		typedef Shape::Data Super;
 
 		coord round_left_top     = 0;
 		coord round_right_top    = 0;
@@ -735,11 +830,50 @@ namespace Reflex
 
 		uint nsegment = 0;
 
-	};// RectShape::Data
+		Polygon get_polygon_for_shape () const override
+		{
+			return Rays::create_rect(
+				get_frame(),
+				round_left_top,    round_right_top,
+				round_left_bottom, round_right_bottom,
+				nsegment);
+		}
+
+		Polygon get_polygon_for_fixtures () const override
+		{
+			if (nsegment <= 0 && has_rounds())
+				return Rays::create_rect(get_frame(), 0, 0, 0, 0, 1);
+			else
+				return Super::get_polygon_for_fixtures();
+		}
+
+		bool has_rounds () const
+		{
+			return
+				round_left_top     != 0 ||
+				round_right_top    != 0 ||
+				round_left_bottom  != 0 ||
+				round_right_bottom != 0;
+		}
+
+	};// RectShapeData
+
+
+	static RectShapeData&
+	get_data (RectShape& shape)
+	{
+		return (RectShapeData&) *shape.self;
+	}
+
+	static const RectShapeData&
+	get_data (const RectShape& shape)
+	{
+		return get_data(const_cast<RectShape&>(shape));
+	}
 
 
 	RectShape::RectShape (const char* name)
-	:	Super(name)
+	:	Super(new RectShapeData, name)
 	{
 	}
 
@@ -757,117 +891,90 @@ namespace Reflex
 	RectShape::set_round (
 		coord left_top, coord right_top, coord left_bottom, coord right_bottom)
 	{
-		self->round_left_top     = left_top;
-		self->round_right_top    = right_top;
-		self->round_left_bottom  = left_bottom;
-		self->round_right_bottom = right_bottom;
+		RectShapeData& data = get_data(*this);
+		data.round_left_top     = left_top;
+		data.round_right_top    = right_top;
+		data.round_left_bottom  = left_bottom;
+		data.round_right_bottom = right_bottom;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	void
 	RectShape::set_round_left_top (coord round)
 	{
-		self->round_left_top = round;
+		get_data(*this).round_left_top = round;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	coord
 	RectShape::round_left_top () const
 	{
-		return self->round_left_top;
+		return get_data(*this).round_left_top;
 	}
 
 	void
 	RectShape::set_round_right_top (coord round)
 	{
-		self->round_right_top = round;
+		get_data(*this).round_right_top = round;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	coord
 	RectShape::round_right_top () const
 	{
-		return self->round_right_top;
+		return get_data(*this).round_right_top;
 	}
 
 	void
 	RectShape::set_round_left_bottom (coord round)
 	{
-		self->round_left_bottom = round;
+		get_data(*this).round_left_bottom = round;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	coord
 	RectShape::round_left_bottom () const
 	{
-		return self->round_left_bottom;
+		return get_data(*this).round_left_bottom;
 	}
 
 	void
 	RectShape::set_round_right_bottom (coord round)
 	{
-		self->round_right_bottom = round;
+		get_data(*this).round_right_bottom = round;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	coord
 	RectShape::round_right_bottom () const
 	{
-		return self->round_right_bottom;
+		return get_data(*this).round_right_bottom;
 	}
 
 	void
 	RectShape::set_nsegment (uint nsegment)
 	{
-		self->nsegment = nsegment;
+		get_data(*this).nsegment = nsegment;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	uint
 	RectShape::nsegment () const
 	{
-		return self->nsegment;
-	}
-
-	Polygon
-	RectShape::update_polygon () const
-	{
-		return Rays::create_rect(
-			frame(),
-			self->round_left_top,    self->round_right_top,
-			self->round_left_bottom, self->round_right_bottom,
-			self->nsegment);
-	}
-
-	static bool
-	has_rounds (const RectShape& shape)
-	{
-		const RectShape::Data* self = shape.self.get();
-		return
-			self->round_left_top     != 0 ||
-			self->round_right_top    != 0 ||
-			self->round_left_bottom  != 0 ||
-			self->round_right_bottom != 0;
-	}
-
-	Polygon
-	RectShape::get_polygon_for_fixtures () const
-	{
-		if (self->nsegment <= 0 && has_rounds(*this))
-			return Rays::create_rect(frame(), 0, 0, 0, 0, 1);
-		else
-			return Super::get_polygon_for_fixtures();
+		return get_data(*this).nsegment;
 	}
 
 
-	struct EllipseShape::Data
+	struct EllipseShapeData : public Shape::Data
 	{
+
+		typedef Shape::Data Super;
 
 		enum
 		{
@@ -896,11 +1003,67 @@ namespace Reflex
 				angle_to   != DEFAULT_ANGLE_TO;
 		}
 
-	};// EllipseShape::Data
+		Fixture* create_fixtures (Shape* shape) override
+		{
+			Bounds f    = get_frame();
+			bool circle = f.size() != 0 && f.width == f.height;
+			if (circle && !has_angle() && !has_hole() && has_fill(shape))
+				return create_circle_fixture(shape, f);
+			else
+				return Super::create_fixtures(shape);
+		}
+
+		Fixture* create_circle_fixture (Shape* shape, const Bounds& frame)
+		{
+			assert(shape);
+
+			if (!owner)
+				invalid_state_error(__FILE__, __LINE__);
+
+			float ppm = owner->meter2pixel();
+
+			b2CircleShape b2shape;
+			b2shape.m_p      = to_b2vec2(frame.center(), ppm);
+			b2shape.m_radius = to_b2coord(frame.width / 2, ppm);
+
+			return FixtureBuilder(shape, &b2shape).fixtures();
+		}
+
+		Polygon get_polygon_for_shape () const override
+		{
+			return Rays::create_ellipse(
+				get_frame(), hole_size, angle_from, angle_to, nsegment);
+		}
+
+		Polygon get_polygon_for_fixtures () const override
+		{
+			if (nsegment <= 0)
+			{
+				return Rays::create_ellipse(
+					get_frame(), hole_size, angle_from, angle_to, 8);
+			}
+			else
+				return Super::get_polygon_for_fixtures();
+		}
+
+	};// EllipseShapeData
+
+
+	static EllipseShapeData&
+	get_data (EllipseShape& shape)
+	{
+		return (EllipseShapeData&) *shape.self;
+	}
+
+	static const EllipseShapeData&
+	get_data (const EllipseShape& shape)
+	{
+		return get_data(const_cast<EllipseShape&>(shape));
+	}
 
 
 	EllipseShape::EllipseShape (const char* name)
-	:	Super(name)
+	:	Super(new EllipseShapeData, name)
 	{
 	}
 
@@ -911,9 +1074,9 @@ namespace Reflex
 	void
 	EllipseShape::set_hole_size (coord width, coord height)
 	{
-		self->hole_size.reset(width, height);
+		get_data(*this).hole_size.reset(width, height);
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	void
@@ -925,137 +1088,122 @@ namespace Reflex
 	const Point&
 	EllipseShape::hole_size () const
 	{
-		return self->hole_size;
+		return get_data(*this).hole_size;
 	}
 
 	void
 	EllipseShape::set_angle_from (float degree)
 	{
-		self->angle_from = degree;
+		get_data(*this).angle_from = degree;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	float
 	EllipseShape::angle_from () const
 	{
-		return self->angle_from;
+		return get_data(*this).angle_from;
 	}
 
 	void
 	EllipseShape::set_angle_to (float degree)
 	{
-		self->angle_to = degree;
+		get_data(*this).angle_to = degree;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	float
 	EllipseShape::angle_to () const
 	{
-		return self->angle_to;
+		return get_data(*this).angle_to;
 	}
 
 	void
 	EllipseShape::set_nsegment (uint num_of_segments)
 	{
-		self->nsegment = num_of_segments;
+		get_data(*this).nsegment = num_of_segments;
 
-		update_polygon_on_next_update(this);
+		self->update_polygon_on_next_update();
 	}
 
 	uint
 	EllipseShape::nsegment () const
 	{
-		return self->nsegment;
+		return get_data(*this).nsegment;
 	}
 
-	static Fixture*
-	create_circle_fixture (EllipseShape* shape, const Bounds& frame)
+
+	struct WallShapeData : public Shape::Data
 	{
-		assert(shape);
 
-		View* view = shape->owner();
-		if (!view)
-			invalid_state_error(__FILE__, __LINE__);
+		uint positions  = 0;
 
-		float ppm = view->meter2pixel();
+		coord thickness = 0;
 
-		b2CircleShape b2shape;
-		b2shape.m_p      = to_b2vec2(frame.center(), ppm);
-		b2shape.m_radius = to_b2coord(frame.width / 2, ppm);
-
-		return FixtureBuilder(shape, &b2shape).fixtures();
-	}
-
-	Fixture*
-	EllipseShape::create_fixtures ()
-	{
-		Bounds f    = frame();
-		bool circle = f.size() != 0 && f.width == f.height;
-		if (circle && !self->has_angle() && !self->has_hole() && has_fill(this))
-			return create_circle_fixture(this, f);
-		else
-			return Super::create_fixtures();
-	}
-
-	Polygon
-	EllipseShape::update_polygon () const
-	{
-		return Rays::create_ellipse(
-			frame(), self->hole_size, self->angle_from, self->angle_to,
-			self->nsegment);
-	}
-
-	Polygon
-	EllipseShape::get_polygon_for_fixtures () const
-	{
-		if (self->nsegment <= 0)
+		Polygon get_polygon_for_shape () const override
 		{
-			return Rays::create_ellipse(
-				frame(), self->hole_size, self->angle_from, self->angle_to, 8);
+			Bounds frame = get_frame();
+
+			Polygon poly;
+			add_wall_polygon(&poly, WallShape::LEFT,   frame);
+			add_wall_polygon(&poly, WallShape::TOP,    frame);
+			add_wall_polygon(&poly, WallShape::RIGHT,  frame);
+			add_wall_polygon(&poly, WallShape::BOTTOM, frame);
+			return poly;
 		}
-		else
-			return Super::get_polygon_for_fixtures();
+
+		void add_wall_polygon (
+			Polygon* polygon, WallShape::Position position, const Bounds& frame) const
+		{
+			assert(polygon);
+
+			if (positions & position)
+				*polygon = *polygon | create_wall_polygon(position, frame, thickness);
+		}
+
+		static Polygon create_wall_polygon (
+			WallShape::Position pos, const Bounds& frame, coord thickness)
+		{
+			coord w = frame.width, h = frame.height, t = thickness, tt = thickness * 2;
+			switch (pos)
+			{
+				case WallShape::LEFT:   return Rays::create_rect(-t, -t, t,      h + tt);
+				case WallShape::TOP:    return Rays::create_rect(-t, -t, w + tt, t);
+				case WallShape::RIGHT:  return Rays::create_rect( w, -t, t,      h + tt);
+				case WallShape::BOTTOM: return Rays::create_rect(-t,  h, w + tt, t);
+				default: argument_error(__FILE__, __LINE__, "invalid wall position.");
+			}
+		}
+
+	};// WallShapeData
+
+
+	static WallShapeData&
+	get_data (WallShape& shape)
+	{
+		return (WallShapeData&) *shape.self;
+	}
+
+	static const WallShapeData&
+	get_data (const WallShape& shape)
+	{
+		return get_data(const_cast<WallShape&>(shape));
 	}
 
 
 	WallShape::WallShape (uint positions, coord thickness)
-	:	positions(positions), thickness(thickness)
+	:	Super(new WallShapeData)
 	{
+		WallShapeData& data = get_data(*this);
+		data.positions = positions;
+		data.thickness = thickness;
 	}
 
 	void
 	WallShape::on_draw (DrawEvent* e)
 	{
-	}
-
-	static Polygon
-	make_wall_polygon (
-		WallShape::Position pos, const Bounds& frame, coord tickness)
-	{
-		coord w = frame.width, h = frame.height, t = tickness, tt = tickness * 2;
-		switch (pos)
-		{
-			case WallShape::LEFT:   return Rays::create_rect(-t, -t, t,      h + tt);
-			case WallShape::TOP:    return Rays::create_rect(-t, -t, w + tt, t);
-			case WallShape::RIGHT:  return Rays::create_rect( w, -t, t,      h + tt);
-			case WallShape::BOTTOM: return Rays::create_rect(-t,  h, w + tt, t);
-			default: argument_error(__FILE__, __LINE__, "invalid wall position.");
-		}
-	}
-
-	Polygon
-	WallShape::update_polygon () const
-	{
-		Bounds f = frame();
-
-		Polygon p;
-		if (positions & LEFT)   p = p | make_wall_polygon(LEFT,   f, thickness);
-		if (positions & TOP)    p = p | make_wall_polygon(TOP,    f, thickness);
-		if (positions & RIGHT)  p = p | make_wall_polygon(RIGHT,  f, thickness);
-		if (positions & BOTTOM) p = p | make_wall_polygon(BOTTOM, f, thickness);
-		return p;
+		// wall is invisible, so draw nothing
 	}
 
 

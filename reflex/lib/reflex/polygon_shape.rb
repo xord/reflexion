@@ -12,6 +12,11 @@ module Reflex
 
     universal_accessor :polygon
 
+    def initialize (polygon, *args, &block)
+      super *args, &block
+      self.polygon = polygon
+    end
+
   end# PolygonShape
 
 

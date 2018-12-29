@@ -48,15 +48,13 @@ namespace Reflex
 
 			UPDATING_WORLD       = Xot::bit(7, FLAG_LAST),
 
-			RESIZE_TO_FIT        = Xot::bit(8, FLAG_LAST),
+			FIT_TO_CONTENT       = Xot::bit(8, FLAG_LAST),
 
 			REMOVE_SELF          = Xot::bit(9, FLAG_LAST),
 
 			HAS_VARIABLE_LENGTHS = Xot::bit(10, FLAG_LAST),
 
 			NO_SHAPE             = Xot::bit(11, FLAG_LAST),
-
-			DEFAULT_FLAGS        = FLAG_CLIP | REDRAW | UPDATE_LAYOUT | UPDATE_STYLE
 
 		};// Flag
 
@@ -101,8 +99,9 @@ namespace Reflex
 		std::unique_ptr<ChildList>   pchildren;
 
 		Data ()
-		:	window(NULL), parent(NULL), zoom(1), angle(0),
-			capture(CAPTURE_NONE), hide_count(0), flags(DEFAULT_FLAGS)
+		:	window(NULL), parent(NULL),
+			zoom(1), angle(0), capture(CAPTURE_NONE), hide_count(0),
+			flags(FLAG_CLIP | FLAG_RESIZE_TO_FIT | REDRAW | UPDATE_LAYOUT | UPDATE_STYLE)
 		{
 		}
 
@@ -591,7 +590,8 @@ namespace Reflex
 	void
 	View_set_window (View* view, Window* window)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
 
 		Window* current = view->self->window;
 		if (current == window) return;
@@ -617,17 +617,8 @@ namespace Reflex
 		{
 			Event e;
 			view->on_attach(&e);
-			view->self->add_flag(View::Data::RESIZE_TO_FIT);
+			view->self->add_flag(View::Data::FIT_TO_CONTENT);
 		}
-	}
-
-	static void
-	resize_view (View* view, FrameEvent* event)
-	{
-		assert(view);
-
-		view->self->resize_shapes(event);
-		view->on_resize(event);
 	}
 
 	static void
@@ -673,20 +664,26 @@ namespace Reflex
 		self->frame = frame;
 		self->angle = angle;
 
-		bool move = event.is_move(), rotate = event.is_rotate();
+		bool move   = event.is_move();
+		bool resize = event.is_resize();
+		bool rotate = event.is_rotate();
 
 		if (move)   view->on_move(&event);
+		if (resize) view->on_resize(&event);
 		if (rotate) view->on_rotate(&event);
+
+		if (resize)
+		{
+			view->self->resize_shapes(&event);
+			apply_style_to_children_have_variable_lengths(view);
+			update_view_layout(view, true);
+		}
 
 		if (update_body && (move || rotate) && self->pbody)
 			self->update_body_frame();
 
-		if (event.is_resize())
-		{
-			resize_view(view, &event);
-			apply_style_to_children_have_variable_lengths(view);
-			update_view_layout(view, true);
-		}
+		if ((move || resize) && self->parent)
+			self->parent->self->add_flag(View::Data::FIT_TO_CONTENT);
 
 		view->redraw();
 	}
@@ -694,7 +691,8 @@ namespace Reflex
 	void
 	View_set_frame (View* view, const Bounds& frame)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
 
 		update_view_frame(view, frame, view->self->angle, true);
 	}
@@ -702,7 +700,8 @@ namespace Reflex
 	const Style&
 	View_get_style (const View* view)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
 
 		static const Style DEFAULT_STYLE;
 		return view->self->pstyle ? *view->self->pstyle : DEFAULT_STYLE;
@@ -914,6 +913,32 @@ namespace Reflex
 	}
 
 	static void
+	fit_view_to_content (View* view)
+	{
+		assert(view);
+
+		Bounds bounds = view->content_bounds();
+		if (!bounds) return;
+
+		if (view->self->has_flag(View::FLAG_SCROLL_TO_FIT))
+			view->scroll_to(-bounds.position());
+		else
+			bounds.size() += bounds.position();
+
+		if (view->self->has_flag(View::FLAG_RESIZE_TO_FIT))
+		{
+			Bounds frame = view->frame();
+
+			const Style* style = view->style(false);
+			if ((!style || !Style_has_width( *style))) frame.w = bounds.w;
+			if ((!style || !Style_has_height(*style))) frame.h = bounds.h;
+			frame.d = bounds.d;
+
+			view->set_frame(frame);
+		}
+	}
+
+	static void
 	update_view_shapes (View* view)
 	{
 		assert(view);
@@ -929,7 +954,9 @@ namespace Reflex
 	void
 	View_update_tree (View* view, const UpdateEvent& event)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
+
 		View::Data* self = view->self.get();
 
 		if (self->check_and_remove_flag(View::Data::REMOVE_SELF))
@@ -947,6 +974,7 @@ namespace Reflex
 				View_update_tree(pchild.get(), event);
 		}
 
+		update_view_shapes(view);
 		update_child_world(view, event.dt);
 
 		UpdateEvent e = event;
@@ -960,13 +988,11 @@ namespace Reflex
 		if (self->check_and_remove_flag(View::Data::APPLY_STYLE))
 			Style_apply_to(View_get_style(view), view);
 
-		if (self->check_and_remove_flag(View::Data::RESIZE_TO_FIT))
-			view->resize_to_fit();
-
 		if (self->check_and_remove_flag(View::Data::UPDATE_LAYOUT))
 			view->update_layout();
 
-		update_view_shapes(view);
+		if (self->check_and_remove_flag(View::Data::FIT_TO_CONTENT))
+			fit_view_to_content(view);
 	}
 
 	static bool
@@ -1065,9 +1091,8 @@ namespace Reflex
 		Painter* p = event->painter;
 		p->push_state();
 
-		Bounds clip2 = clip & self->frame.dup().move_to(offset);
 		if (self->has_flag(View::FLAG_CLIP) && !self->pbody)
-			p->set_clip(clip2);
+			p->set_clip(clip);
 		else
 			p->no_clip();
 
@@ -1081,7 +1106,7 @@ namespace Reflex
 			for (auto& pchild : *pchildren)
 			{
 				if (event->bounds & pchild->self->frame)
-					View_draw_tree(pchild.get(), *event, offset, clip2);
+					View_draw_tree(pchild.get(), *event, offset, clip);
 			}
 		}
 
@@ -1111,9 +1136,7 @@ namespace Reflex
 	}
 
 	static bool
-	draw_view_with_cache (
-		View* view, DrawEvent* event, const Point& offset, const Bounds& clip,
-		bool redraw)
+	draw_view_with_cache (View* view, DrawEvent* event, bool redraw)
 	{
 		assert(view && event && event->painter);
 		View::Data* self = view->self.get();
@@ -1124,7 +1147,9 @@ namespace Reflex
 			return false;
 		}
 
-		if (reset_cache_image(view, *event->painter) || redraw)
+		Painter* painter = event->painter;
+
+		if (reset_cache_image(view, *painter) || redraw)
 		{
 			if (!self->pcache_image)
 				return false;
@@ -1132,19 +1157,17 @@ namespace Reflex
 			draw_view_to_cache(view, event);
 		}
 
-		Painter* p = event->painter;
-
-		p->push_state();
-		p->set_fill(1);
-		p->no_stroke();
-		p->no_shader();
+		painter->push_state();
+		painter->set_fill(1);
+		painter->no_stroke();
+		painter->no_shader();
 
 		if (self->pfilter && *self->pfilter)
-			self->pfilter->apply(p, *self->pcache_image);
+			self->pfilter->apply(painter, *self->pcache_image);
 		else
-			p->image(*self->pcache_image, event->bounds);
+			painter->image(*self->pcache_image, event->bounds);
 
-		p->pop_state();
+		painter->pop_state();
 
 		return true;
 	}
@@ -1153,7 +1176,9 @@ namespace Reflex
 	View_draw_tree (
 		View* view, const DrawEvent& event, const Point& offset, const Bounds& clip)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
+
 		View::Data* self = view->self.get();
 
 		bool redraw = self->check_and_remove_flag(View::Data::REDRAW);
@@ -1164,17 +1189,17 @@ namespace Reflex
 		if (self->frame.width <= 0 || self->frame.height <= 0)
 			return;
 
-		DrawEvent e = event;
-		e.view      = view;
-		e.bounds    = self->frame;
+		Point pos    = self->frame.position();
+		Bounds clip2 = self->frame.dup().move_by(offset) & clip;
+		DrawEvent e  = event;
+		e.view       = view;
+		e.bounds     = self->frame;
 		e.bounds.move_to(0, 0, e.bounds.z);
 
-		Point pos = self->frame.position();
-		const Point* scroll = self->pscroll.get();
-		if (scroll)
+		if (self->pscroll)
 		{
-			pos     .move_by(-*scroll);
-			e.bounds.move_by( *scroll);
+			pos     .move_by( *self->pscroll);
+			e.bounds.move_by(-*self->pscroll);
 		}
 
 		Painter* p = event.painter;
@@ -1190,8 +1215,8 @@ namespace Reflex
 			p->scale(zoom, zoom);
 
 		pos += offset;
-		if (!draw_view_with_cache(view, &e, pos, clip, redraw))
-			draw_view(view, &e, pos, clip);
+		if (!draw_view_with_cache(view, &e, redraw))
+			draw_view(view, &e, pos, clip2);
 
 		p->pop_matrix();
 	}
@@ -1199,7 +1224,9 @@ namespace Reflex
 	void
 	View_update_styles (View* view, const Selector& selector)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
+
 		View::Data* self = view->self.get();
 
 		if (selector.is_empty())
@@ -1211,7 +1238,8 @@ namespace Reflex
 	void
 	View_update_shapes (View* view)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
 
 		view->self->add_flag(View::Data::UPDATE_SHAPES);
 	}
@@ -1233,7 +1261,8 @@ namespace Reflex
 	void
 	View_call_key_event (View* view, const KeyEvent& event)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
 
 		bool capturing = view->capture() & View::CAPTURE_KEY;
 		if (capturing != event.capture) return;
@@ -1271,7 +1300,8 @@ namespace Reflex
 	void
 	View_call_pointer_event (View* view, const PointerEvent& event)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
 
 		bool capturing = view->capture() & View::CAPTURE_POINTER;
 		if (capturing != event.capture) return;
@@ -1301,7 +1331,8 @@ namespace Reflex
 	void
 	View_call_wheel_event (View* view, const WheelEvent& event)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
 
 		const Bounds& frame = view->frame();
 
@@ -1319,7 +1350,8 @@ namespace Reflex
 	void
 	View_call_contact_event (View* view, const ContactEvent& event)
 	{
-		assert(view);
+		if (!view)
+			argument_error(__FILE__, __LINE__);
 
 		ContactEvent e = event;
 		view->on_contact(&e);
@@ -1540,7 +1572,7 @@ namespace Reflex
 		if (!self->pchildren) return;
 
 		auto end = child_end();
-		auto it = std::find(child_begin(), end, child);
+		auto it  = std::find(child_begin(), end, child);
 		if (it == end) return;
 
 		child->self->remove_flag(Data::ACTIVE);
@@ -1806,6 +1838,7 @@ namespace Reflex
 	void
 	View::clear_shapes ()
 	{
+		set_shape(NULL);
 		while (self->pshapes && !self->pshapes->empty())
 			remove_shape(self->pshapes->begin()->get());
 	}
@@ -1947,25 +1980,49 @@ namespace Reflex
 		return self->frame;
 	}
 
-	Point
-	View::content_size () const
+	template <typename FUN>
+	static void
+	each_shape (const View& view, FUN fun)
 	{
-		return -1;
+		View::Data* self = view.self.get();
+
+		if (self->pshape)
+			fun(*self->pshape);
+
+		if (self->pshapes)
+		{
+			for (const auto& pshape : *self->pshapes)
+			{
+				if (pshape)
+					fun(*pshape);
+			}
+		}
+	}
+
+	static void
+	include_shape_frames (Bounds* result, const View& view)
+	{
+		each_shape(view, [&](const Shape& shape) {
+			if (!Shape_has_frame(shape))
+				return;
+
+			Bounds frame = shape.frame();
+			if (frame) *result |= frame;
+		});
+	}
+
+	Bounds
+	View::content_bounds () const
+	{
+		Bounds b = Rays::invalid_bounds();
+		include_shape_frames(&b, *this);
+		return b;
 	}
 
 	void
-	View::resize_to_fit ()
+	View::fit_to_content ()
 	{
-		Point size = content_size();
-		if (size.x < 0 && size.y < 0 && size.z <= 0) return;
-
-		const Style* st = style(false);
-
-		Bounds b = frame();
-		if ((!st || !Style_has_width(*st))  && size.x >= 0) b.width  = size.x;
-		if ((!st || !Style_has_height(*st)) && size.y >= 0) b.height = size.y;
-		if (                                   size.z >= 0) b.depth  = size.z;
-		set_frame(b);
+		self->add_flag(View::Data::FIT_TO_CONTENT);
 	}
 
 	void
@@ -2066,6 +2123,24 @@ namespace Reflex
 		return self->capture;
 	}
 
+	void
+	View::add_flag (uint flags)
+	{
+		self->add_flag(flags);
+	}
+
+	void
+	View::remove_flag (uint flags)
+	{
+		self->remove_flag(flags);
+	}
+
+	bool
+	View::has_flag (uint flags) const
+	{
+		return self->has_flag(flags);
+	}
+
 	View*
 	View::parent ()
 	{
@@ -2088,24 +2163,6 @@ namespace Reflex
 	View::window () const
 	{
 		return const_cast<View*>(this)->window();
-	}
-
-	void
-	View::add_flag (uint flags)
-	{
-		self->add_flag(flags);
-	}
-
-	void
-	View::remove_flag (uint flags)
-	{
-		self->remove_flag(flags);
-	}
-
-	bool
-	View::has_flag (uint flags) const
-	{
-		return self->has_flag(flags);
 	}
 
 	void
@@ -2414,10 +2471,10 @@ namespace Reflex
 	}
 
 	bool
-	View::debugging () const
+	View::debug () const
 	{
 		World* w = self->pchild_world.get();
-		return w ? w->debugging() : false;
+		return w ? w->debug() : false;
 	}
 
 	void
@@ -2472,11 +2529,6 @@ namespace Reflex
 
 	void
 	View::on_focus (FocusEvent* e)
-	{
-	}
-
-	void
-	View::on_blur (FocusEvent* e)
 	{
 	}
 
