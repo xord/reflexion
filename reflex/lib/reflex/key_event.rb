@@ -26,6 +26,10 @@ module Reflex
       get_type == TYPE_UP
     end
 
+    def repeat? ()
+      repeat >= 1
+    end
+
     def inspect ()
       "#<Reflex::KeyEvent type:#{type} chars:'#{chars}' code:#{code} mod:#{modifiers} repeat:#{repeat} capture?:#{capture?}>"
     end

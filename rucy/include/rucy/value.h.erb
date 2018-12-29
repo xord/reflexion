@@ -148,7 +148,9 @@ namespace Rucy
 	class GlobalValue : public Value
 	{
 
-		typedef Value Super;
+		typedef       Value Super;
+
+		typedef GlobalValue This;
 
 		public:
 
@@ -174,23 +176,23 @@ namespace Rucy
 
 			GlobalValue (const Value& v, bool gc = false);
 
-			GlobalValue (const GlobalValue& obj, bool gc = false);
+			GlobalValue (const This& obj, bool gc = false);
 
 			GlobalValue& operator = (const Value& v);
 
+			GlobalValue& operator = (const This& obj);
+
 			~GlobalValue ();
 
-			void gc (bool enable) const;
+			void  enable_gc () const;
+
+			void disable_gc () const;
 
 		private:
 
-			mutable short gc_disable_count;
-
-			mutable bool gc_guarded;
+			mutable int gc_disable_count;
 
 			void init (bool gc);
-
-			void update_guard () const;
 
 	};// GlobalValue
 

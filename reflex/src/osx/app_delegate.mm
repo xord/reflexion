@@ -9,9 +9,6 @@
 #include "application_data.h"
 
 
-#define REF (*pref)
-
-
 @implementation AppDelegate
 
 	- (id) init
@@ -19,77 +16,94 @@
 		self = [super init];
 		if (!self) return nil;
 
-		pref = new Reflex::Application::Ref;
+		pinstance = ptr_for_rebind = NULL;
 
 		return self;
 	}
 
 	- (void) dealloc
 	{
-		assert(pref && !REF);
-
-		delete pref;
+		assert(!pinstance);
 
 		[super dealloc];
 	}
 
 	- (void) bind: (Reflex::Application*) instance
 	{
-		assert(pref);
-
-		if (instance && instance->self->delegate)
+		if (!instance)
 			Reflex::argument_error(__FILE__, __LINE__);
 
-		if (REF)
+		if (instance && instance->self->delegate)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		REF = instance;
-		if (REF) REF->self->delegate = [self retain];
+		instance->self->delegate = [self retain];
+
+		// Reflex::Application is not constructed completely,
+		// so can not call ClassWrapper::retain().
+		instance->Xot::template RefCountable<>::retain();
+
+		// defer calling ClassWrapper::retain() to rebind.
+		ptr_for_rebind = instance;
 	}
 
-	- (void) unbind: (Reflex::Application*) instance
+	- (void) rebind
 	{
-		assert(pref);
+		if (!pinstance && ptr_for_rebind)
+		{
+			pinstance = ptr_for_rebind;
+			pinstance->retain();
 
-		if (!REF) return;
+			ptr_for_rebind->Xot::template RefCountable<>::release();
+			ptr_for_rebind = NULL;
+		}
 
-		if (instance && instance != REF.get())
-			Reflex::invalid_state_error(__FILE__, __LINE__);
+		assert(pinstance && !ptr_for_rebind);
+	}
 
-		if (REF->self->delegate) [REF->self->delegate release];
-		REF->self->delegate = nil;
-		REF.reset();
+	- (void) unbind
+	{
+		[self rebind];
+		if (!pinstance) return;
+
+		if (pinstance->self->delegate) [pinstance->self->delegate release];
+		pinstance->self->delegate = nil;
+
+		pinstance->release();
+		pinstance = NULL;
+	}
+
+	- (Reflex::Application*) instance
+	{
+		[self rebind];
+		return pinstance;
 	}
 
 	- (void) quit
 	{
-		assert(pref);
-
-		if (REF)
-			REF->quit();
+		Reflex::Application* ptr = [self instance];
+		if (ptr)
+			ptr->quit();
 		else
 			[NSApp terminate: nil];
 	}
 
 	- (void) showPreference
 	{
-		assert(pref);
-
-		if (REF)
+		Reflex::Application* ptr = [self instance];
+		if (ptr)
 		{
 			Reflex::Event e;
-			REF->on_preference(&e);
+			ptr->on_preference(&e);
 		}
 	}
 
 	- (void) showAbout
 	{
-		assert(pref);
-
-		if (REF)
+		Reflex::Application* ptr = [self instance];
+		if (ptr)
 		{
 			Reflex::Event e;
-			REF->on_about(&e);
+			ptr->on_about(&e);
 		}
 		else
 			[NSApp orderFrontStandardAboutPanel: nil];
@@ -100,10 +114,11 @@
 		[NSApp setActivationPolicy: NSApplicationActivationPolicyRegular];
 		[NSApp activateIgnoringOtherApps: YES];
 
-		if (REF)
+		Reflex::Application* ptr = [self instance];
+		if (ptr)
 		{
 			Reflex::Event e;
-			REF->on_start(&e);
+			ptr->on_start(&e);
 			if (e.is_blocked())
 			{
 				[self quit];
@@ -116,10 +131,11 @@
 
 	- (NSApplicationTerminateReply) applicationShouldTerminate: (NSApplication*) application
 	{
-		if (REF)
+		Reflex::Application* ptr = [self instance];
+		if (ptr)
 		{
 			Reflex::Event e;
-			REF->on_quit(&e);
+			ptr->on_quit(&e);
 			if (e.is_blocked()) return NSTerminateCancel;
 		}
 
@@ -133,13 +149,13 @@
 
 	- (void) applicationWillTerminate: (NSNotification*) notification
 	{
-		[self unbind: NULL];
+		[self unbind];
 	}
 
 	- (BOOL) setupApplicationMenu: (NSMenu*) parent
 	{
-		assert(pref);
-		if (!REF || !parent) return NO;
+		Reflex::Application* ptr = [self instance];
+		if (!ptr || !parent) return NO;
 
 		NSMenu* menu = [[[NSMenu alloc]
 			initWithTitle: @"Application"]
@@ -147,8 +163,8 @@
 		if ([NSApp respondsToSelector: @selector(setAppleMenu:)])
 			[NSApp performSelector: @selector(setAppleMenu:) withObject: menu];
 
-		NSString* name = !REF->self->name.empty() ?
-			[NSString stringWithUTF8String: REF->self->name.c_str()] : @"";
+		NSString* name = !ptr->self->name.empty() ?
+			[NSString stringWithUTF8String: ptr->self->name.c_str()] : @"";
 		if ([name length] > 0)
 			name = [@" " stringByAppendingString: name];
 

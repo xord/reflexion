@@ -25,11 +25,11 @@ namespace Reflex
 	struct Window::Data
 	{
 
-		NativeWindow* native;
+		NativeWindow* native = nil;
 
-		int hide_count;
+		int hide_count = 1;
 
-		bool redraw;
+		bool redraw = true;
 
 		Painter painter;
 
@@ -37,14 +37,13 @@ namespace Reflex
 
 		Point prev_position, prev_size;
 
-		double prev_time_update, prev_time_draw, prev_fps;
+		double prev_time_update = 0, prev_time_draw = 0, prev_fps = 0;
 
 		String title_tmp;
 
 		CapturingViews capturing_views;
 
 		Data ()
-		:	native(nil), hide_count(1), redraw(true), prev_fps(0)
 		{
 			prev_time_update = prev_time_draw = Xot::time();
 		}

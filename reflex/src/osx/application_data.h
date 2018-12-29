@@ -17,14 +17,9 @@ namespace Reflex
 	struct Application::Data
 	{
 
-		AppDelegate* delegate;
+		AppDelegate* delegate = nil;
 
 		String name;
-
-		Data ()
-		:	delegate(nil)
-		{
-		}
 
 		operator bool () const
 		{

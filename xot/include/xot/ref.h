@@ -34,33 +34,34 @@ namespace Xot
 
 		public:
 
-			virtual void retain (void* data = NULL) const
+			virtual void retain (intptr_t data = 0) const
 			{
-				refc_update_count(+1);
+				refc_update_count(true);
 
 				#ifdef XOT_REF_DEBUG
 					doutln(
 						"%s: %d -> %d",
-						typeid(this).name(), refc_count() - 1, refc_count());
+						typeid(this).name(), refc_count - 1, refc_count);
 				#endif
 			}
 
-			virtual void release (void* data = NULL) const
+			virtual void release (intptr_t data = 0) const
 			{
-				assert(refc_count() >= 0);
-				bool del = !refc_retained() || refc_update_count(-1) == 0;
+				assert(refc_count >= 0);
+
+				bool del = refc_count == 0 || refc_update_count(false) == 0;
 
 				#ifdef XOT_REF_DEBUG
 					doutln(
-						"%s: %d -> %d, refcount:%s, delete:%s",
-						typeid(this).name(), refc_count() + 1, refc_count(),
-						refc_retained() ? "yes" : "no", del ? "yes" : "no");
+						"%s: %d -> %d, delete:%s",
+						typeid(this).name(), refc_count + 1, refc_count,
+						del ? "yes" : "no");
 				#endif
 
 				if (del) delete this;
 			}
 
-			virtual void* rucy_value () const
+			virtual void* rucy_wrapper_value () const
 			{
 				return NULL;
 			}
@@ -80,53 +81,20 @@ namespace Xot
 			{
 			}
 
-			virtual int refc_count () const
-			{
-				return refc.count;
-			}
-
-			virtual bool refc_retained () const
-			{
-				return refc.aux & 0x1;
-			}
-
-			virtual int refc_update_count (int add) const
-			{
-				assert(add != 0);
-				if (add >= 0) refc.aux |= 0x1;// bit for retained flag.
-
-				int c = refc.count + add;
-				if (c < 0)
-					invalid_state_error(__FILE__, __LINE__);
-				if (c > USHRT_MAX)
-					xot_error(__FILE__, __LINE__, "refc.count overflow.");
-
-				return refc.count = c;
-			}
-
-			virtual ushort refc_aux () const
-			{
-				return refc.aux >> 1;
-			}
-
-			virtual void refc_set_aux (ushort aux) const
-			{
-				if ((0x1 << 15) & aux)
-					argument_error(__FILE__, __LINE__);
-
-				refc.aux = (refc.aux & 0x1) | (aux << 1);
-			}
-
 		private:
 
-			mutable struct Data
+			mutable int refc_count = 0;
+
+			int refc_update_count (bool increment) const
 			{
+				int c = refc_count + (increment ? +1 : -1);
+				if (c < 0)
+					invalid_state_error(__FILE__, __LINE__, "refc_count underflow");
+				if (c > INT_MAX)
+					xot_error(__FILE__, __LINE__, "refc_count overflow.");
 
-				ushort count, aux;
-
-				Data () : count(0), aux(0) {}
-
-			} refc;
+				return refc_count = c;
+			}
 
 	};// RefCountable
 

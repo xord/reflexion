@@ -118,10 +118,10 @@
 		value (native_class* obj, Value klass) \
 		{ \
 			if (!obj) return nil(); \
-			Value* pval = (Value*) obj->rucy_value(); \
-			if (!pval) return new_ref(klass, obj); \
-			if (pval->is_nil()) *pval = new_wrapper(klass, obj); \
-			return *pval; \
+			GlobalValue* wrapped = (GlobalValue*) obj->rucy_wrapper_value(); \
+			if (!wrapped) return new_ref(klass, obj); \
+			if (wrapped->is_nil()) *wrapped = new_wrapper(klass, obj); \
+			return *wrapped; \
 		} \
 	}
 
@@ -299,13 +299,13 @@ namespace Rucy
 	template <typename T> Class get_ruby_class ();
 
 
-	template <typename T>
-	class ClassWrapper : public T
+	template <typename RefCountableT>
+	class ClassWrapper : public RefCountableT
 	{
 
-		typedef ClassWrapper This;
+		typedef ClassWrapper  This;
 
-		typedef T RucyWrapped;
+		typedef RefCountableT RucyWrapped;
 
 		public:
 
@@ -316,25 +316,15 @@ namespace Rucy
 			{
 			}
 
-			virtual void retain (void* by_ruby_value = NULL) const
+			void retain (intptr_t by_ruby) const override
 			{
-				if (!by_ruby_value)
-				{
-					refc_set_aux(refc_aux() + 1);
-					if (refc_aux() == 1) value.gc(false);
-				}
-
+				if (!by_ruby) value.disable_gc();
 				RucyWrapped::retain();
 			}
 
-			virtual void release (void* by_ruby_value = NULL) const
+			void release (intptr_t by_ruby) const override
 			{
-				if (!by_ruby_value && refc_aux() > 0)
-				{
-					refc_set_aux(refc_aux() - 1);
-					if (refc_aux() == 0) value.gc(true);
-				}
-
+				if (!by_ruby) value.enable_gc();
 				RucyWrapped::release();
 			}
 
@@ -352,27 +342,15 @@ namespace Rucy
 				return true;
 			}
 
-			virtual void* rucy_value () const
+			void* rucy_wrapper_value () const override
 			{
 				return (void*) &value;
 			}
 
-			virtual bool rucy_disable_override () const
+			bool rucy_disable_override () const override
 			{
 				overridable = false;
 				return true;
-			}
-
-		protected:
-
-			virtual ushort refc_aux () const
-			{
-				return RucyWrapped::refc_aux();
-			}
-
-			virtual void refc_set_aux (ushort aux) const
-			{
-				RucyWrapped::refc_set_aux(aux);
 			}
 
 		private:
@@ -382,11 +360,6 @@ namespace Rucy
 	};// ClassWrapper
 
 
-	template <typename T> inline void mark_type (void* p)
-	{
-		if (p) ((T*) p)->mark();
-	}
-
 	template <typename T> inline void delete_type (void* p)
 	{
 		delete (T*) p;
@@ -394,12 +367,12 @@ namespace Rucy
 
 	template <typename T> inline void release_ref (void* p)
 	{
-		if (p) ((T*) p)->release((void*) true);// 'true' means by-ruby-value.
+		if (p) ((T*) p)->release();
 	}
 
 	template <typename T> inline void release_wrapper (void* p)
 	{
-		if (p) ((T*) p)->Xot::template RefCountable<>::release();
+		if (p) ((T*) p)->release(true);
 	}
 
 
@@ -425,7 +398,7 @@ namespace Rucy
 		RUBY_DATA_FUNC mark = NULL,
 		RUBY_DATA_FUNC free = release_ref<T>)
 	{
-		if (ptr) ptr->retain((void*) true);// 'true' means by-ruby-value
+		if (ptr) ptr->retain();
 		return new_type(klass, ptr, mark, free);
 	}
 
@@ -442,7 +415,7 @@ namespace Rucy
 		RUBY_DATA_FUNC mark = NULL,
 		RUBY_DATA_FUNC free = release_wrapper<T>)
 	{
-		if (ptr) ptr->Xot::template RefCountable<>::retain();
+		if (ptr) ptr->retain(true);
 		return new_type(klass, ptr, mark, free);
 	}
 

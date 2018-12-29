@@ -103,7 +103,7 @@ class TestClass < Test::Unit::TestCase
 
   def test_gc ()
     def simple_objs (name, n = 10) ([nil] * n).map {SimpleObj.new name} end
-    def gc (n = 10) n.times {GC.start}; print '' end
+    def gc () GC.start end
     rt = Rucy::Tester
 
     gc

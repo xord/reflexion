@@ -446,7 +446,7 @@ namespace Rucy
 		init(gc_);
 	}
 
-	GlobalValue::GlobalValue (const GlobalValue& obj, bool gc_)
+	GlobalValue::GlobalValue (const This& obj, bool gc_)
 	:	Super(obj)
 	{
 		init(gc_);
@@ -456,50 +456,41 @@ namespace Rucy
 	GlobalValue::operator = (const Value& v)
 	{
 		Super::operator=(v);
-		update_guard();
+		return *this;
+	}
+
+	GlobalValue&
+	GlobalValue::operator = (const This& obj)
+	{
+		Super::operator=(obj);
 		return *this;
 	}
 
 	GlobalValue::~GlobalValue ()
 	{
-		while (gc_guarded) gc(true);
+		if (gc_disable_count > 0)
+			rb_gc_unregister_address(&val);
 	}
 
 	void
-	GlobalValue::gc (bool enable) const
+	GlobalValue::enable_gc () const
 	{
-		gc_disable_count += enable ? -1 : +1;
-		update_guard();
+		if (--gc_disable_count == 0)
+			rb_gc_unregister_address(const_cast<RubyValue*>(&val));
+	}
+
+	void
+	GlobalValue::disable_gc () const
+	{
+		if (++gc_disable_count == 1)
+			rb_gc_register_address(const_cast<RubyValue*>(&val));
 	}
 
 	void
 	GlobalValue::init (bool gc_)
 	{
 		gc_disable_count = 0;
-		gc_guarded       = false;
-		if (!gc_) gc(false);
-	}
-
-	void
-	GlobalValue::update_guard () const
-	{
-		assert(gc_disable_count >= 0);
-
-		if (IMMEDIATE_P(val))
-		{
-			if (gc_guarded) rb_gc_unregister_address((RubyValue*) &val);
-			gc_guarded = false;
-		}
-		else if (gc_disable_count > 0)
-		{
-			if (!gc_guarded) rb_gc_register_address((RubyValue*) &val);
-			gc_guarded = true;
-		}
-		else
-		{
-			if (gc_guarded) rb_gc_unregister_address((RubyValue*) &val);
-			gc_guarded = false;
-		}
+		if (!gc_) disable_gc();
 	}
 
 

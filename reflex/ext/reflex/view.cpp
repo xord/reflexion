@@ -149,6 +149,15 @@ RUCY_DEF1(remove_child, child)
 RUCY_END
 
 static
+RUCY_DEF0(clear_children)
+{
+	CHECK;
+	THIS->clear_children();
+	return self;
+}
+RUCY_END
+
+static
 RUCY_DEFN(find_children)
 {
 	CHECK;
@@ -1093,10 +1102,11 @@ Init_view ()
 	cView.define_private_method("start_timer", start_timer);
 	cView.define_method("update_layout", update_layout);
 
-	cView.define_method("add_child",     add_child);
-	cView.define_method("remove_child",  remove_child);
-	cView.define_method("find_children", find_children);
-	cView.define_method("each_child",    each_child);
+	cView.define_method("add_child",      add_child);
+	cView.define_method("remove_child",   remove_child);
+	cView.define_method("clear_children", clear_children);
+	cView.define_method("find_children",  find_children);
+	cView.define_method("each_child",     each_child);
 
 	cView.define_method("add_style",    add_style);
 	cView.define_method("remove_style", remove_style);

@@ -6,11 +6,11 @@
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 
 	{
-		Reflex::Application::Ref* pref;
+		Reflex::Application *pinstance, *ptr_for_rebind;
 	}
 
-	- (void) bind:   (Reflex::Application*) instance;
+	- (void) bind: (Reflex::Application*) instance;
 
-	- (void) unbind: (Reflex::Application*) instance;
+	- (void) unbind;
 
 @end// AppDelegate

@@ -9,14 +9,14 @@
 @interface NativeWindow : NSWindow <NSWindowDelegate>
 
 	{
-		Reflex::Window::Ref* pref;
+		Reflex::Window *pinstance, *ptr_for_rebind;
 		OpenGLView* view;
 		NSTimer* timer;
 	}
 
-	- (void) bind:   (Reflex::Window*) instance;
+	- (void) bind: (Reflex::Window*) instance;
 
-	- (void) unbind: (Reflex::Window*) instance;
+	- (void) unbind;
 
 	- (void) draw;
 

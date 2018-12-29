@@ -393,7 +393,7 @@ namespace Reflex
 			Xot::PImpl<Data> self;
 
 			#ifdef REFLEX_VIEW_REF_DEBUG
-				virtual void retain (void* data = NULL) const
+				void retain (intptr_t data) const override
 				{
 					RefCountable::retain(data);
 					String spaces = "";
@@ -401,7 +401,7 @@ namespace Reflex
 					printf("(%d)%s-> %s\n", refc_count(), spaces.c_str(), name());
 				}
 
-				virtual void release (void* data = NULL) const
+				void release (intptr_t data) const override
 				{
 					RefCountable::release(data);
 					String spaces = "";
