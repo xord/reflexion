@@ -8,7 +8,7 @@ require 'reflex/shape'
 module Reflex
 
 
-  class LineShape
+  class LineShape < Shape
 
     universal_accessor :loop
 

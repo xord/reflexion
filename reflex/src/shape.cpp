@@ -607,8 +607,11 @@ namespace Reflex
 			return create_solid_fixtures(this, polygon, ppm);
 		else if (has_stroke_width(this))
 		{
-			Polygon stroke = polygon - polygon.expand(-get_stroke_width(this));
-			return create_solid_fixtures(this, stroke, ppm);
+			Polygon hole;
+			if (!polygon.expand(&hole, -get_stroke_width(this)))
+				return NULL;
+
+			return create_solid_fixtures(this, polygon - hole, ppm);
 		}
 		else
 			return create_line_fixtures(this, polygon, ppm);
@@ -1047,12 +1050,12 @@ namespace Reflex
 	{
 		Bounds f = frame();
 
-		Polygon polygon;
-		if (positions & LEFT)   polygon += make_wall_polygon(LEFT,   f, thickness);
-		if (positions & TOP)    polygon += make_wall_polygon(TOP,    f, thickness);
-		if (positions & RIGHT)  polygon += make_wall_polygon(RIGHT,  f, thickness);
-		if (positions & BOTTOM) polygon += make_wall_polygon(BOTTOM, f, thickness);
-		return polygon;
+		Polygon p;
+		if (positions & LEFT)   p = p | make_wall_polygon(LEFT,   f, thickness);
+		if (positions & TOP)    p = p | make_wall_polygon(TOP,    f, thickness);
+		if (positions & RIGHT)  p = p | make_wall_polygon(RIGHT,  f, thickness);
+		if (positions & BOTTOM) p = p | make_wall_polygon(BOTTOM, f, thickness);
+		return p;
 	}
 
 

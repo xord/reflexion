@@ -13,7 +13,7 @@ module Xot
 
     def const_symbol_writer (name, **symbol2const)
       writer = "#{name}=".intern
-      setter = "bf_set_#{name}__".intern
+      setter = "cs_set_#{name}__".intern
 
       alias_method setter, writer
       private setter
@@ -29,7 +29,7 @@ module Xot
 
     def const_symbol_reader (name, **symbol2const)
       reader = name.intern
-      getter = "bf_get_#{name}__".intern
+      getter = "cs_get_#{name}__".intern
 
       alias_method getter, reader
       private getter

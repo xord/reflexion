@@ -8,7 +8,7 @@ require 'reflex/shape'
 module Reflex
 
 
-  class PolygonShape
+  class PolygonShape < Shape
 
     universal_accessor :polygon
 

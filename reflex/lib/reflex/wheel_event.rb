@@ -9,6 +9,14 @@ module Reflex
 
   class WheelEvent
 
+    def position ()
+      Point.new x, y, z
+    end
+
+    def delta ()
+      Point.new dx, dy, dz
+    end
+
     def inspect ()
       "#<Reflex::WheelEvent dx:#{dx} dy:#{dy} dz:#{dz} x:#{x} y:#{y} z:#{z} mod:#{modifiers}>"
     end

@@ -134,7 +134,7 @@ static
 RUCY_DEF1(array_get, index)
 {
 	CHECK;
-	return value((*THIS)[index.to_i()]);
+	return value((*THIS)[to<int>(index)]);
 }
 RUCY_END
 

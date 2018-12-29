@@ -8,7 +8,7 @@ require 'reflex/shape'
 module Reflex
 
 
-  class RectShape
+  class RectShape < Shape
 
     universal_accessor :nsegment, :round,
       :round_left_top,    :round_right_top,

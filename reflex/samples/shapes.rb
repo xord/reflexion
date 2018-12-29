@@ -10,7 +10,7 @@ require 'reflex'
 
 Reflex::Window.new do
   title 'Shape Sample'
-  frame 100, 100, 500, 400
+  frame 100, 100, 800, 500
 
   def on_draw (e)
     e.painter.push do
@@ -21,45 +21,55 @@ Reflex::Window.new do
       x, y, y2, w, h = 10, 10, 100, 50, 50
 
       push do
-        rect x, y, w, h
+        rect                       x, y,  w, h
         polygon Rays::Polygon.rect x, y2, w, h
 
         translate 100, 0
-        rect x, y, w, h, 5
+        rect                       x, y,  w, h, 5
         polygon Rays::Polygon.rect x, y2, w, h, 5
 
         translate 100, 0
-        rect x, y, w, h, 5, 10, 15, 20
+        rect                       x, y,  w, h, 5, 10, 15, 20
         polygon Rays::Polygon.rect x, y2, w, h, 5, 10, 15, 20
-      end
 
-      translate 0, 200
-      push do
-        ellipse x, y, w, h
+        translate 100, 0
+        ellipse                       x, y,  w, h
         polygon Rays::Polygon.ellipse x, y2, w, h
 
         translate 100, 0
-        ellipse x, y, w, h, from: 45, to: 180
+        ellipse                       x, y,  w, h, from: 45, to: 180
         polygon Rays::Polygon.ellipse x, y2, w, h, from: 45, to: 180
 
         translate 100, 0
-        ellipse x, y, w, h, hole: 10
+        ellipse                       x, y,  w, h, hole: 10
         polygon Rays::Polygon.ellipse x, y2, w, h, hole: 10
 
         translate 100, 0
-        ellipse x, y, w, h, hole: 10, from: 200, to: 300
+        ellipse                       x, y,  w, h, hole: 10, from: 200, to: 300
         polygon Rays::Polygon.ellipse x, y2, w, h, hole: 10, from: 200, to: 300
       end
 
       translate 0, 200
       push do
-        line x, y, x + w, y + h
+        line                    x, y,  x + w, y  + h
+        line Rays::Polyline.new x, y2, x + w, y2 + h
 
-        x += 100
-        line x, y, x + w, y + h, x, y + h
+        translate 100, 0
+        line                    x, y,  x + w, y  + h, x, y  + h
+        line Rays::Polyline.new x, y2, x + w, y2 + h, x, y2 + h
 
-        x += 100
-        line x, y, x + w, y + h, x, y + h, loop: true
+        translate 100, 0
+        line                    x, y,  x + w, y  + h, x, y  + h, loop: true
+        line Rays::Polyline.new x, y2, x + w, y2 + h, x, y2 + h, loop: true
+
+        translate 100, 0
+        polygon Rays::Polyline.new(x, y, x + w, y + h).expand 10
+
+        translate 100, 0
+        polygon Rays::Polyline.new(x, y, x + w, y + h, x, y + h).expand 10
+
+        translate 100, 0
+        polygon Rays::Polyline.new(x, y, x + w, y + h, x, y + h, loop: true).expand 10
       end
     end
   end

@@ -8,7 +8,7 @@ require 'reflex/shape'
 module Reflex
 
 
-  class EllipseShape
+  class EllipseShape < Shape
 
     universal_accessor :angle_from, :angle_to, :hole_size, :nsegment
 

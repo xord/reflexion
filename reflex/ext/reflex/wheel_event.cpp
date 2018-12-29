@@ -98,22 +98,6 @@ RUCY_DEF0(modifiers)
 }
 RUCY_END
 
-static
-RUCY_DEF0(position)
-{
-	CHECK;
-	return value(Rays::Point(THIS->x, THIS->y, THIS->z));
-}
-RUCY_END
-
-static
-RUCY_DEF0(delta)
-{
-	CHECK;
-	return value(Rays::Point(THIS->dx, THIS->dy, THIS->dz));
-}
-RUCY_END
-
 
 static Class cWheelEvent;
 
@@ -133,8 +117,6 @@ Init_wheel_event ()
 	cWheelEvent.define_method("y", y);
 	cWheelEvent.define_method("z", z);
 	cWheelEvent.define_method("modifiers", modifiers);
-	cWheelEvent.define_method("position", position);
-	cWheelEvent.define_method("delta", delta);
 }
 
 

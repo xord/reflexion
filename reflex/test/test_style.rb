@@ -10,14 +10,14 @@ class TestStyle < Test::Unit::TestCase
     Reflex::Style.new *args, &block
   end
 
-  def rgb (*args)
+  def color (*args)
     Reflex::Color.new *args
   end
 
   def setup ()
     {
-      rgb100: rgb(1, 0, 0),
-      rgb010: rgb(0, 1, 0)
+      rgb100: color(1, 0, 0),
+      rgb010: color(0, 1, 0)
     }.each do |name, col|
       Rays::Color.set_palette_color name, col
     end
@@ -91,47 +91,47 @@ class TestStyle < Test::Unit::TestCase
   end
 
   def test_foreground ()
-    s, white, transp = style, rgb(1, 1, 1, 1), rgb(0, 0, 0, 0)
+    s, white, transp = style, color(1, 1, 1, 1), color(0, 0, 0, 0)
 
     assert_equal white,  s.foreground_fill
     assert_equal transp, s.foreground_stroke
 
-    assert_equal [white,        transp], s.foreground
+    assert_equal [white,          transp], s.foreground
     s.foreground = :rgb100
-    assert_equal [rgb(1, 0, 0), transp], s.foreground
+    assert_equal [color(1, 0, 0), transp], s.foreground
     s.foreground = nil
-    assert_equal [white,        transp], s.foreground
+    assert_equal [white,          transp], s.foreground
 
-    s.foreground :rgb100
-    assert_equal [rgb(1, 0, 0), transp],       s.foreground
-    s.foreground :rgb010, nil
-    assert_equal [rgb(0, 1, 0), transp],       s.foreground
-    s.foreground nil, :rgb100
-    assert_equal [white,        rgb(1, 0, 0)], s.foreground
-    s.foreground :rgb100, :rgb010
-    assert_equal [rgb(1, 0, 0), rgb(0, 1, 0)], s.foreground
+    s.foreground  :rgb100
+    assert_equal [color(1, 0, 0), transp],         s.foreground
+    s.foreground  :rgb010,        nil
+    assert_equal [color(0, 1, 0), transp],         s.foreground
+    s.foreground  nil,            :rgb100
+    assert_equal [white,          color(1, 0, 0)], s.foreground
+    s.foreground  :rgb100,        :rgb010
+    assert_equal [color(1, 0, 0), color(0, 1, 0)], s.foreground
   end
 
   def test_background ()
-    s, transp = style, rgb(0, 0, 0, 0)
+    s, transp = style, color(0, 0, 0, 0)
 
     assert_equal transp, s.background_fill
     assert_equal transp, s.background_stroke
 
-    assert_equal [transp,       transp], s.background
+    assert_equal [transp,         transp], s.background
     s.background = :rgb100
-    assert_equal [rgb(1, 0, 0), transp], s.background
+    assert_equal [color(1, 0, 0), transp], s.background
     s.background = nil
-    assert_equal [transp,       transp], s.background
+    assert_equal [transp,         transp], s.background
 
-    s.background :rgb100
-    assert_equal [rgb(1, 0, 0), transp],       s.background
-    s.background :rgb010, nil
-    assert_equal [rgb(0, 1, 0), transp],       s.background
-    s.background nil, :rgb100
-    assert_equal [transp,       rgb(1, 0, 0)], s.background
-    s.background :rgb100, :rgb010
-    assert_equal [rgb(1, 0, 0), rgb(0, 1, 0)], s.background
+    s.background  :rgb100
+    assert_equal [color(1, 0, 0), transp],         s.background
+    s.background  :rgb010,        nil
+    assert_equal [color(0, 1, 0), transp],         s.background
+    s.background  nil,            :rgb100
+    assert_equal [transp,         color(1, 0, 0)], s.background
+    s.background  :rgb100,        :rgb010
+    assert_equal [color(1, 0, 0), color(0, 1, 0)], s.background
   end
 
   def test_image ()

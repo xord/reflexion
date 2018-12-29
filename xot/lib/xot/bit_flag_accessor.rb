@@ -10,24 +10,24 @@ module Xot
 
   module BitFlagAccessor
 
-    def bit_flag_accessor (name, bit_flag = nil, &block)
-      bf = define_bit_flag name, bit_flag, block
+    def bit_flag_accessor (name, bit_flag = nil, **flags, &block)
+      bf = define_bit_flag name, bit_flag, flags, block
       define_bit_flag_writer name, bf
       define_bit_flag_reader name, bf
     end
 
-    def bit_flag_writer (name, bit_flag = nil, &block)
-      define_bit_flag_writer name, define_bit_flag(name, bit_flag, block)
+    def bit_flag_writer (name, bit_flag = nil, **flags, &block)
+      define_bit_flag_writer name, define_bit_flag(name, bit_flag, flags, block)
     end
 
-    def bit_flag_reader (name, bit_flag = nil, &block)
-      define_bit_flag_reader name, define_bit_flag(name, bit_flag, block)
+    def bit_flag_reader (name, bit_flag = nil, **flags, &block)
+      define_bit_flag_reader name, define_bit_flag(name, bit_flag, flags, block)
     end
 
     private
 
-      def define_bit_flag (name, bit_flag, block)
-        bit_flag ||= Xot::BitFlag.new
+      def define_bit_flag (name, bit_flag, flags, block)
+        bit_flag ||= Xot::BitFlag.new **flags
         Xot::BlockUtil.instance_eval_or_block_call bit_flag, &block if block
 
         define_singleton_method "#{name}_flag".intern do
