@@ -1207,9 +1207,9 @@ Init_view ()
 	cView.define_method("on_wheel", on_wheel);
 	cView.define_method("on_capture", on_capture);
 	cView.define_method("on_timer", on_timer);
-	cView.define_method("on_contact",       on_contact);
-	cView.define_method("on_contact_begin", on_contact_begin);
-	cView.define_method("on_contact_end",   on_contact_end);
+	cView.define_private_method("call_contact!",       on_contact);
+	cView.define_private_method("call_contact_begin!", on_contact_begin);
+	cView.define_private_method("call_contact_end!",   on_contact_end);
 
 	cView.define_const("CAPTURE_NONE",    Reflex::View::CAPTURE_NONE);
 	cView.define_const("CAPTURE_KEY",     Reflex::View::CAPTURE_KEY);

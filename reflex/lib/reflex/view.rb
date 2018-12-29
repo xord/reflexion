@@ -64,6 +64,10 @@ module Reflex
       timer
     end
 
+    def delay (seconds = 0, &block)
+      timeout seconds, &block
+    end
+
     def interval (seconds = 0, &block)
       timeout seconds, count: -1, &block
     end
@@ -117,6 +121,32 @@ module Reflex
     def capturing? (*args)
       cap = capture
       args.all? {|type| cap.include? type}
+    end
+
+    def on_contact! (*args)
+      call_contact! *args
+      delay do# to avoid physics world lock
+        on_contact *args
+      end
+    end
+
+    def on_contact_begin! (*args)
+      call_contact_begin! *args
+      delay {on_contact_begin *args}
+    end
+
+    def on_contact_end! (*args)
+      call_contact_end! *args
+      delay {on_contact_end *args}
+    end
+
+    def on_contact (e)
+    end
+
+    def on_contact_begin (e)
+    end
+
+    def on_contact_end (e)
     end
 
     universal_accessor :shape, :name, :selector, :frame, :angle, :zoom, :capture,

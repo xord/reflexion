@@ -7,7 +7,7 @@ require 'reflex/ext'
 module Reflex
 
 
-  class UpdateEvent
+  class UpdateEvent < Event
 
     def inspect ()
       "#<Reflex::UpdateEvent dt:#{dt}>"

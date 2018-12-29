@@ -9,7 +9,7 @@ require 'reflex/ext'
 module Reflex
 
 
-  class PointerEvent
+  class PointerEvent < Event
 
     alias pos position
 

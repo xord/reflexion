@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 
+require 'reflex/ext'
 require 'reflex/view'
 
 
 module Reflex
 
 
-  class CaptureEvent
+  class CaptureEvent < Event
 
     def begin ()
       View.capture_flag.bits2symbols get_begin

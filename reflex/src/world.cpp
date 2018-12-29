@@ -161,7 +161,7 @@ namespace Reflex
 		if (dt <= 0) return;
 
 		int count = (int) (duration / DELTA_TIME);
-		if (count <= 0) count = 0;
+		if (count < 1) count = 1;
 
 		for (int i = 0; i < count; ++i)
 			self->b2world.Step(dt, 8, 4);

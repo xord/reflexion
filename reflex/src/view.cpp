@@ -34,27 +34,21 @@ namespace Reflex
 		enum Flag
 		{
 
-			ACTIVE               = Xot::bit(1, FLAG_LAST),
+			REDRAW               = Xot::bit(1, FLAG_LAST),
 
-			REDRAW               = Xot::bit(2, FLAG_LAST),
+			APPLY_STYLE          = Xot::bit(2, FLAG_LAST),
 
-			APPLY_STYLE          = Xot::bit(3, FLAG_LAST),
+			UPDATE_STYLE         = Xot::bit(3, FLAG_LAST),
 
-			UPDATE_STYLE         = Xot::bit(4, FLAG_LAST),
+			UPDATE_SHAPES        = Xot::bit(4, FLAG_LAST),
 
-			UPDATE_SHAPES        = Xot::bit(5, FLAG_LAST),
+			UPDATE_LAYOUT        = Xot::bit(5, FLAG_LAST),
 
-			UPDATE_LAYOUT        = Xot::bit(6, FLAG_LAST),
+			FIT_TO_CONTENT       = Xot::bit(6, FLAG_LAST),
 
-			UPDATING_WORLD       = Xot::bit(7, FLAG_LAST),
+			HAS_VARIABLE_LENGTHS = Xot::bit(7, FLAG_LAST),
 
-			FIT_TO_CONTENT       = Xot::bit(8, FLAG_LAST),
-
-			REMOVE_SELF          = Xot::bit(9, FLAG_LAST),
-
-			HAS_VARIABLE_LENGTHS = Xot::bit(10, FLAG_LAST),
-
-			NO_SHAPE             = Xot::bit(11, FLAG_LAST),
+			NO_SHAPE             = Xot::bit(8, FLAG_LAST),
 
 		};// Flag
 
@@ -718,7 +712,7 @@ namespace Reflex
 	bool
 	View_is_active (const View& view)
 	{
-		return view.self->has_flag(View::Data::ACTIVE);
+		return view.self->window;
 	}
 
 	static void
@@ -771,19 +765,6 @@ namespace Reflex
 		}
 	}
 
-	static bool
-	remove_self (View* view)
-	{
-		assert(view);
-		View::Data* self = view->self.get();
-
-		if (!self->parent)
-			return false;
-
-		self->parent->remove_child(view);
-		return true;
-	}
-
 	static void
 	fire_timers (View* view, double now)
 	{
@@ -816,9 +797,7 @@ namespace Reflex
 		World* child_world = self->pchild_world.get();
 		if (!child_world) return;
 
-		self->add_flag(View::Data::UPDATING_WORLD);
 		child_world->on_update(dt);
-		self->remove_flag(View::Data::UPDATING_WORLD);
 
 		View::ChildList* pchildren = self->pchildren.get();
 		if (pchildren)
@@ -958,12 +937,6 @@ namespace Reflex
 			argument_error(__FILE__, __LINE__);
 
 		View::Data* self = view->self.get();
-
-		if (self->check_and_remove_flag(View::Data::REMOVE_SELF))
-		{
-			if (remove_self(view))
-				return;
-		}
 
 		fire_timers(view, event.now);
 

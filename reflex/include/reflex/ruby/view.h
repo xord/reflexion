@@ -230,7 +230,7 @@ namespace Reflex
 
 			virtual void on_contact (ContactEvent* e)
 			{
-				RUCY_SYM(on_contact);
+				RUCY_SYM_B(on_contact);
 				if (this->is_overridable())
 					this->value.call(on_contact, Rucy::value(e));
 				else
@@ -239,7 +239,7 @@ namespace Reflex
 
 			virtual void on_contact_begin (ContactEvent* e)
 			{
-				RUCY_SYM(on_contact_begin);
+				RUCY_SYM_B(on_contact_begin);
 				if (this->is_overridable())
 					this->value.call(on_contact_begin, Rucy::value(e));
 				else
@@ -248,7 +248,7 @@ namespace Reflex
 
 			virtual void on_contact_end (ContactEvent* e)
 			{
-				RUCY_SYM(on_contact_end);
+				RUCY_SYM_B(on_contact_end);
 				if (this->is_overridable())
 					this->value.call(on_contact_end, Rucy::value(e));
 				else

@@ -8,7 +8,7 @@ require 'reflex/ext'
 module Reflex
 
 
-  class FocusEvent
+  class FocusEvent < Event
 
     alias get_type type
 

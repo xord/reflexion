@@ -8,7 +8,7 @@ require 'reflex/ext'
 module Reflex
 
 
-  class KeyEvent
+  class KeyEvent < Event
 
     alias get_type type
 

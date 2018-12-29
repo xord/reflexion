@@ -16,9 +16,6 @@ $left     =
 $right    = false
 
 class View
-  def remove_self ()
-    parent.remove self if parent
-  end
   alias center_noangle center
   def center
     p, c, a = pos, center_noangle, angle

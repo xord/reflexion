@@ -8,7 +8,7 @@ require 'reflex/ext'
 module Reflex
 
 
-  class DrawEvent
+  class DrawEvent < Event
 
     def paint (&block)
       Xot::BlockUtil.instance_eval_or_block_call painter, &block if block

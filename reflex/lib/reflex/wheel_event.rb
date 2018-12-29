@@ -7,7 +7,7 @@ require 'reflex/ext'
 module Reflex
 
 
-  class WheelEvent
+  class WheelEvent < Event
 
     def position ()
       Point.new x, y, z

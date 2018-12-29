@@ -10,7 +10,16 @@ module Reflex
 
   class EllipseShape < Shape
 
-    universal_accessor :angle_from, :angle_to, :hole_size, :nsegment
+    def angle= (range)
+      angle_from range.min
+      angle_to   range.max
+    end
+
+    def angle ()
+      angle_from..angle_to
+    end
+
+    universal_accessor :angle_from, :angle_to, :angle, :hole_size, :nsegment
 
   end# EllipseShape
 

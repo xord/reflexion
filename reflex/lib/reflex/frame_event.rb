@@ -7,7 +7,7 @@ require 'reflex/ext'
 module Reflex
 
 
-  class FrameEvent
+  class FrameEvent < Event
 
     alias dw   dwidth
     alias dh   dheight

@@ -8,7 +8,7 @@ require 'reflex/ext'
 module Reflex
 
 
-  class ContactEvent
+  class ContactEvent < Event
 
     alias get_type type
 

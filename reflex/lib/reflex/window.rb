@@ -21,7 +21,7 @@ module Reflex
     extend Forwardable
 
     def_delegators :root,
-      :timeout, :interval,
+      :timeout, :delay, :interval,
       :add_child,     :add,
       :remove_child,  :remove,
       :find_child,    :find, :find_children,

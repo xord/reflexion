@@ -21,12 +21,12 @@ setup do
   5.times do |y|
     10.times do |x|
       shape = add_shape frame: [(x + 1) * 50, (y + 1) * 20, 30, 10], color: [:white, :red, :green, :blue, :yellow][y]
-      shape.on(:contact) {$hit.play; shape.parent.remove shape}
+      shape.on(:contact) {$hit.play; shape.remove_self}
     end
   end
   $bar   = add_shape frame: [0, 350, 100, 20], color: :blue
   bottom = add_shape frame: [0, window.h - 1, window.w, 1]
-  bottom.on(:contact) {|e| $bang.play; e.view.parent.remove e.view}
+  bottom.on(:contact) {|e| $bang.play; e.view.remove_self}
 end
 
 pointer do |e|

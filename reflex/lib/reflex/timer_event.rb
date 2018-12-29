@@ -8,7 +8,7 @@ require 'reflex/ext'
 module Reflex
 
 
-  class TimerEvent
+  class TimerEvent < Event
 
     extend Forwardable
 
