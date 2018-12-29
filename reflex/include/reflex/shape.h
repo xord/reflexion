@@ -69,10 +69,6 @@ namespace Reflex
 
 			virtual uint     collision_mask () const;
 
-			virtual void on_attach (Event* e);
-
-			virtual void on_detach (Event* e);
-
 			virtual void on_draw   (DrawEvent* e);
 
 			virtual void on_resize (FrameEvent* e);

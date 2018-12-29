@@ -585,18 +585,6 @@ namespace Reflex
 	}
 
 	void
-	Shape::on_attach (Event* e)
-	{
-		assert(owner());
-	}
-
-	void
-	Shape::on_detach (Event* e)
-	{
-		assert(!owner());
-	}
-
-	void
 	Shape::on_draw (DrawEvent* e)
 	{
 		assert(e && e->painter);

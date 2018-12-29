@@ -1750,19 +1750,6 @@ namespace Reflex
 		return self->pstyles->end();
 	}
 
-	static void
-	set_shape_owner (Shape* shape, View* owner)
-	{
-		if (!shape || !Shape_set_owner(shape, owner))
-			return;
-
-		Event e;
-		if (owner)
-			shape->on_attach(&e);
-		else
-			shape->on_detach(&e);
-	}
-
 	void
 	View::set_shape (Shape* shape)
 	{
@@ -1774,9 +1761,9 @@ namespace Reflex
 		Shape::Ref& pshape = self->pshape;
 		if (shape == pshape.get()) return;
 
-		set_shape_owner(pshape.get(), NULL);
+		if (pshape) Shape_set_owner(pshape, NULL);
 		pshape.reset(shape);
-		set_shape_owner(pshape.get(), this);
+		if (pshape) Shape_set_owner(pshape, this);
 	}
 
 	Shape*
@@ -1799,7 +1786,7 @@ namespace Reflex
 	{
 		if (!shape) return;
 
-		set_shape_owner(shape, this);
+		Shape_set_owner(shape, this);
 		self->shapes().push_back(shape);
 	}
 
@@ -1813,7 +1800,7 @@ namespace Reflex
 		auto it  = std::find(shape_begin(), end, shape);
 		if (it == end) return;
 
-		set_shape_owner(it->get(), NULL);
+		Shape_set_owner(it->get(), NULL);
 
 		self->pshapes->erase(it);
 		if (self->pshapes->empty())
