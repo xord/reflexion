@@ -10,10 +10,14 @@
 
 
 class b2Fixture;
+class b2Shape;
 
 
 namespace Reflex
 {
+
+
+	class Body;
 
 
 	class Fixture : public Xot::NonCopyable
@@ -21,7 +25,7 @@ namespace Reflex
 
 		public:
 
-			Fixture (b2Fixture* b2fixture);
+			Fixture (Body* body, const b2Shape* b2shape, void* userdata = NULL);
 
 			~Fixture ();
 

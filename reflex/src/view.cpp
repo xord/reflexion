@@ -184,9 +184,9 @@ namespace Reflex
 		{
 			if (!pbody)
 			{
-				World* w = parent_world();
-				Body* b  = w
-					? w->create_body(frame.position(), angle)
+				World* world = parent_world();
+				Body* b      = world
+					? new Body(world, frame.position(), angle)
 					: Body_create_temporary();
 				assert(b);
 
@@ -2319,6 +2319,13 @@ namespace Reflex
 		return b ? b->gravity_scale() : 1;
 	}
 
+	void
+	View::update_physics (float duration)
+	{
+		World* w = self->pchild_world.get();
+		if (w) w->update(duration);
+	}
+
 	float
 	View::meter2pixel (float meter, bool create_world)
 	{
@@ -2367,6 +2374,19 @@ namespace Reflex
 	{
 		World* w = self->pchild_world.get();
 		return w ? w->gravity() : 0;
+	}
+
+	void
+	View::set_time_scale (float scale)
+	{
+		self->child_world(this)->set_time_scale(scale);
+	}
+
+	float
+	View::time_scale () const
+	{
+		World* w = self->pchild_world.get();
+		return w ? w->time_scale() : 1;
 	}
 
 	View*

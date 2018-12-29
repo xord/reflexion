@@ -125,6 +125,7 @@ RUCY_DEF0(update_layout)
 {
 	CHECK;
 	THIS->update_layout();
+	return self;
 }
 RUCY_END
 
@@ -728,13 +729,25 @@ RUCY_DEF0(get_gravity_scale)
 RUCY_END
 
 static
+RUCY_DEFN(update_physics)
+{
+	CHECK;
+	check_arg_count(__FILE__, __LINE__, "View#update_physics", argc, 0, 1);
+
+	float duration = argc >= 1 ? to<float>(argv[0]) : 0;
+	THIS->update_physics(duration);
+	return self;
+}
+RUCY_END
+
+static
 RUCY_DEFN(meter2pixel)
 {
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "View#meter2pixel", argc, 0, 1, 2);
 
-	float meter       = argc >= 1 ? argv[0].as_f(true) : 1;
-	bool create_world = argc >= 2 ? (bool) argv[1]     : true;
+	float meter       = argc >= 1 ? to<float>(argv[0]) : 1;
+	bool create_world = argc >= 2 ? to<bool> (argv[1]) : true;
 	return value(THIS->meter2pixel(meter, create_world));
 }
 RUCY_END
@@ -753,6 +766,23 @@ RUCY_DEF0(get_gravity)
 {
 	CHECK;
 	return value(THIS->gravity());
+}
+RUCY_END
+
+static
+RUCY_DEF1(set_time_scale, scale)
+{
+	CHECK;
+	THIS->set_time_scale(to<float>(scale));
+	return scale;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_time_scale)
+{
+	CHECK;
+	return value(THIS->time_scale());
 }
 RUCY_END
 
@@ -1069,9 +1099,12 @@ Init_view ()
 	cView.define_method("gravity_scale=", set_gravity_scale);
 	cView.define_method("gravity_scale",  get_gravity_scale);
 
+	cView.define_method("update_physics", update_physics);
 	cView.define_method("meter2pixel", meter2pixel);
 	cView.define_method("gravity=", set_gravity);
 	cView.define_method("gravity",  get_gravity);
+	cView.define_method("time_scale=", set_time_scale);
+	cView.define_method("time_scale",  get_time_scale);
 	cView.define_method("wall", wall);
 	cView.define_method("debug=", set_debug);
 	cView.define_method("debug",   is_debugging);

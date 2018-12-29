@@ -51,28 +51,34 @@ namespace Reflex
 	}
 
 
-	Body::Body (b2Body* b2body, float pixels_per_meter)
+	Body::Body (World* world, const Point& position, float angle)
 	{
-		assert(b2body && pixels_per_meter > 0);
+		assert(world);
+
+		b2World* b2world = World_get_b2ptr(world);
+		float ppm        = world->meter2pixel();
+		assert(b2world && ppm > 0);
+
+		if (b2world->IsLocked())
+			invalid_state_error(__FILE__, __LINE__);
+
+		b2BodyDef def;
+		def.position = to_b2vec2(position, ppm);
+		def.angle    = Xot::deg2rad(angle);
+
+		b2Body* b2body = b2world->CreateBody(&def);
+		if (!b2body)
+			physics_error(__FILE__, __LINE__);
 
 		self->b2body = b2body;
-		self->ppm    = pixels_per_meter;
+		self->ppm    = ppm;
 	}
 
 	Body::~Body ()
 	{
-		remove_self();
-	}
-
-	void
-	Body::remove_self ()
-	{
 		validate(this, true);
 
 		self->b2body->GetWorld()->DestroyBody(self->b2body);
-
-		self->b2body = NULL;
-		self->ppm    = 0;
 	}
 
 	void
@@ -273,7 +279,7 @@ namespace Reflex
 	Body*
 	Body_create_temporary ()
 	{
-		return World_get_temporary()->create_body();
+		return new Body(World_get_temporary());
 	}
 
 	bool

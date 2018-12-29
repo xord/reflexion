@@ -39,6 +39,7 @@ module Reflex
       :background_stroke=, :background_stroke,
       :image=,             :image,
       :gravity=,           :gravity,
+      :time_scale=,        :time_scale,
       :debug=,             :debug, :debug?
 
     def_delegators :wall,

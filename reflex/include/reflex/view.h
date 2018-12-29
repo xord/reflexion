@@ -305,6 +305,8 @@ namespace Reflex
 			//
 			// for physics child world
 			//
+			virtual void update_physics (float duration = 0);
+
 			virtual float meter2pixel (float meter = 1, bool create_world = true);
 
 			virtual float meter2pixel (float meter = 1) const;
@@ -314,6 +316,10 @@ namespace Reflex
 			virtual void set_gravity (const Point& vector);
 
 			virtual Point    gravity () const;
+
+			virtual void set_time_scale (float scale);
+
+			virtual float    time_scale () const;
 
 			virtual       View* wall ();
 

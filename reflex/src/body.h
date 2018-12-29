@@ -17,16 +17,17 @@ namespace Reflex
 {
 
 
+	class World;
+
+
 	class Body : public Xot::NonCopyable
 	{
 
 		public:
 
-			Body (b2Body* b2body, float pixels_per_meter);
+			Body (World* world, const Point& position = 0, float angle = 0);
 
 			~Body ();
-
-			void remove_self ();
 
 			void apply_force (coord x, coord y);
 

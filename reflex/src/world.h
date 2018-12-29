@@ -38,13 +38,17 @@ namespace Reflex
 
 			virtual ~World ();
 
-			Body* create_body (const Point& position = 0, float angle = 0);
+			void update (float duration = 0);
 
 			float meter2pixel (float meter = 1) const;
 
 			void set_gravity (const Point& gravity);
 
 			Point    gravity () const;
+
+			void set_time_scale (float scale);
+
+			float    time_scale () const;
 
 			void set_debug (bool state = true);
 

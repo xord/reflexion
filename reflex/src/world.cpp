@@ -6,16 +6,19 @@
 #include <Box2D/Common/b2Draw.h>
 #include <Box2D/Dynamics/b2World.h>
 #include <Box2D/Dynamics/Contacts/b2Contact.h>
-#include <xot/util.h>
 #include "reflex/event.h"
 #include "reflex/exception.h"
 #include "shape.h"
 #include "view.h"
 #include "body.h"
+#include "fixture.h"
 
 
 namespace Reflex
 {
+
+
+	static constexpr double DELTA_TIME = 1. / 60.;
 
 
 	class DebugDraw : public b2Draw
@@ -125,12 +128,12 @@ namespace Reflex
 
 		b2World b2world;
 
-		float ppm, carried_time;
+		float ppm, time_scale;
 
 		std::unique_ptr<DebugDraw> debug_draw;
 
 		Data ()
-		:	b2world(b2Vec2(0, 0)), ppm(0), carried_time(0)
+		:	b2world(b2Vec2(0, 0)), ppm(0), time_scale(1)
 		{
 		}
 
@@ -151,21 +154,17 @@ namespace Reflex
 		self->b2world.SetContactListener(NULL);
 	}
 
-	Body*
-	World::create_body (const Point& position, float angle)
+	void
+	World::update (float duration)
 	{
-		if (self->b2world.IsLocked())
-			invalid_state_error(__FILE__, __LINE__);
+		float dt = DELTA_TIME * self->time_scale;
+		if (dt <= 0) return;
 
-		b2BodyDef def;
-		def.position = to_b2vec2(position, self->ppm);
-		def.angle    = Xot::deg2rad(angle);
+		int count = (int) (duration / DELTA_TIME);
+		if (count <= 0) count = 0;
 
-		b2Body* b2body = self->b2world.CreateBody(&def);
-		if (!b2body)
-			physics_error(__FILE__, __LINE__);
-
-		return new Body(b2body, self->ppm);
+		for (int i = 0; i < count; ++i)
+			self->b2world.Step(dt, 8, 4);
 	}
 
 	float
@@ -188,6 +187,18 @@ namespace Reflex
 	World::gravity () const
 	{
 		return to_point(self->b2world.GetGravity(), self->ppm);
+	}
+
+	void
+	World::set_time_scale (float scale)
+	{
+		self->time_scale = scale;
+	}
+
+	float
+	World::time_scale () const
+	{
+		return self->time_scale;
 	}
 
 	void
@@ -215,21 +226,7 @@ namespace Reflex
 	void
 	World::on_update (float dt)
 	{
-		static const double DT     = 1. / 60.;
-		static const int COUNT_MAX = 8;
-
-		dt                += self->carried_time;
-		self->carried_time = fmod(dt, DT);
-
-		int count = (int) (dt / DT);
-		if (count > COUNT_MAX)
-		{
-			count              = COUNT_MAX;
-			self->carried_time = 0;
-		}
-
-		for (int i = 0; i < count; ++i)
-			self->b2world.Step(DT, 8, 4);
+		update(DELTA_TIME);
 	}
 
 	void

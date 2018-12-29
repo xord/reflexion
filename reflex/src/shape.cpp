@@ -42,16 +42,7 @@ namespace Reflex
 				if (!body)
 					invalid_state_error(__FILE__, __LINE__);
 
-				b2Body* b2body = Body_get_b2ptr(body);
-				if (!b2body)
-					invalid_state_error(__FILE__, __LINE__);
-
-				b2Fixture* b2fix = b2body->CreateFixture(b2shape, 0);
-				if (!b2fix)
-					invalid_state_error(__FILE__, __LINE__);
-
-				b2fix->SetUserData(shape);
-				append(new Fixture(b2fix));
+				append(new Fixture(body, b2shape, shape));
 			}
 
 			Fixture* fixtures () const

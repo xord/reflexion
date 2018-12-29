@@ -137,7 +137,7 @@ module Reflex
       :static, :dynamic, :density, :friction, :restitution,
       :sensor, :category, :collision,
       :linear_velocity, :angular_velocity, :gravity_scale,
-      :gravity, :debug
+      :gravity, :time_scale, :debug
 
     def self.has_model ()
       include ModelView

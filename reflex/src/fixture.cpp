@@ -15,27 +15,26 @@ namespace Reflex
 {
 
 
-	Fixture::Fixture (b2Fixture* b2fixture)
-	:	b2fixture(b2fixture)
+	Fixture::Fixture (Body* body, const b2Shape* b2shape, void* userdata)
+	:	b2fixture(NULL)
 	{
-		assert(b2fixture);
+		assert(body);
+
+		b2Body* b2body = Body_get_b2ptr(body);
+		assert(b2body);
+
+		b2fixture = b2body->CreateFixture(b2shape, 0);
+		if (!b2fixture)
+			system_error(__FILE__, __LINE__);
+
+		b2fixture->SetUserData(userdata);
 	}
 
 	Fixture::~Fixture ()
 	{
+		b2fixture->SetUserData(NULL);
 		b2fixture->GetBody()->DestroyFixture(b2fixture);
 	}
-
-#if 0
-	void
-	Fixture::remove_self ()
-	{
-		validate();
-
-		b2fixture->GetBody()->DestroyFixture(b2fixture);
-		b2fixture = NULL;
-	}
-#endif
 
 	void
 	Fixture::set_density (float density)
@@ -218,21 +217,10 @@ namespace Reflex
 		if (!body)
 			invalid_state_error(__FILE__, __LINE__);
 
-		b2Body* b2body = Body_get_b2ptr(body);
-		if (!b2body)
-			invalid_state_error(__FILE__, __LINE__);
+		b2CircleShape b2shape;
+		b2shape.m_radius = 1;
 
-		b2CircleShape shape;
-		shape.m_radius = 1;
-
-		b2FixtureDef def;
-		def.shape = &shape;
-
-		b2Fixture* b2fix = b2body->CreateFixture(&def);
-		if (!b2fix)
-			system_error(__FILE__, __LINE__);
-
-		return new Fixture(b2fix);
+		return new Fixture(body, &b2shape);
 	}
 
 	bool
