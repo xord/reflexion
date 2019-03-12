@@ -7,6 +7,8 @@ require 'xot/bit_flag_accessor'
 require 'xot/universal_accessor'
 require 'xot/block_util'
 require 'reflex/ext'
+require 'reflex/selector'
+require 'reflex/style'
 require 'reflex/model_view'
 require 'reflex/helper'
 
@@ -64,12 +66,12 @@ module Reflex
       timer
     end
 
-    def delay (seconds = 0, &block)
-      timeout seconds, &block
-    end
-
     def interval (seconds = 0, &block)
       timeout seconds, count: -1, &block
+    end
+
+    def delay (seconds = 0, &block)
+      timeout seconds, &block
     end
 
     def remove_self ()
@@ -123,23 +125,6 @@ module Reflex
       args.all? {|type| cap.include? type}
     end
 
-    def on_contact! (*args)
-      call_contact! *args
-      delay do# to avoid physics world lock
-        on_contact *args
-      end
-    end
-
-    def on_contact_begin! (*args)
-      call_contact_begin! *args
-      delay {on_contact_begin *args}
-    end
-
-    def on_contact_end! (*args)
-      call_contact_end! *args
-      delay {on_contact_end *args}
-    end
-
     def on_contact (e)
     end
 
@@ -181,6 +166,23 @@ module Reflex
       def parent_categories ()
         raise InvalidStateError unless parent
         parent.categories
+      end
+
+    private
+
+      def on_contact! (*args)
+        call_contact! *args
+        delay {on_contact *args}# delay to avoid physics world lock
+      end
+
+      def on_contact_begin! (*args)
+        call_contact_begin! *args
+        delay {on_contact_begin *args}
+      end
+
+      def on_contact_end! (*args)
+        call_contact_end! *args
+        delay {on_contact_end *args}
       end
 
   end# View

@@ -101,6 +101,46 @@ RUCY_DEF0(dsize)
 }
 RUCY_END
 
+static
+RUCY_DEF0(angle)
+{
+	CHECK;
+	return value(THIS->angle);
+}
+RUCY_END
+
+static
+RUCY_DEF0(dangle)
+{
+	CHECK;
+	return value(THIS->dangle);
+}
+RUCY_END
+
+static
+RUCY_DEF0(is_move)
+{
+	CHECK;
+	return value(THIS->is_move());
+}
+RUCY_END
+
+static
+RUCY_DEF0(is_resize)
+{
+	CHECK;
+	return value(THIS->is_resize());
+}
+RUCY_END
+
+static
+RUCY_DEF0(is_rotate)
+{
+	CHECK;
+	return value(THIS->is_rotate());
+}
+RUCY_END
+
 
 static Class cFrameEvent;
 
@@ -120,6 +160,11 @@ Init_frame_event ()
 	cFrameEvent.define_method("dheight", dheight);
 	cFrameEvent.define_method("dposition", dposition);
 	cFrameEvent.define_method("dsize",     dsize);
+	cFrameEvent.define_method( "angle",  angle);
+	cFrameEvent.define_method("dangle", dangle);
+	cFrameEvent.define_method("move?",   is_move);
+	cFrameEvent.define_method("resize?", is_resize);
+	cFrameEvent.define_method("rotate?", is_rotate);
 }
 
 

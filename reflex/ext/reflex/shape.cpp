@@ -209,9 +209,9 @@ Init_shape ()
 	cShape.define_method("collision_mask=", set_collision_mask);
 	cShape.define_method("collision_mask",  get_collision_mask);
 	cShape.define_method("on_draw",          on_draw);
-	cShape.define_method("on_contact",       on_contact);
-	cShape.define_method("on_contact_begin", on_contact_begin);
-	cShape.define_method("on_contact_end",   on_contact_end);
+	cShape.define_private_method("call_contact!",       on_contact);
+	cShape.define_private_method("call_contact_begin!", on_contact_begin);
+	cShape.define_private_method("call_contact_end!",   on_contact_end);
 
 	define_selector_methods<Reflex::Shape>(cShape);
 }

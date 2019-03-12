@@ -15,6 +15,9 @@ module Reflex
 
     attr_accessor :font
 
+    alias text= data=
+    alias text  data
+
     def content_bounds ()
       s = string
       return 0, 0 unless s && window
