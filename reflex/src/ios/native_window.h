@@ -1,6 +1,6 @@
 // -*- objc -*-
 #import <UIKit/UIWindow.h>
-#include <reflex/window.h>
+#include "window.h"
 
 
 @class OpenGLViewController;
@@ -8,7 +8,7 @@
 
 @interface NativeWindow : UIWindow
 
-	- (void) bind: (Reflex::Window*) instance;
+	- (void) bind: (Reflex::Window*) window;
 
 	- (void) update;
 

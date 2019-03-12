@@ -42,7 +42,7 @@ namespace Reflex
 	static CreateTimerFun create_timer_fun = NULL;
 
 	void
-	Timer_set_create_fun (CreateTimerFun fun)
+	set_create_timer_fun (CreateTimerFun fun)
 	{
 		create_timer_fun = fun;
 	}

@@ -5,11 +5,9 @@
 #include <assert.h>
 #import <Cocoa/Cocoa.h>
 #include "rays/bounds.h"
-#include "reflex/window.h"
 #include "reflex/exception.h"
 #include "../view.h"
 #include "event.h"
-#include "window_data.h"
 #import "opengl_view.h"
 
 
@@ -24,7 +22,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 @implementation NativeWindow
 
 	{
-		Reflex::Window *pinstance, *ptr_for_rebind;
+		Reflex::Window *pwindow, *ptr_for_rebind;
 		OpenGLView* view;
 		NSTimer* timer;
 	}
@@ -38,9 +36,9 @@ static const NSUInteger WINDOW_STYLE_MASK =
 			defer: NO];
 		if (!self) return nil;
 
-		pinstance = ptr_for_rebind = NULL;
-		view      = nil;
-		timer     = nil;
+		pwindow = ptr_for_rebind = NULL;
+		view    = nil;
+		timer   = nil;
 
 		[self setDelegate: self];
 		[self setupContentView];
@@ -51,61 +49,66 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) dealloc
 	{
-		assert(!pinstance);
+		assert(!pwindow);
 
 		if (view) [view release];
 
 		[super dealloc];
 	}
 
-	- (void) bind: (Reflex::Window*) instance
+	- (void) bind: (Reflex::Window*) window
 	{
-		if (!instance)
+		if (!window)
 			Reflex::argument_error(__FILE__, __LINE__);
 
-		if (instance && instance->self->native)
+		Reflex::WindowData& data = Window_get_data(window);
+		if (data.native)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		instance->self->native = [self retain];
+		data.native = [self retain];
 
 		// Reflex::Window is not constructed completely,
 		// so can not call ClassWrapper::retain().
-		instance->Xot::template RefCountable<>::retain();
+		window->Xot::template RefCountable<>::retain();
 
 		// defer calling ClassWrapper::retain() to rebind.
-		ptr_for_rebind = instance;
+		ptr_for_rebind = window;
 	}
 
 	- (void) rebind
 	{
-		if (!pinstance && ptr_for_rebind)
+		if (!pwindow && ptr_for_rebind)
 		{
-			pinstance = ptr_for_rebind;
-			pinstance->retain();
+			pwindow = ptr_for_rebind;
+			pwindow->retain();
 
 			ptr_for_rebind->Xot::template RefCountable<>::release();
 			ptr_for_rebind = NULL;
 		}
 
-		assert(pinstance && !ptr_for_rebind);
+		assert(pwindow && !ptr_for_rebind);
 	}
 
 	- (void) unbind
 	{
 		[self rebind];
-		if (!pinstance) return;
+		if (!pwindow) return;
 
-		if (pinstance->self->native) [pinstance->self->native release];
-		pinstance->self->native = nil;
+		Reflex::WindowData& data = Window_get_data(pwindow);
+		if (data.native)
+		{
+			[data.native release];
+			data.native = nil;
+		}
 
-		pinstance->release();
-		pinstance = NULL;
+		pwindow->release();
+		pwindow = NULL;
 	}
 
-	- (Reflex::Window*) instance
+	- (Reflex::Window*) window
 	{
 		[self rebind];
-		return pinstance;
+		return pwindow;
 	}
 
 	- (void) setupContentView
@@ -146,63 +149,63 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) update: (NSTimer*) t
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
 		double now = Xot::time();
-		Reflex::UpdateEvent e(now, now - ptr->self->prev_time_update);
-		ptr->self->prev_time_update = now;
+		Reflex::UpdateEvent e(now, now - win->self->prev_time_update);
+		win->self->prev_time_update = now;
 
-		ptr->on_update(&e);
+		win->on_update(&e);
 		if (!e.is_blocked())
-			Reflex::View_update_tree(ptr->root(), e);
+			Reflex::View_update_tree(win->root(), e);
 
-		if (ptr->self->redraw)
+		if (win->self->redraw)
 		{
 			[self display];
-			ptr->self->redraw = false;
+			win->self->redraw = false;
 		}
 	}
 
 	- (void) draw
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
 		double now = Xot::time();
-		double dt  = now - ptr->self->prev_time_draw;
+		double dt  = now - win->self->prev_time_draw;
 		double fps = 1. / dt;
 
-		fps = ptr->self->prev_fps * 0.9 + fps * 0.1;// LPF
+		fps = win->self->prev_fps * 0.9 + fps * 0.1;// LPF
 
-		ptr->self->prev_time_draw = now;
-		ptr->self->prev_fps       = fps;
+		win->self->prev_time_draw = now;
+		win->self->prev_fps       = fps;
 
 		Reflex::DrawEvent e(dt, fps);
 
-		e.painter = ptr->painter();
+		e.painter = win->painter();
 		if (!e.painter)
 			Xot::invalid_state_error(__FILE__, __LINE__);
 
-		Rays::Bounds frame = ptr->frame();
+		Rays::Bounds frame = win->frame();
 		e.bounds.reset(0, 0, frame.width, frame.height);
 
 		e.painter->begin();
 		e.painter->clear();
 
-		ptr->on_draw(&e);
+		win->on_draw(&e);
 		if (!e.is_blocked())
-			Reflex::View_draw_tree(ptr->root(), e, 0, frame.move_to(0));
+			Reflex::View_draw_tree(win->root(), e, 0, frame.move_to(0));
 
 		e.painter->end();
 	}
 
 	- (BOOL) windowShouldClose: (id) sender
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return YES;
+		Reflex::Window* win = [self window];
+		if (!win) return YES;
 
-		ptr->close();
+		win->close();
 		return NO;
 	}
 
@@ -215,10 +218,10 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) windowWillMove: (NSNotification*) notification
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
-		ptr->self->prev_position = ptr->frame().position();
+		win->self->prev_position = win->frame().position();
 	}
 
 	- (void) windowDidMove: (NSNotification*) notification
@@ -228,10 +231,10 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (NSSize) windowWillResize: (NSWindow*) sender toSize: (NSSize) frameSize
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return frameSize;
+		Reflex::Window* win = [self window];
+		if (!win) return frameSize;
 
-		ptr->self->prev_size = ptr->frame().size();
+		win->self->prev_size = win->frame().size();
 
 		return frameSize;
 	}
@@ -243,51 +246,51 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) frameChanged
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
-		Rays::Bounds b           = ptr->frame();
-		Rays::Point dpos         = b.position() - ptr->self->prev_position;
-		Rays::Point dsize        = b.size()     - ptr->self->prev_size;
-		ptr->self->prev_position = b.position();
-		ptr->self->prev_size     = b.size();
+		Rays::Bounds b           = win->frame();
+		Rays::Point dpos         = b.position() - win->self->prev_position;
+		Rays::Point dsize        = b.size()     - win->self->prev_size;
+		win->self->prev_position = b.position();
+		win->self->prev_size     = b.size();
 
 		if (dpos != 0 || dsize != 0)
 		{
 			Reflex::FrameEvent e(b, dpos.x, dpos.y, dsize.x, dsize.y);
-			if (dpos  != 0) ptr->on_move(&e);
+			if (dpos  != 0) win->on_move(&e);
 			if (dsize != 0)
 			{
-				Rays::Bounds b = ptr->frame();
+				Rays::Bounds b = win->frame();
 				b.move_to(0, 0);
 
-				if (ptr->painter())
-					ptr->painter()->canvas(b, self.backingScaleFactor);
+				if (win->painter())
+					win->painter()->canvas(b, self.backingScaleFactor);
 
-				if (ptr->root())
-					View_set_frame(ptr->root(), b);
+				if (win->root())
+					View_set_frame(win->root(), b);
 
-				ptr->on_resize(&e);
+				win->on_resize(&e);
 			}
 		}
 	}
 
 	- (void) keyDown: (NSEvent*) event
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
 		Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::DOWN);
-		ptr->on_key(&e);
+		win->on_key(&e);
 	}
 
 	- (void) keyUp: (NSEvent*) event
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
 		Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::UP);
-		ptr->on_key(&e);
+		win->on_key(&e);
 	}
 
 	- (void) flagsChanged: (NSEvent*) event
@@ -297,47 +300,47 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) mouseDown: (NSEvent*) event
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
 		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::DOWN);
-		ptr->on_pointer(&e);
+		win->on_pointer(&e);
 	}
 
 	- (void) mouseUp: (NSEvent*) event
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
 		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::UP);
-		ptr->on_pointer(&e);
+		win->on_pointer(&e);
 	}
 
 	- (void) mouseDragged: (NSEvent*) event
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
 		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::MOVE);
-		ptr->on_pointer(&e);
+		win->on_pointer(&e);
 	}
 
 	- (void) mouseMoved: (NSEvent*) event
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
 		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::MOVE);
-		ptr->on_pointer(&e);
+		win->on_pointer(&e);
 	}
 
 	- (void) scrollWheel: (NSEvent*) event
 	{
-		Reflex::Window* ptr = [self instance];
-		if (!ptr) return;
+		Reflex::Window* win = [self window];
+		if (!win) return;
 
 		Reflex::NativeWheelEvent e(event, view);
-		ptr->on_wheel(&e);
+		win->on_wheel(&e);
 	}
 
 	+ (NSRect) frameRectForContentRect: (NSRect) contentRect

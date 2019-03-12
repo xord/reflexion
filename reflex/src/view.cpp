@@ -1422,9 +1422,9 @@ namespace Reflex
 		if (!w) return;
 
 		if (state)
-			Window_set_focus(w, this);
+			set_focus(w, this);
 		else if (w->focus() == this)
-			Window_set_focus(w, NULL);
+			set_focus(w, NULL);
 	}
 
 	void
@@ -2050,9 +2050,9 @@ namespace Reflex
 		bool capture    = types != CAPTURE_NONE;
 
 		if (capture && !registered)
-			Window_register_capture(this);
+			register_capture(this);
 		else if (!capture && registered)
-			Window_unregister_capture(this);
+			unregister_capture(this);
 
 		CaptureEvent e(~old & types, old & ~types);
 		on_capture(&e);

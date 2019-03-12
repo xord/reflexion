@@ -23,8 +23,8 @@ static
 RUCY_DEF0(init)
 {
 	Reflex::init();
-	Reflex::Window_set_create_root_view_fun(create_root_view);
-	Reflex::Timer_set_create_fun(create_timer);
+	Reflex::set_create_root_view_fun(create_root_view);
+	Reflex::set_create_timer_fun(create_timer);
 
 	return self;
 }
@@ -33,8 +33,8 @@ RUCY_END
 static
 RUCY_DEF0(fin)
 {
-	Reflex::Window_set_create_root_view_fun(NULL);
-	Reflex::Timer_set_create_fun(NULL);
+	Reflex::set_create_root_view_fun(NULL);
+	Reflex::set_create_timer_fun(NULL);
 	Reflex::fin();
 
 	return self;

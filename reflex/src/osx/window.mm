@@ -1,11 +1,9 @@
 // -*- objc -*-
-#include "../window.h"
+#include "window.h"
 
 
 #import <Cocoa/Cocoa.h>
 #include "reflex/exception.h"
-#include "../view.h"
-#include "window_data.h"
 #import "native_window.h"
 
 
@@ -13,198 +11,95 @@ namespace Reflex
 {
 
 
-	void
-	set_focus (Window* window, View* view)
+	WindowData&
+	Window_get_data (Window* window)
 	{
-		if (!window || !view)
-			argument_error(__FILE__, __LINE__);
-
-		View* current = window->self->focus.get();
-		if (current == view) return;
-
-		window->self->focus.reset(view);
-
-		FocusEvent e(FocusEvent::BLUR, view, current);
-
-		if (current)
-		{
-			current->on_focus(&e);
-			current->redraw();
-		}
-
-		if (view)
-		{
-			e.type = FocusEvent::FOCUS;
-			view->on_focus(&e);
-			view->redraw();
-		}
-	}
-
-	void
-	register_capture (View* view)
-	{
-		if (!view)
-			argument_error(__FILE__, __LINE__);
-
-		const Window* window = view->window();
 		if (!window)
-			invalid_state_error(__FILE__, __LINE__, "this view does not belong to any Window.");
-
-		window->self->capturing_views[view] = true;
-	}
-
-	void
-	unregister_capture (View* view)
-	{
-		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		const Window* window = view->window();
-		if (!window) return;
-
-		CapturingViews::iterator it = window->self->capturing_views.find(view);
-		if (it == window->self->capturing_views.end()) return;
-
-		it->second = false;
+		return (WindowData&) *window->self;
 	}
 
-	void
-	cleanup_capturing_views (Window* window)
+	const WindowData&
+	Window_get_data (const Window* window)
 	{
-		CapturingViews::iterator end = window->self->capturing_views.end();
-		for (CapturingViews::iterator it = window->self->capturing_views.begin(); it != end;)
-		{
-			CapturingViews::iterator t = it++;
-			if (!t->second) window->self->capturing_views.erase(t);
-		}
+		return Window_get_data(const_cast<Window*>(window));
 	}
 
-
-	Window::Window ()
+	static NativeWindow*
+	get_native (const Window* window)
 	{
-		[[[NativeWindow alloc] init] bind: this];
-
-		self->root.reset(Window_create_root_view());
-		self->root->set_name(VIEW_TAG_ROOT);
-		View_set_window(self->root.get(), this);
-
-		self->painter.canvas(0, 0, 1, 1);
-	}
-
-	Window::~Window ()
-	{
-		//close();
-
-		View_set_window(self->root.get(), NULL);
-	}
-
-	void
-	Window::show ()
-	{
-		if (!*this)
+		NativeWindow* p = Window_get_data(const_cast<Window*>(window)).native;
+		if (!p)
 			invalid_state_error(__FILE__, __LINE__);
 
-		int new_count = self->hide_count - 1;
-		if (new_count == 0)
-		{
-			Event e;
-			on_show(&e);
-			if (e.is_blocked()) return;
-
-			[self->native makeKeyAndOrderFront: nil];
-		}
-
-		self->hide_count = new_count;
+		return p;
 	}
 
-	void
-	Window::hide ()
+
+	Window::Data*
+	Window_create_data ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		int new_count = self->hide_count + 1;
-		if (new_count == 1)
-		{
-			Event e;
-			on_hide(&e);
-			if (e.is_blocked()) return;
-
-			[self->native orderOut: self->native];
-		}
-
-		self->hide_count = new_count;
+		return new WindowData();
 	}
 
 	void
-	Window::close ()
+	Window_initialize (Window* window)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		Event e;
-		on_close(&e);
-		if (e.is_blocked()) return;
-
-		[self->native close];
+		[[[NativeWindow alloc] init] bind: window];
 	}
 
 	void
-	Window::redraw ()
+	Window_show (Window* window)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		self->redraw = true;
+		[get_native(window) makeKeyAndOrderFront: nil];
 	}
 
 	void
-	Window::set_title (const char* title)
+	Window_hide (Window* window)
+	{
+		NativeWindow* native = get_native(window);
+		[native orderOut: native];
+	}
+
+	void
+	Window_close (Window* window)
+	{
+		[get_native(window) close];
+	}
+
+	void
+	Window_set_title (Window* window, const char* title)
 	{
 		if (!title)
 			argument_error(__FILE__, __LINE__);
 
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		[self->native setTitle: [NSString stringWithUTF8String: title]];
+		[get_native(window) setTitle: [NSString stringWithUTF8String: title]];
 	}
 
 	const char*
-	Window::title () const
+	Window_get_title (const Window& window)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
+		const WindowData& data = Window_get_data(&window);
 
-		NSString* s = [self->native title];
-		self->title_tmp = s ? [s UTF8String] : "";
-		return self->title_tmp.c_str();
+		NSString* s = [get_native(&window) title];
+		data.title_tmp = s ? [s UTF8String] : "";
+		return data.title_tmp.c_str();
 	}
 
 	void
-	Window::set_frame (coord x, coord y, coord width, coord height)
+	Window_set_frame (Window* window, coord x, coord y, coord width, coord height)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		NSRect frame =
 			[NativeWindow frameRectForContentRect: NSMakeRect(x, y, width, height)];
-		[self->native setFrame: frame display: NO animate: NO];
-	}
-
-	void
-	Window::set_frame (const Bounds& bounds)
-	{
-		set_frame(bounds.x, bounds.y, bounds.width, bounds.height);
+		[get_native(window) setFrame: frame display: NO animate: NO];
 	}
 
 	Bounds
-	Window::frame () const
+	Window_get_frame (const Window& window)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		NSRect rect = [self->native contentRectForFrameRect: [self->native frame]];
+		NativeWindow* native = get_native(&window);
+		NSRect rect = [native contentRectForFrameRect: [native frame]];
 		return Bounds(
 			rect.origin.x,
 			rect.origin.y,
@@ -212,110 +107,10 @@ namespace Reflex
 			rect.size.height);
 	}
 
-	bool
-	Window::hidden () const
+
+	WindowData::WindowData ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		return self->hide_count > 0;
-	}
-
-	View*
-	Window::root ()
-	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		return self->root.get();
-	}
-
-	View*
-	Window::focus ()
-	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		return self->focus.get();
-	}
-
-	Painter*
-	Window::painter ()
-	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
-		return &self->painter;
-	}
-
-	void
-	Window::on_key (KeyEvent* e)
-	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
-
-		switch (e->type)
-		{
-			case KeyEvent::DOWN: on_key_down(e); break;
-			case KeyEvent::UP:   on_key_up(e);   break;
-			case KeyEvent::NONE: break;
-		}
-
-		CapturingViews::iterator end = self->capturing_views.end();
-		for (CapturingViews::iterator it = self->capturing_views.begin(); it != end; ++it)
-		{
-			KeyEvent event = *e;
-			event.capture = true;
-			View_call_key_event(const_cast<View*>(it->first.get()), event);
-		}
-
-		if (self->focus)
-			View_call_key_event(self->focus.get(), *e);
-
-		cleanup_capturing_views(this);
-	}
-
-	void
-	Window::on_pointer (PointerEvent* e)
-	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
-
-		switch (e->type)
-		{
-			case PointerEvent::DOWN: on_pointer_down(e); break;
-			case PointerEvent::UP:   on_pointer_up(e);   break;
-			case PointerEvent::MOVE: on_pointer_move(e); break;
-			case PointerEvent::NONE: break;
-		}
-
-		CapturingViews::iterator end = self->capturing_views.end();
-		for (CapturingViews::iterator it = self->capturing_views.begin(); it != end; ++it)
-		{
-			PointerEvent event = *e;
-			event.capture = true;
-			for (size_t i = 0; i < event.size; ++i)
-				event[i] = it->first.get()->from_window(event[i]);
-			View_call_pointer_event(const_cast<View*>(it->first.get()), event);
-		}
-
-		View_call_pointer_event(root(), *e);
-
-		cleanup_capturing_views(this);
-	}
-
-	void
-	Window::on_wheel (WheelEvent* e)
-	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
-
-		View_call_wheel_event(root(), *e);
-	}
-
-	Window::operator bool () const
-	{
-		return self && *self;
+		native = nil;
 	}
 
 

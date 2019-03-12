@@ -1,11 +1,11 @@
 // -*- objc -*-
 #import <AppKit/NSWindow.h>
-#include <reflex/window.h>
+#include "window.h"
 
 
 @interface NativeWindow : NSWindow <NSWindowDelegate>
 
-	- (void) bind: (Reflex::Window*) instance;
+	- (void) bind: (Reflex::Window*) window;
 
 	- (void) draw;
 
