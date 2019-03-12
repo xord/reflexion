@@ -13,7 +13,8 @@
 @implementation ReflexAppDelegate
 
 	{
-		Reflex::Application *pinstance;
+		Reflex::Application* pinstance;
+		bool started;
 		CMMotionManager* motion_manager;
 	}
 
@@ -22,7 +23,9 @@
 		self = [super init];
 		if (!self) return nil;
 
-		pinstance = NULL;
+		pinstance      = NULL;
+		started        = false;
+		motion_manager = nil;
 
 		return self;
 	}
@@ -61,37 +64,28 @@
 		pinstance = NULL;
 	}
 
-	- (Reflex::Application*) instance
+	- (BOOL) callOnStart
 	{
-		return pinstance;
+		if (!pinstance || started)
+			return YES;
+
+		Reflex::Event e;
+		pinstance->on_start(&e);
+		started = true;
+
+		return !e.is_blocked();
 	}
 
 	- (BOOL) application: (UIApplication*) application
 		didFinishLaunchingWithOptions: (NSDictionary*) options
 	{
-		if (!Reflex::app())
-		{
-			Reflex::invalid_state_error(
-				__FILE__, __LINE__,
-				"no Application instance on application:didFinishLaunchingWithOptions:");
-		}
-
-		[self bind: Reflex::app()];
+		Reflex::Application* app = Reflex::app();
+		if (!pinstance && app)
+			[self bind: app];
 
 		[self startUpdateDeviceMotion];
 
-		Reflex::Application* ptr = [self instance];
-		if (ptr)
-		{
-			Reflex::Event e;
-			ptr->on_start(&e);
-			if (e.is_blocked())
-			{
-				return NO;
-			}
-		}
-
-		return YES;
+		return [self callOnStart];
 	}
 
 	- (void) startUpdateDeviceMotion
@@ -105,12 +99,11 @@
 			startDeviceMotionUpdatesToQueue: NSOperationQueue.currentQueue
 			withHandler: ^(CMDeviceMotion* motion, NSError* error)
 			{
-				Reflex::Application* ptr = pinstance;
-				if (!ptr) return;
+				if (!pinstance) return;
 
 				Reflex::MotionEvent e(
 					Reflex::Point(motion.gravity.x, -motion.gravity.y, motion.gravity.z));
-				ptr->on_motion(&e);
+				pinstance->on_motion(&e);
 			}
 		];
 
@@ -145,11 +138,10 @@
 
 	- (void) applicationWillTerminate: (UIApplication*) application
 	{
-		Reflex::Application* ptr = [self instance];
-		if (ptr)
+		if (pinstance)
 		{
 			Reflex::Event e;
-			ptr->on_quit(&e);
+			pinstance->on_quit(&e);
 			if (e.is_blocked())
 			{
 				Reflex::not_implemented_error(

@@ -18,6 +18,12 @@ namespace Reflex
 
 	View* Window_create_root_view ();
 
+	void Window_set_focus (Window* window, View* view);
+
+	void Window_register_capture   (View* view);
+
+	void Window_unregister_capture (View* view);
+
 
 }// Reflex
 

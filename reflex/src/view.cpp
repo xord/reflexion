@@ -4,11 +4,11 @@
 #include <assert.h>
 #include <memory>
 #include <algorithm>
-#include "reflex/window.h"
 #include "reflex/timer.h"
 #include "reflex/filter.h"
 #include "reflex/exception.h"
 #include "reflex/debug.h"
+#include "window.h"
 #include "selector.h"
 #include "timer.h"
 #include "style.h"
@@ -1421,11 +1421,10 @@ namespace Reflex
 		Window* w = window();
 		if (!w) return;
 
-		void set_focus (Window*, View*);
 		if (state)
-			set_focus(w, this);
+			Window_set_focus(w, this);
 		else if (w->focus() == this)
-			set_focus(w, NULL);
+			Window_set_focus(w, NULL);
 	}
 
 	void
@@ -2051,15 +2050,9 @@ namespace Reflex
 		bool capture    = types != CAPTURE_NONE;
 
 		if (capture && !registered)
-		{
-			void register_capture (View*);
-			register_capture(this);
-		}
+			Window_register_capture(this);
 		else if (!capture && registered)
-		{
-			void unregister_capture (View*);
-			unregister_capture(this);
-		}
+			Window_unregister_capture(this);
 
 		CaptureEvent e(~old & types, old & ~types);
 		on_capture(&e);

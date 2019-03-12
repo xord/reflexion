@@ -49,7 +49,7 @@
 	{
 		[super didReceiveMemoryWarning];
 
-		if ([self isViewLoaded] && self.view.window == nil)
+		if ([self isViewLoaded] && !self.view.window)
 		{
 			self.view = nil;
 			[self teardownOpenGL];

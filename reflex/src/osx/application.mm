@@ -13,9 +13,6 @@ namespace Reflex
 {
 
 
-	bool initialized ();
-
-
 	namespace global
 	{
 
@@ -33,17 +30,8 @@ namespace Reflex
 
 	Application::Application ()
 	{
-		if (!initialized() || !NSApp)
-			reflex_error(__FILE__, __LINE__, "not initialized.");
-
 		if (global::instance)
 			reflex_error(__FILE__, __LINE__, "multiple application instances.");
-
-		ReflexAppDelegate* delegate = (ReflexAppDelegate*) [NSApp delegate];
-		if (!delegate)
-			invalid_state_error(__FILE__, __LINE__);
-
-		[delegate bind: this];
 
 		global::instance = this;
 	}
@@ -53,21 +41,38 @@ namespace Reflex
 		global::instance = NULL;
 	}
 
+	static ReflexAppDelegate*
+	setup_app_delegate (NSApplication* app)
+	{
+		id<NSApplicationDelegate> delegate = [app delegate];
+		if (!delegate)
+		{
+			delegate = [[[ReflexAppDelegate alloc] init] autorelease];
+			[app setDelegate: delegate];
+		}
+
+		if (![delegate isKindOfClass: ReflexAppDelegate.class])
+			reflex_error(__FILE__, __LINE__);
+
+		return (ReflexAppDelegate*) delegate;
+	}
+
 	void
 	Application::start ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
+		NSApplication* app          = [NSApplication sharedApplication];
+		ReflexAppDelegate* delegate = setup_app_delegate(app);
+		[delegate bind: this];
 
-		[NSApp run];
+		if (![app isRunning])
+			[app run];
+		else
+			[delegate callOnStart];
 	}
 
 	void
 	Application::quit ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		[NSApp terminate: nil];
 	}
 
@@ -77,61 +82,44 @@ namespace Reflex
 		if (!name)
 			argument_error(__FILE__, __LINE__);
 
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		self->name = name;
 	}
 
 	const char*
 	Application::name () const
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		return self->name.c_str();
 	}
 
 	void
 	Application::on_start (Event* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 	}
 
 	void
 	Application::on_quit (Event* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 	}
 
 	void
 	Application::on_motion (MotionEvent* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 	}
 
 	void
 	Application::on_preference (Event* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 	}
 
 	void
 	Application::on_about (Event* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		[NSApp orderFrontStandardAboutPanel: nil];
 	}
 
 	Application::operator bool () const
 	{
-		return self && *self;
+		return true;
 	}
 
 	bool

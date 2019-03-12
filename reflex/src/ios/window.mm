@@ -12,8 +12,19 @@ namespace Reflex
 {
 
 
+	static void
+	cleanup_capturing_views (Window* window)
+	{
+		CapturingViews::iterator end = window->self->capturing_views.end();
+		for (CapturingViews::iterator it = window->self->capturing_views.begin(); it != end;)
+		{
+			CapturingViews::iterator t = it++;
+			if (!t->second) window->self->capturing_views.erase(t);
+		}
+	}
+
 	void
-	set_focus (Window* window, View* view)
+	Window_set_focus (Window* window, View* view)
 	{
 		if (!window || !view)
 			argument_error(__FILE__, __LINE__);
@@ -40,7 +51,7 @@ namespace Reflex
 	}
 
 	void
-	register_capture (View* view)
+	Window_register_capture (View* view)
 	{
 		if (!view)
 			argument_error(__FILE__, __LINE__);
@@ -53,7 +64,7 @@ namespace Reflex
 	}
 
 	void
-	unregister_capture (View* view)
+	Window_unregister_capture (View* view)
 	{
 		if (!view)
 			argument_error(__FILE__, __LINE__);
@@ -65,17 +76,6 @@ namespace Reflex
 		if (it == window->self->capturing_views.end()) return;
 
 		it->second = false;
-	}
-
-	void
-	cleanup_capturing_views (Window* window)
-	{
-		CapturingViews::iterator end = window->self->capturing_views.end();
-		for (CapturingViews::iterator it = window->self->capturing_views.begin(); it != end;)
-		{
-			CapturingViews::iterator t = it++;
-			if (!t->second) window->self->capturing_views.erase(t);
-		}
 	}
 
 

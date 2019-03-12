@@ -21,16 +21,6 @@ namespace Reflex
 
 		String name;
 
-		operator bool () const
-		{
-			return delegate;
-		}
-
-		bool operator ! () const
-		{
-			return !operator bool();
-		}
-
 	};// Application::Data
 
 

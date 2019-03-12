@@ -12,7 +12,8 @@
 @implementation ReflexAppDelegate
 
 	{
-		Reflex::Application *pinstance, *ptr_for_rebind;
+		Reflex::Application* pinstance;
+		bool started;
 	}
 
 	- (id) init
@@ -20,7 +21,8 @@
 		self = [super init];
 		if (!self) return nil;
 
-		pinstance = ptr_for_rebind = NULL;
+		pinstance = NULL;
+		started   = false;
 
 		return self;
 	}
@@ -41,32 +43,13 @@
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
 		instance->self->delegate = [self retain];
+		instance->retain();
 
-		// Reflex::Application is not constructed completely,
-		// so can not call ClassWrapper::retain().
-		instance->Xot::template RefCountable<>::retain();
-
-		// defer calling ClassWrapper::retain() to rebind.
-		ptr_for_rebind = instance;
-	}
-
-	- (void) rebind
-	{
-		if (!pinstance && ptr_for_rebind)
-		{
-			pinstance = ptr_for_rebind;
-			pinstance->retain();
-
-			ptr_for_rebind->Xot::template RefCountable<>::release();
-			ptr_for_rebind = NULL;
-		}
-
-		assert(pinstance && !ptr_for_rebind);
+		pinstance = instance;
 	}
 
 	- (void) unbind
 	{
-		[self rebind];
 		if (!pinstance) return;
 
 		if (pinstance->self->delegate) [pinstance->self->delegate release];
@@ -76,38 +59,41 @@
 		pinstance = NULL;
 	}
 
-	- (Reflex::Application*) instance
+	- (BOOL) callOnStart
 	{
-		[self rebind];
-		return pinstance;
+		if (!pinstance || started)
+			return YES;
+
+		Reflex::Event e;
+		pinstance->on_start(&e);
+		started = true;
+
+		if (e.is_blocked()) [self quit];
+		return !e.is_blocked();
 	}
 
 	- (void) quit
 	{
-		Reflex::Application* ptr = [self instance];
-		if (ptr)
-			ptr->quit();
+		if (pinstance)
+			pinstance->quit();
 		else
 			[NSApp terminate: nil];
 	}
 
 	- (void) showPreference
 	{
-		Reflex::Application* ptr = [self instance];
-		if (ptr)
-		{
-			Reflex::Event e;
-			ptr->on_preference(&e);
-		}
+		if (!pinstance) return;
+
+		Reflex::Event e;
+		pinstance->on_preference(&e);
 	}
 
 	- (void) showAbout
 	{
-		Reflex::Application* ptr = [self instance];
-		if (ptr)
+		if (pinstance)
 		{
 			Reflex::Event e;
-			ptr->on_about(&e);
+			pinstance->on_about(&e);
 		}
 		else
 			[NSApp orderFrontStandardAboutPanel: nil];
@@ -118,28 +104,18 @@
 		[NSApp setActivationPolicy: NSApplicationActivationPolicyRegular];
 		[NSApp activateIgnoringOtherApps: YES];
 
-		Reflex::Application* ptr = [self instance];
-		if (ptr)
-		{
-			Reflex::Event e;
-			ptr->on_start(&e);
-			if (e.is_blocked())
-			{
-				[self quit];
-				return;
-			}
-		}
+		if (![self callOnStart])
+			return;
 
 		[self setupMenu];
 	}
 
 	- (NSApplicationTerminateReply) applicationShouldTerminate: (NSApplication*) application
 	{
-		Reflex::Application* ptr = [self instance];
-		if (ptr)
+		if (pinstance)
 		{
 			Reflex::Event e;
-			ptr->on_quit(&e);
+			pinstance->on_quit(&e);
 			if (e.is_blocked()) return NSTerminateCancel;
 		}
 
@@ -158,8 +134,7 @@
 
 	- (BOOL) setupApplicationMenu: (NSMenu*) parent
 	{
-		Reflex::Application* ptr = [self instance];
-		if (!ptr || !parent) return NO;
+		if (!pinstance || !parent) return NO;
 
 		NSMenu* menu = [[[NSMenu alloc]
 			initWithTitle: @"Application"]
@@ -167,8 +142,8 @@
 		if ([NSApp respondsToSelector: @selector(setAppleMenu:)])
 			[NSApp performSelector: @selector(setAppleMenu:) withObject: menu];
 
-		NSString* name = !ptr->self->name.empty() ?
-			[NSString stringWithUTF8String: ptr->self->name.c_str()] : @"";
+		NSString* name = !pinstance->self->name.empty() ?
+			[NSString stringWithUTF8String: pinstance->self->name.c_str()] : @"";
 		if ([name length] > 0)
 			name = [@" " stringByAppendingString: name];
 

@@ -3,7 +3,6 @@
 
 
 #include "reflex/exception.h"
-#import "app_delegate.h"
 
 
 namespace Reflex
@@ -17,12 +16,6 @@ namespace Reflex
 
 	}// global
 
-
-	bool
-	initialized ()
-	{
-		return global::pool;
-	}
 
 	void
 	init ()

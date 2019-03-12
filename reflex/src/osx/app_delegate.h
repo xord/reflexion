@@ -7,4 +7,6 @@
 
 	- (void) bind: (Reflex::Application*) instance;
 
+	- (BOOL) callOnStart;
+
 @end// ReflexAppDelegate

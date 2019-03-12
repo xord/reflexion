@@ -24,7 +24,8 @@
 		self = [super initWithFrame: UIScreen.mainScreen.bounds];
 		if (!self) return nil;
 
-		pinstance       = ptr_for_rebind = NULL;
+		pinstance       =
+		ptr_for_rebind  = NULL;
 		view_controller = [[OpenGLViewController alloc] init];
 
 		self.rootViewController = view_controller;

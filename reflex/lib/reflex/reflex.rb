@@ -19,9 +19,7 @@ module Reflex
     end
 
     def window (*args, &block)
-      w = Window.new *args, &block
-      w.show
-      w
+      Window.new(*args, &block).tap {|w| w.show}
     end
 
     self

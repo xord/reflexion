@@ -18,9 +18,6 @@ namespace Reflex
 {
 
 
-	bool initialized ();
-
-
 	namespace global
 	{
 
@@ -38,9 +35,6 @@ namespace Reflex
 
 	Application::Application ()
 	{
-		if (!initialized())
-			reflex_error(__FILE__, __LINE__, "not initialized.");
-
 		if (global::instance)
 			reflex_error(__FILE__, __LINE__, "multiple application instances.");
 
@@ -55,18 +49,25 @@ namespace Reflex
 	void
 	Application::start ()
 	{
-		NSString* class_name = NSClassFromString(@"AppDelegate")
-			? @"AppDelegate"
-			: @"ReflexAppDelegate";
-		UIApplicationMain(*_NSGetArgc(), *_NSGetArgv(), nil, class_name);
+		UIApplication* app                 = [UIApplication sharedApplication];
+		id<UIApplicationDelegate> delegate = [app delegate];
+		if (!delegate)
+		{
+			UIApplicationMain(*_NSGetArgc(), *_NSGetArgv(), nil, @"ReflexAppDelegate");
+			return;
+		}
+
+		if (![delegate isKindOfClass: ReflexAppDelegate.class])
+			reflex_error(__FILE__, __LINE__);
+
+		ReflexAppDelegate* reflex_delegate = (ReflexAppDelegate*) delegate;
+		[reflex_delegate bind: this];
+		[reflex_delegate callOnStart];
 	}
 
 	void
 	Application::quit ()
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
-
 		not_implemented_error(__FILE__, __LINE__);
 	}
 
@@ -88,41 +89,31 @@ namespace Reflex
 	void
 	Application::on_start (Event* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 	}
 
 	void
 	Application::on_quit (Event* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 	}
 
 	void
 	Application::on_motion (MotionEvent* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 	}
 
 	void
 	Application::on_preference (Event* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 	}
 
 	void
 	Application::on_about (Event* e)
 	{
-		if (!*this)
-			invalid_state_error(__FILE__, __LINE__);
 	}
 
 	Application::operator bool () const
 	{
-		return self && *self;
+		return true;
 	}
 
 	bool
