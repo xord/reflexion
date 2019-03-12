@@ -61,6 +61,7 @@ module Xot
       srcs    = srcs_map
       depend  = 'depend.mf'
 
+      alias_task :erb   => 'lib:erb'
       alias_task :lib   => out
       alias_task :clean => 'lib:clean'
 

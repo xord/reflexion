@@ -2,6 +2,7 @@
 #import "opengl_view.h"
 
 
+#include <rays/opengl.h>
 #include <rays/exception.h>
 #include "reflex/exception.h"
 #import "native_window.h"

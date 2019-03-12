@@ -105,7 +105,7 @@
 			startDeviceMotionUpdatesToQueue: NSOperationQueue.currentQueue
 			withHandler: ^(CMDeviceMotion* motion, NSError* error)
 			{
-				Reflex::Application* ptr = instance;
+				Reflex::Application* ptr = pinstance;
 				if (!ptr) return;
 
 				Reflex::MotionEvent e(

@@ -44,18 +44,18 @@ namespace Reflex
 		if (global::instance)
 			reflex_error(__FILE__, __LINE__, "multiple application instances.");
 
-		instance = this;
+		global::instance = this;
 	}
 
 	Application::~Application ()
 	{
-		instance = NULL;
+		global::instance = NULL;
 	}
 
 	void
 	Application::start ()
 	{
-		NSString class_name = NSClassFromString(@"AppDelegate")
+		NSString* class_name = NSClassFromString(@"AppDelegate")
 			? @"AppDelegate"
 			: @"ReflexAppDelegate";
 		UIApplicationMain(*_NSGetArgc(), *_NSGetArgv(), nil, class_name);
