@@ -1,11 +1,10 @@
 // -*- objc -*-
-#include "reflex/application.h"
+#include "application.h"
 
 
 #include <assert.h>
 #import <AppKit/NSApplication.h>
 #include "reflex/exception.h"
-#include "application_data.h"
 #import "app_delegate.h"
 
 

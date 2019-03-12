@@ -4,17 +4,16 @@
 
 #include <assert.h>
 #import  <CoreMotion/CoreMotion.h>
-#include "reflex/application.h"
 #include "reflex/event.h"
 #include "reflex/exception.h"
-#include "application_data.h"
 
 
 @implementation ReflexAppDelegate
 
 	{
-		Reflex::Application* pinstance;
+		Reflex::Application* application;
 		bool started;
+		UIWindow* window;
 		CMMotionManager* motion_manager;
 	}
 
@@ -23,8 +22,9 @@
 		self = [super init];
 		if (!self) return nil;
 
-		pinstance      = NULL;
+		application    = NULL;
 		started        = false;
+		window         = nil;
 		motion_manager = nil;
 
 		return self;
@@ -32,45 +32,48 @@
 
 	- (void) dealloc
 	{
-		assert(!pinstance);
+		assert(!application);
 
 		[self stopUpdateDeviceMotion];
 
 		[super dealloc];
 	}
 
-	- (void) bind: (Reflex::Application*) instance
+	- (void) bind: (Reflex::Application*) app
 	{
-		if (!instance)
+		if (!app)
 			Reflex::argument_error(__FILE__, __LINE__);
 
-		if (instance && instance->self->delegate)
+		if (app->self->delegate)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		instance->self->delegate = [self retain];
-		instance->retain();
+		app->self->delegate = [self retain];
+		app->retain();
 
-		pinstance = instance;
+		application = app;
 	}
 
 	- (void) unbind
 	{
-		if (!pinstance) return;
+		if (!application) return;
 
-		if (pinstance->self->delegate) [pinstance->self->delegate release];
-		pinstance->self->delegate = nil;
+		if (application->self->delegate)
+		{
+			[application->self->delegate release];
+			application->self->delegate = nil;
+		}
 
-		pinstance->release();
-		pinstance = NULL;
+		application->release();
+		application = NULL;
 	}
 
 	- (BOOL) callOnStart
 	{
-		if (!pinstance || started)
+		if (!application || started)
 			return YES;
 
 		Reflex::Event e;
-		pinstance->on_start(&e);
+		application->on_start(&e);
 		started = true;
 
 		return !e.is_blocked();
@@ -80,7 +83,7 @@
 		didFinishLaunchingWithOptions: (NSDictionary*) options
 	{
 		Reflex::Application* app = Reflex::app();
-		if (!pinstance && app)
+		if (!self->application && app)
 			[self bind: app];
 
 		[self startUpdateDeviceMotion];
@@ -99,11 +102,11 @@
 			startDeviceMotionUpdatesToQueue: NSOperationQueue.currentQueue
 			withHandler: ^(CMDeviceMotion* motion, NSError* error)
 			{
-				if (!pinstance) return;
+				if (!application) return;
 
 				Reflex::MotionEvent e(
 					Reflex::Point(motion.gravity.x, -motion.gravity.y, motion.gravity.z));
-				pinstance->on_motion(&e);
+				application->on_motion(&e);
 			}
 		];
 
@@ -138,10 +141,10 @@
 
 	- (void) applicationWillTerminate: (UIApplication*) application
 	{
-		if (pinstance)
+		if (self->application)
 		{
 			Reflex::Event e;
-			pinstance->on_quit(&e);
+			self->application->on_quit(&e);
 			if (e.is_blocked())
 			{
 				Reflex::not_implemented_error(

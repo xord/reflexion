@@ -1,10 +1,9 @@
 // -*- objc -*-
-#include "reflex/application.h"
+#include "application.h"
 
 
 #include <assert.h>
 #include "reflex/exception.h"
-#include "application_data.h"
 #import "app_delegate.h"
 
 
@@ -49,8 +48,8 @@ namespace Reflex
 	void
 	Application::start ()
 	{
-		UIApplication* app                 = [UIApplication sharedApplication];
-		id<UIApplicationDelegate> delegate = [app delegate];
+		UIApplication* app                 = UIApplication.sharedApplication;
+		id<UIApplicationDelegate> delegate = app.delegate;
 		if (!delegate)
 		{
 			UIApplicationMain(*_NSGetArgc(), *_NSGetArgv(), nil, @"ReflexAppDelegate");

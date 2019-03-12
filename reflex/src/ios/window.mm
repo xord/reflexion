@@ -3,7 +3,7 @@
 
 
 #include "reflex/exception.h"
-#import "native_window.h"
+#import "view_controller.h"
 
 
 namespace Reflex
@@ -25,10 +25,11 @@ namespace Reflex
 		return Window_get_data(const_cast<Window*>(window));
 	}
 
-	static NativeWindow*
-	get_native (const Window* window)
+	static ReflexViewController*
+	get_vc (const Window* window)
 	{
-		NativeWindow* p = Window_get_data(const_cast<Window*>(window)).native;
+		ReflexViewController* p =
+			Window_get_data(const_cast<Window*>(window)).view_controller;
 		if (!p)
 			invalid_state_error(__FILE__, __LINE__);
 
@@ -45,13 +46,63 @@ namespace Reflex
 	void
 	Window_initialize (Window* window)
 	{
-		[[[NativeWindow alloc] init] bind: window];
+		[[[ReflexViewController alloc] init] bind: window];
+	}
+
+	static UIWindow*
+	get_window ()
+	{
+		UIApplication* app = UIApplication.sharedApplication;
+		if (app.keyWindow)
+			return app.keyWindow;
+		else
+		{
+			UIWindow* win =
+				[[UIWindow alloc] initWithFrame: UIScreen.mainScreen.bounds];
+			[win makeKeyAndVisible];
+			return win;
+		}
+	}
+
+	static UIViewController*
+	get_next_view_controller (UIViewController* vc)
+	{
+		assert(vc);
+
+		if ([vc isKindOfClass: UINavigationController.class])
+			return ((UINavigationController*) vc).topViewController;
+
+		if ([vc isKindOfClass: UITabBarController.class])
+			return ((UITabBarController*) vc).selectedViewController;
+
+		return vc.presentedViewController;
+	}
+
+	static UIViewController*
+	get_top_view_controller (UIViewController* vc)
+	{
+		assert(vc);
+
+		UIViewController* next;
+		while (next = get_next_view_controller(vc))
+			vc = next;
+
+		return vc;
 	}
 
 	void
 	Window_show (Window* window)
 	{
-		[get_native(window) makeKeyAndVisible];
+		UIViewController* vc = get_vc(window);
+
+		UIWindow* win = get_window();
+		if (!win.rootViewController)
+			win.rootViewController = vc;
+		else
+		{
+			UIViewController* top = get_top_view_controller(win.rootViewController);
+			[top presentViewController: vc animated: YES completion: nil];
+		}
 	}
 
 	void
@@ -72,25 +123,25 @@ namespace Reflex
 		if (!title)
 			argument_error(__FILE__, __LINE__);
 
-		Window_get_data(window).title = title;
+		get_vc(window).title = [[NSString alloc] initWithUTF8String: title];
 	}
 
 	const char*
 	Window_get_title (const Window& window)
 	{
-		return Window_get_data(&window).title.c_str();
+		return [get_vc(&window).title UTF8String];
 	}
 
 	void
 	Window_set_frame (Window* window, coord x, coord y, coord width, coord height)
 	{
-		[get_native(window) frameChanged];
+		//not_implemented_error(__FILE__, __LINE__);
 	}
 
 	Bounds
 	Window_get_frame (const Window& window)
 	{
-		CGRect rect = get_native(&window).frame;
+		CGRect rect = get_vc(&window).view.bounds;
 		return Bounds(
 			rect.origin.x,
 			rect.origin.y,
@@ -101,7 +152,7 @@ namespace Reflex
 
 	WindowData::WindowData ()
 	{
-		native = nil;
+		view_controller = nil;
 	}
 
 

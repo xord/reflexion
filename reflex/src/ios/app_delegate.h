@@ -1,11 +1,11 @@
 // -*- objc -*-
 #import <UIKit/UIApplication.h>
-#include <reflex/application.h>
+#include "application.h"
 
 
 @interface ReflexAppDelegate : UIResponder <UIApplicationDelegate>
 
-	- (void) bind: (Reflex::Application*) instance;
+	- (void) bind: (Reflex::Application*) application;
 
 	- (BOOL) callOnStart;
 

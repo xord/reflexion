@@ -1,41 +1,40 @@
 // -*- objc -*-
-#import "native_window.h"
+#import "view_controller.h"
 
 
-#include <assert.h>
-#include "rays/bounds.h"
+#include <rays/opengl.h>
+#include <rays/exception.h>
 #include "reflex/exception.h"
 #include "../view.h"
 #include "event.h"
-#import "opengl_view.h"
+#include "window.h"
 
 
-@implementation NativeWindow
+//#define TRANSPARENT_BACKGROUND
+
+
+@implementation ReflexViewController
 
 	{
 		Reflex::Window *pwindow, *ptr_for_rebind;
-		OpenGLViewController* view_controller;
+		EAGLContext* context;
 	}
 
 	- (id) init
 	{
-		self = [super initWithFrame: UIScreen.mainScreen.bounds];
+		self = [super init];
 		if (!self) return nil;
 
-		pwindow         = ptr_for_rebind = NULL;
-		view_controller = [[OpenGLViewController alloc] init];
-
-		self.rootViewController = view_controller;
+		pwindow = ptr_for_rebind = NULL;
+		context = nil;
 
 		return self;
 	}
 
 	- (void) dealloc
 	{
-		self.rootViewController = nil;
-		if (view_controller) [view_controller release];
-
 		[self unbind];
+		[self cleanupContext];
 
 		[super dealloc];
 	}
@@ -46,10 +45,10 @@
 			Reflex::argument_error(__FILE__, __LINE__);
 
 		Reflex::WindowData& data = Window_get_data(window);
-		if (data.native)
+		if (data.view_controller)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		data.native = [self retain];
+		data.view_controller = [self retain];
 
 		// Reflex::Window is not constructed completely,
 		// so can not call ClassWrapper::retain().
@@ -79,10 +78,10 @@
 		if (!pwindow) return;
 
 		Reflex::WindowData& data = Window_get_data(pwindow);
-		if (data.native)
+		if (data.view_controller)
 		{
-			[data.native release];
-			data.native = nil;
+			[data.view_controller release];
+			data.view_controller = nil;
 		}
 
 		pwindow->release();
@@ -95,9 +94,58 @@
 		return pwindow;
 	}
 
+	- (void) viewDidLoad
+	{
+		[super viewDidLoad];
+
+		context = (EAGLContext*) Rays::get_offscreen_context();
+		if (!context)
+		{
+			Reflex::reflex_error(
+				__FILE__, __LINE__, "failed to setup OpenGL context.");
+		}
+
+		GLKView* view = (GLKView*) self.view;
+		view.context              = context;
+		view.multipleTouchEnabled = YES;
+		view.drawableDepthFormat  = GLKViewDrawableDepthFormat24;
+		//view.drawableMultisample  = GLKViewDrawableMultisample4X;
+
+		self.preferredFramesPerSecond = 60;
+
+		[self activateContext];
+	}
+
+	- (void) didReceiveMemoryWarning
+	{
+		[super didReceiveMemoryWarning];
+
+		if ([self isViewLoaded] && !self.view.window)
+		{
+			self.view = nil;
+			[self cleanupContext];
+		}
+	}
+
+	- (void) activateContext
+	{
+		[EAGLContext setCurrentContext: context];
+	}
+
+	- (void) cleanupContext
+	{
+		[self activateContext];
+
+		if (context && [EAGLContext currentContext] == context)
+		{
+			[EAGLContext setCurrentContext: nil];
+			context = nil;
+		}
+	}
+
 	- (void) update
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		double now = Xot::time();
@@ -109,12 +157,13 @@
 			Reflex::View_update_tree(win->root(), e);
 	}
 
-	- (void) draw
+	- (void) glkView: (GLKView*) view drawInRect: (CGRect) rect
 	{
-		Reflex::Window* win = [self window];
-		if (!win || !win->self->redraw) return;
+		Reflex::Window* win = self.window;
+		if (!win || !win->self->redraw)
+			return;
 
-		win->self->redraw = false;
+		[self activateContext];
 
 		double now = Xot::time();
 		double dt  = now - win->self->prev_time_draw;
@@ -142,11 +191,13 @@
 			Reflex::View_draw_tree(win->root(), e, 0, frame.move_to(0));
 
 		e.painter->end();
+
+		win->self->redraw = false;
 	}
 
-	- (void) frameChanged
+	- (void) viewWillLayoutSubviews
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		Rays::Bounds b           = win->frame();
@@ -175,15 +226,11 @@
 		}
 	}
 
-	- (void) becomeKeyWindow
-	{
-		[super becomeKeyWindow];
-		[self frameChanged];
-	}
-
 	- (void) keyDown: (UIEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		//[self interpretKeyEvents: [NSArray arrayWithObject: event]];
+
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		//Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::DOWN);
@@ -192,7 +239,7 @@
 
 	- (void) keyUp: (UIEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		//Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::UP);
@@ -201,38 +248,42 @@
 
 	- (void) touchesBegan: (NSSet*) touches withEvent: (UIEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(touches, event, view_controller.view, Reflex::PointerEvent::DOWN);
+		Reflex::NativePointerEvent e(
+			touches, event, self.view, Reflex::PointerEvent::DOWN);
 		win->on_pointer(&e);
 	}
 
 	- (void) touchesEnded: (NSSet*) touches withEvent: (UIEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(touches, event, view_controller.view, Reflex::PointerEvent::UP);
+		Reflex::NativePointerEvent e(
+			touches, event, self.view, Reflex::PointerEvent::UP);
 		win->on_pointer(&e);
 	}
 
 	- (void) touchesCancelled: (NSSet*) touches withEvent: (UIEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(touches, event, view_controller.view, Reflex::PointerEvent::UP);
+		Reflex::NativePointerEvent e(
+			touches, event, self.view, Reflex::PointerEvent::UP);
 		win->on_pointer(&e);
 	}
 
 	- (void) touchesMoved: (NSSet*) touches withEvent: (UIEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(touches, event, view_controller.view, Reflex::PointerEvent::MOVE);
+		Reflex::NativePointerEvent e(
+			touches, event, self.view, Reflex::PointerEvent::MOVE);
 		win->on_pointer(&e);
 	}
 
-@end// NativeWindow
+@end// ReflexViewController

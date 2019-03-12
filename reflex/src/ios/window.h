@@ -7,7 +7,7 @@
 #include "../window.h"
 
 
-@class NativeWindow;
+@class ReflexViewController;
 
 
 namespace Reflex
@@ -17,15 +17,13 @@ namespace Reflex
 	struct WindowData : public Window::Data
 	{
 
-		NativeWindow* native;
-
-		String title;
+		ReflexViewController* view_controller;
 
 		WindowData ();
 
 		bool is_valid () const
 		{
-			return native;
+			return view_controller;
 		}
 
 	};// WindowData

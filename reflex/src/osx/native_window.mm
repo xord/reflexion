@@ -149,7 +149,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) update: (NSTimer*) t
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		double now = Xot::time();
@@ -169,7 +169,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) draw
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		double now = Xot::time();
@@ -202,7 +202,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (BOOL) windowShouldClose: (id) sender
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return YES;
 
 		win->close();
@@ -218,7 +218,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) windowWillMove: (NSNotification*) notification
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		win->self->prev_position = win->frame().position();
@@ -231,7 +231,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (NSSize) windowWillResize: (NSWindow*) sender toSize: (NSSize) frameSize
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return frameSize;
 
 		win->self->prev_size = win->frame().size();
@@ -246,7 +246,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) frameChanged
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		Rays::Bounds b           = win->frame();
@@ -277,7 +277,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) keyDown: (NSEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::DOWN);
@@ -286,7 +286,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) keyUp: (NSEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::UP);
@@ -300,7 +300,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) mouseDown: (NSEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::DOWN);
@@ -309,7 +309,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) mouseUp: (NSEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::UP);
@@ -318,7 +318,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) mouseDragged: (NSEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::MOVE);
@@ -327,7 +327,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) mouseMoved: (NSEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::MOVE);
@@ -336,7 +336,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) scrollWheel: (NSEvent*) event
 	{
-		Reflex::Window* win = [self window];
+		Reflex::Window* win = self.window;
 		if (!win) return;
 
 		Reflex::NativeWheelEvent e(event, view);

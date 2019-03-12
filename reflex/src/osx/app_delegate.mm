@@ -6,13 +6,12 @@
 #import <Cocoa/Cocoa.h>
 #include "reflex/event.h"
 #include "reflex/exception.h"
-#include "application_data.h"
 
 
 @implementation ReflexAppDelegate
 
 	{
-		Reflex::Application* pinstance;
+		Reflex::Application* application;
 		bool started;
 	}
 
@@ -21,51 +20,54 @@
 		self = [super init];
 		if (!self) return nil;
 
-		pinstance = NULL;
-		started   = false;
+		application = NULL;
+		started     = false;
 
 		return self;
 	}
 
 	- (void) dealloc
 	{
-		assert(!pinstance);
+		assert(!application);
 
 		[super dealloc];
 	}
 
-	- (void) bind: (Reflex::Application*) instance
+	- (void) bind: (Reflex::Application*) app
 	{
-		if (!instance)
+		if (!app)
 			Reflex::argument_error(__FILE__, __LINE__);
 
-		if (instance && instance->self->delegate)
+		if (app->self->delegate)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		instance->self->delegate = [self retain];
-		instance->retain();
+		app->self->delegate = [self retain];
+		app->retain();
 
-		pinstance = instance;
+		application = app;
 	}
 
 	- (void) unbind
 	{
-		if (!pinstance) return;
+		if (!application) return;
 
-		if (pinstance->self->delegate) [pinstance->self->delegate release];
-		pinstance->self->delegate = nil;
+		if (application->self->delegate)
+		{
+			[application->self->delegate release];
+			application->self->delegate = nil;
+		}
 
-		pinstance->release();
-		pinstance = NULL;
+		application->release();
+		application = NULL;
 	}
 
 	- (BOOL) callOnStart
 	{
-		if (!pinstance || started)
+		if (!application || started)
 			return YES;
 
 		Reflex::Event e;
-		pinstance->on_start(&e);
+		application->on_start(&e);
 		started = true;
 
 		if (e.is_blocked()) [self quit];
@@ -74,26 +76,26 @@
 
 	- (void) quit
 	{
-		if (pinstance)
-			pinstance->quit();
+		if (application)
+			application->quit();
 		else
 			[NSApp terminate: nil];
 	}
 
 	- (void) showPreference
 	{
-		if (!pinstance) return;
+		if (!application) return;
 
 		Reflex::Event e;
-		pinstance->on_preference(&e);
+		application->on_preference(&e);
 	}
 
 	- (void) showAbout
 	{
-		if (pinstance)
+		if (application)
 		{
 			Reflex::Event e;
-			pinstance->on_about(&e);
+			application->on_about(&e);
 		}
 		else
 			[NSApp orderFrontStandardAboutPanel: nil];
@@ -112,10 +114,10 @@
 
 	- (NSApplicationTerminateReply) applicationShouldTerminate: (NSApplication*) application
 	{
-		if (pinstance)
+		if (application)
 		{
 			Reflex::Event e;
-			pinstance->on_quit(&e);
+			application->on_quit(&e);
 			if (e.is_blocked()) return NSTerminateCancel;
 		}
 
@@ -134,7 +136,7 @@
 
 	- (BOOL) setupApplicationMenu: (NSMenu*) parent
 	{
-		if (!pinstance || !parent) return NO;
+		if (!application || !parent) return NO;
 
 		NSMenu* menu = [[[NSMenu alloc]
 			initWithTitle: @"Application"]
@@ -142,8 +144,8 @@
 		if ([NSApp respondsToSelector: @selector(setAppleMenu:)])
 			[NSApp performSelector: @selector(setAppleMenu:) withObject: menu];
 
-		NSString* name = !pinstance->self->name.empty() ?
-			[NSString stringWithUTF8String: pinstance->self->name.c_str()] : @"";
+		NSString* name = !application->self->name.empty() ?
+			[NSString stringWithUTF8String: application->self->name.c_str()] : @"";
 		if ([name length] > 0)
 			name = [@" " stringByAppendingString: name];
 
