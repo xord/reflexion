@@ -60,6 +60,10 @@ static
 RUCY_DEF1(on_start, event)
 {
 	CHECK;
+
+	RUCY_SYM(call_start_block);
+	self.call(call_start_block);
+
 	CALL(on_start(to<Reflex::Event*>(event)));
 }
 RUCY_END

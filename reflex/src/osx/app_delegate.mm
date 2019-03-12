@@ -114,10 +114,10 @@
 
 	- (NSApplicationTerminateReply) applicationShouldTerminate: (NSApplication*) application
 	{
-		if (application)
+		if (self->application)
 		{
 			Reflex::Event e;
-			application->on_quit(&e);
+			self->application->on_quit(&e);
 			if (e.is_blocked()) return NSTerminateCancel;
 		}
 

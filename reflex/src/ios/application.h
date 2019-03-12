@@ -17,9 +17,11 @@ namespace Reflex
 	struct Application::Data
 	{
 
-		ReflexAppDelegate* delegate = nil;
+		ReflexAppDelegate* delegate;
 
 		String name;
+
+		Data ();
 
 	};// Application::Data
 

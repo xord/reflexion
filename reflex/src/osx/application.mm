@@ -128,4 +128,10 @@ namespace Reflex
 	}
 
 
+	Application::Data::Data ()
+	:	delegate(nil)
+	{
+	}
+
+
 }// Reflex
