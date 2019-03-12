@@ -1154,6 +1154,7 @@ namespace Reflex
 				case WallShape::BOTTOM: return Rays::create_rect(-t,  h, w + tt, t);
 				default: argument_error(__FILE__, __LINE__, "invalid wall position.");
 			}
+			return Polygon();
 		}
 
 	};// WallShapeData
