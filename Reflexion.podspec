@@ -26,7 +26,7 @@ Pod::Spec.new do |s|
     ${PODS_ROOT}/CRuby/CRuby/include
   ]
 
-  s.prepare_command    = "rake erb"
+  s.prepare_command    = "rake vendor erb"
   s.preserve_paths     = mods
   s.requires_arc       = false
   s.osx.compiler_flags = "-DOSX"
