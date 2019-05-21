@@ -75,6 +75,12 @@ namespace Reflex
 		if ([vc isKindOfClass: UITabBarController.class])
 			return ((UITabBarController*) vc).selectedViewController;
 
+		if ([vc isKindOfClass: UISplitViewController.class])
+		{
+			UISplitViewController* split = (UISplitViewController*) vc;
+			return split.viewControllers[split.viewControllers.count - 1];
+		}
+
 		return vc.presentedViewController;
 	}
 
