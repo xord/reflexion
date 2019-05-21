@@ -101,7 +101,10 @@ namespace Reflex
 		else
 		{
 			UIViewController* top = get_top_view_controller(win.rootViewController);
-			[top presentViewController: vc animated: YES completion: nil];
+			if (top.navigationController)
+				[top.navigationController pushViewController: vc animated: YES];
+			else
+				[top presentViewController: vc animated: YES completion: nil];
 		}
 	}
 

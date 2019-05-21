@@ -56,12 +56,12 @@ namespace Reflex
 			return;
 		}
 
-		if (![delegate isKindOfClass: ReflexAppDelegate.class])
-			reflex_error(__FILE__, __LINE__);
-
-		ReflexAppDelegate* reflex_delegate = (ReflexAppDelegate*) delegate;
-		[reflex_delegate bind: this];
-		[reflex_delegate callOnStart];
+		if ([delegate isKindOfClass: ReflexAppDelegate.class])
+		{
+			ReflexAppDelegate* reflex_delegate = (ReflexAppDelegate*) delegate;
+			[reflex_delegate bind: this];
+			[reflex_delegate callOnStart];
+		}
 	}
 
 	void
