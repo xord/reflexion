@@ -15,6 +15,14 @@ namespace Rucy
 {
 
 
+	namespace global
+	{
+
+		static RubyExceptionHandler exception_handler = NULL;
+
+	}// global
+
+
 	RubyException::RubyException (Value exception)
 	:	Super(""), val(exception)
 	{
@@ -158,6 +166,19 @@ namespace Rucy
 		#endif
 
 		raise(system_error_class(), Xot::error_text(file, line, s));
+	}
+
+
+	void
+	set_exception_handler (RubyExceptionHandler handler)
+	{
+		global::exception_handler = handler;
+	}
+
+	RubyExceptionHandler
+	get_exception_handler ()
+	{
+		return global::exception_handler;
 	}
 
 

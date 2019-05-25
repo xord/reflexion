@@ -74,6 +74,13 @@ namespace Rucy
 	void system_error          (const char* file, int line, const char* format = NULL, ...);
 
 
+	typedef bool (*RubyExceptionHandler) (const RubyException& e);
+
+	void                 set_exception_handler (RubyExceptionHandler handler);
+
+	RubyExceptionHandler get_exception_handler ();
+
+
 }// Rucy
 
 
