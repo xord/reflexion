@@ -53,12 +53,7 @@ namespace Rucy
 			if (state == TAG_RAISE && RTEST(exception))
 			{
 				rb_set_errinfo(nil().value());
-
-				RubyExceptionHandler handler = get_exception_handler();
-				if (handler)
-					handler(RubyException(exception));
-				else
-					throw RubyException(exception);
+				throw RubyException(exception);
 			}
 
 			throw RubyJumpTag(state);
