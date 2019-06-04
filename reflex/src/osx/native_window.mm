@@ -162,7 +162,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 		if (win->self->redraw)
 		{
-			[self display];
+			view.needsDisplay = YES;
 			win->self->redraw = false;
 		}
 	}
