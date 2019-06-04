@@ -7,6 +7,11 @@
 #import "native_window.h"
 
 
+@interface NativeWindow (Bind)
+	- (void) bind: (Reflex::Window*) window;
+@end
+
+
 namespace Reflex
 {
 

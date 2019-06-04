@@ -6,6 +6,11 @@
 #import "view_controller.h"
 
 
+@interface ReflexViewController (Bind)
+	- (void) bind: (Reflex::Window*) window;
+@end
+
+
 namespace Reflex
 {
 
