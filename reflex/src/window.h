@@ -78,18 +78,12 @@ namespace Reflex
 
 	Bounds Window_get_frame (const Window& window);
 
+	void Window_set_focus (Window* window, View* view);
 
-	typedef View* (*CreateRootViewFun) ();
 
-	void set_create_root_view_fun (CreateRootViewFun fun);
+	typedef View* (*Window_CreateRootViewFun) ();
 
-	View* create_root_view ();
-
-	void set_focus (Window* window, View* view);
-
-	void register_capture   (View* view);
-
-	void unregister_capture (View* view);
+	void Window_set_create_root_view_fun (Window_CreateRootViewFun fun);
 
 
 }// Reflex

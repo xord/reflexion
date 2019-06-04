@@ -9,22 +9,8 @@ namespace Reflex
 {
 
 
-	static CreateRootViewFun create_root_view_fun = NULL;
-
 	void
-	set_create_root_view_fun (CreateRootViewFun fun)
-	{
-		create_root_view_fun = fun;
-	}
-
-	View*
-	create_root_view ()
-	{
-		return create_root_view_fun ? create_root_view_fun() : new View();
-	}
-
-	void
-	set_focus (Window* window, View* view)
+	Window_set_focus (Window* window, View* view)
 	{
 		if (!window || !view)
 			argument_error(__FILE__, __LINE__);
@@ -50,8 +36,29 @@ namespace Reflex
 		}
 	}
 
+	namespace global
+	{
+
+		static Window_CreateRootViewFun create_root_view_fun = NULL;
+
+	}// global
+
 	void
-	register_capture (View* view)
+	Window_set_create_root_view_fun (Window_CreateRootViewFun fun)
+	{
+		global::create_root_view_fun = fun;
+	}
+
+	static View*
+	create_root_view ()
+	{
+		return global::create_root_view_fun
+			?	global::create_root_view_fun()
+			:	new View();
+	}
+
+	void
+	View_register_capture (View* view)
 	{
 		if (!view)
 			argument_error(__FILE__, __LINE__);
@@ -64,7 +71,7 @@ namespace Reflex
 	}
 
 	void
-	unregister_capture (View* view)
+	View_unregister_capture (View* view)
 	{
 		if (!view)
 			argument_error(__FILE__, __LINE__);
