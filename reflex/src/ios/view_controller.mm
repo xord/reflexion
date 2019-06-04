@@ -13,6 +13,29 @@
 //#define TRANSPARENT_BACKGROUND
 
 
+namespace global
+{
+
+	static ReflexViewController_CreateFun create_fun = NULL;
+
+}// global
+
+
+void
+ReflexViewController_set_create_fun (ReflexViewController_CreateFun fun)
+{
+	global::create_fun = fun;
+}
+
+ReflexViewController*
+ReflexViewController_create ()
+{
+	return global::create_fun
+		?	global::create_fun()
+		:	[[ReflexViewController alloc] init];
+}
+
+
 @implementation ReflexViewController
 
 	{

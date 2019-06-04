@@ -51,7 +51,11 @@ namespace Reflex
 	void
 	Window_initialize (Window* window)
 	{
-		[[[ReflexViewController alloc] init] bind: window];
+		ReflexViewController* vc = ReflexViewController_create();
+		if (!vc)
+			reflex_error(__FILE__, __LINE__);
+
+		[vc bind: window];
 	}
 
 	static UIWindow*
