@@ -39,18 +39,25 @@ namespace Reflex
 	};// Data
 
 
-	static CreateTimerFun create_timer_fun = NULL;
+	namespace global
+	{
+
+		static Timer_CreateFun create_fun = NULL;
+
+	}// global
 
 	void
-	set_create_timer_fun (CreateTimerFun fun)
+	Timer_set_create_fun (Timer_CreateFun fun)
 	{
-		create_timer_fun = fun;
+		global::create_fun = fun;
 	}
 
 	static Timer*
-	create_timer ()
+	Timer_create ()
 	{
-		return create_timer_fun ? create_timer_fun() : new Timer();
+		return global::create_fun
+			?	global::create_fun()
+			:	new Timer();
 	}
 
 
@@ -197,7 +204,7 @@ namespace Reflex
 		if (!owner)
 			argument_error(__FILE__, __LINE__);
 
-		Timer* timer = create_timer();
+		Timer* timer = Timer_create();
 		if (!timer)
 			reflex_error(__FILE__, __LINE__, "failed to create timer.");
 

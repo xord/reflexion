@@ -44,9 +44,9 @@ namespace Reflex
 	};// Timers
 
 
-	typedef Timer* (*CreateTimerFun) ();
+	typedef Timer* (*Timer_CreateFun) ();
 
-	void set_create_timer_fun (CreateTimerFun fun);
+	void Timer_set_create_fun (Timer_CreateFun fun);
 
 
 }// Reflex
