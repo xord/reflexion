@@ -51,7 +51,7 @@ namespace Reflex
 	void
 	Window_initialize (Window* window)
 	{
-		ReflexViewController* vc = ReflexViewController_create();
+		ReflexViewController* vc = [ReflexViewController_create() autorelease];
 		if (!vc)
 			reflex_error(__FILE__, __LINE__);
 
