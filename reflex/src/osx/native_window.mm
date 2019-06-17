@@ -8,6 +8,7 @@
 #include "reflex/exception.h"
 #include "../view.h"
 #include "event.h"
+#include "window.h"
 #import "opengl_view.h"
 
 
