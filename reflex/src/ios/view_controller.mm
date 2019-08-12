@@ -157,7 +157,7 @@ ReflexViewController_create ()
 
 		view.delegate              = self;
 		view.context               = context;
-		//view.enableSetNeedsDisplay = NO;
+		view.enableSetNeedsDisplay = YES;
 		view.multipleTouchEnabled  = YES;
 		view.drawableDepthFormat   = GLKViewDrawableDepthFormat24;
 		//view.drawableMultisample   = GLKViewDrawableMultisample4X;
