@@ -159,7 +159,7 @@ namespace Reflex
 	Bounds
 	Window_get_frame (const Window& window)
 	{
-		CGRect rect = get_vc(&window).view.bounds;
+		CGRect rect = get_vc(&window).glkView.bounds;
 		return Bounds(
 			rect.origin.x,
 			rect.origin.y,

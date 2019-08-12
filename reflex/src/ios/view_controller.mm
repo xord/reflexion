@@ -36,11 +36,19 @@ ReflexViewController_create ()
 }
 
 
+@interface ReflexViewController ()
+
+	@property(nonatomic, strong) GLKView* glkView;
+
+	@property(nonatomic, strong) CADisplayLink* displayLink;
+
+@end
+
+
 @implementation ReflexViewController
 
 	{
 		Reflex::Window *pwindow, *ptr_for_rebind;
-		EAGLContext* context;
 	}
 
 	- (id) init
@@ -49,15 +57,14 @@ ReflexViewController_create ()
 		if (!self) return nil;
 
 		pwindow = ptr_for_rebind = NULL;
-		context = nil;
 
 		return self;
 	}
 
 	- (void) dealloc
 	{
+		[self cleanupGLKView];
 		[self unbind];
-		[self cleanupContext];
 
 		[super dealloc];
 	}
@@ -117,53 +124,99 @@ ReflexViewController_create ()
 		return pwindow;
 	}
 
+	- (void) didReceiveMemoryWarning
+	{
+		[super didReceiveMemoryWarning];
+
+		if ([self isViewLoaded] && !self.view.window)
+			[self cleanupGLKView];
+	}
+
 	- (void) viewDidLoad
 	{
 		[super viewDidLoad];
 
-		context = (EAGLContext*) Rays::get_offscreen_context();
+		[self setupGLKView];
+	}
+
+	- (void) setupGLKView
+	{
+		GLKView* view = [self createGLKView];
+		if (!view)
+		{
+			Reflex::reflex_error(
+				__FILE__, __LINE__, "failed to setup OpenGL view.");
+		}
+
+		EAGLContext* context = (EAGLContext*) Rays::get_offscreen_context();
 		if (!context)
 		{
 			Reflex::reflex_error(
 				__FILE__, __LINE__, "failed to setup OpenGL context.");
 		}
 
-		GLKView* view = (GLKView*) self.view;
-		view.context              = context;
-		view.multipleTouchEnabled = YES;
-		view.drawableDepthFormat  = GLKViewDrawableDepthFormat24;
-		//view.drawableMultisample  = GLKViewDrawableMultisample4X;
+		view.delegate              = self;
+		view.context               = context;
+		//view.enableSetNeedsDisplay = NO;
+		view.multipleTouchEnabled  = YES;
+		view.drawableDepthFormat   = GLKViewDrawableDepthFormat24;
+		//view.drawableMultisample   = GLKViewDrawableMultisample4X;
 
-		self.preferredFramesPerSecond = 60;
+		[self.view addSubview: view];
 
-		[self activateContext];
+		self.glkView = view;
 	}
 
-	- (void) didReceiveMemoryWarning
+	- (GLKView*) createGLKView
 	{
-		[super didReceiveMemoryWarning];
-
-		if ([self isViewLoaded] && !self.view.window)
-		{
-			self.view = nil;
-			[self cleanupContext];
-		}
+		return [[GLKView alloc] initWithFrame: self.view.bounds] autorelease];
 	}
 
-	- (void) activateContext
+	- (void) cleanupGLKView
 	{
-		[EAGLContext setCurrentContext: context];
-	}
+		GLKView* view = self.glkView;
+		if (!view) return;
 
-	- (void) cleanupContext
-	{
-		[self activateContext];
-
-		if (context && [EAGLContext currentContext] == context)
-		{
+		EAGLContext* context = view.context;
+		if (context && context == [EAGLContext currentContext])
 			[EAGLContext setCurrentContext: nil];
-			context = nil;
-		}
+
+		[view removeFromSuperview];
+
+		self.glkView = nil;
+	}
+
+	- (void) viewDidAppear: (BOOL) animated
+	{
+		[super viewDidAppear: animated];
+		[self startTimer: 60];
+	}
+
+	- (void) viewDidDisappear: (BOOL) animated
+	{
+		[self stopTimer];
+		[super viewDidDisappear: animated];
+	}
+
+	- (void) startTimer: (int) fps
+	{
+		[self stopTimer];
+
+		CADisplayLink* dl = [CADisplayLink displayLinkWithTarget: self selector: @selector(update)];
+		dl.preferredFramesPerSecond = fps;// TODO: min ver to iOS10
+
+		[dl addToRunLoop: NSRunLoop.currentRunLoop forMode: NSDefaultRunLoopMode];
+
+		self.displayLink = dl;
+	}
+
+	- (void) stopTimer
+	{
+		if (!self.displayLink) return;
+
+		[self.displayLink removeFromRunLoop: NSRunLoop.currentRunLoop forMode: NSDefaultRunLoopMode];
+
+		self.displayLink = nil;
 	}
 
 	- (void) update
@@ -178,15 +231,23 @@ ReflexViewController_create ()
 		win->on_update(&e);
 		if (!e.is_blocked())
 			Reflex::View_update_tree(win->root(), e);
+
+		if (win->self->redraw)
+		{
+			[self.glkView setNeedsDisplay];
+			win->self->redraw = false;
+		}
 	}
 
 	- (void) glkView: (GLKView*) view drawInRect: (CGRect) rect
 	{
 		Reflex::Window* win = self.window;
-		if (!win || !win->self->redraw)
-			return;
+		if (!win) return;
 
-		[self activateContext];
+		EAGLContext* context = eslf.glkView.context;
+		if (!context) return;
+
+		[EAGLContext setCurrentContext: context];
 
 		double now = Xot::time();
 		double dt  = now - win->self->prev_time_draw;
@@ -214,8 +275,6 @@ ReflexViewController_create ()
 			Reflex::View_draw_tree(win->root(), e, 0, frame.move_to(0));
 
 		e.painter->end();
-
-		win->self->redraw = false;
 	}
 
 	- (void) viewWillLayoutSubviews
@@ -247,26 +306,6 @@ ReflexViewController_create ()
 				win->on_resize(&e);
 			}
 		}
-	}
-
-	- (void) keyDown: (UIEvent*) event
-	{
-		//[self interpretKeyEvents: [NSArray arrayWithObject: event]];
-
-		Reflex::Window* win = self.window;
-		if (!win) return;
-
-		//Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::DOWN);
-		//win->on_key(&e);
-	}
-
-	- (void) keyUp: (UIEvent*) event
-	{
-		Reflex::Window* win = self.window;
-		if (!win) return;
-
-		//Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::UP);
-		//win->on_key(&e);
 	}
 
 	- (void) touchesBegan: (NSSet*) touches withEvent: (UIEvent*) event
