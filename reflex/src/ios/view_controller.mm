@@ -202,11 +202,12 @@ ReflexViewController_create ()
 	{
 		[self stopTimer];
 
-		CADisplayLink* dl = [CADisplayLink displayLinkWithTarget: self selector: @selector(update)];
+		CADisplayLink* dl = [CADisplayLink
+			displayLinkWithTarget: self
+			selector:              @selector(update)];
 		dl.preferredFramesPerSecond = fps;// TODO: min ver to iOS10
 
-		[dl addToRunLoop: NSRunLoop.currentRunLoop forMode: NSDefaultRunLoopMode];
-
+		[dl addToRunLoop: NSRunLoop.currentRunLoop forMode: NSRunLoopCommonModes];
 		self.displayLink = dl;
 	}
 
@@ -214,8 +215,9 @@ ReflexViewController_create ()
 	{
 		if (!self.displayLink) return;
 
-		[self.displayLink removeFromRunLoop: NSRunLoop.currentRunLoop forMode: NSDefaultRunLoopMode];
-
+		[self.displayLink
+			removeFromRunLoop: NSRunLoop.currentRunLoop
+			forMode:           NSRunLoopCommonModes];
 		self.displayLink = nil;
 	}
 
