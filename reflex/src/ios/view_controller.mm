@@ -169,7 +169,7 @@ ReflexViewController_create ()
 
 	- (GLKView*) createGLKView
 	{
-		return [[GLKView alloc] initWithFrame: self.view.bounds] autorelease];
+		return [[[GLKView alloc] initWithFrame: self.view.bounds] autorelease];
 	}
 
 	- (void) cleanupGLKView
@@ -244,7 +244,7 @@ ReflexViewController_create ()
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		EAGLContext* context = eslf.glkView.context;
+		EAGLContext* context = self.glkView.context;
 		if (!context) return;
 
 		[EAGLContext setCurrentContext: context];
