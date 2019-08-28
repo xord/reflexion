@@ -3,11 +3,17 @@
 #import <GLKit/GLKit.h>
 
 
-@interface ReflexViewController : UIViewController <GLKViewDelegate>
+@interface ReflexView : GLKView
+@end
 
-	@property(nonatomic, strong, readonly) GLKView* glkView;
 
-	- (GLKView*) createGLKView;
+@interface ReflexViewController : UIViewController
+
+	@property(nonatomic, strong, readonly) ReflexView* reflexView;
+
+	- (ReflexView*) createReflexView;
+
+	- (void) viewDidResize;
 
 @end// ReflexViewController
 

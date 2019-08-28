@@ -36,9 +36,27 @@ ReflexViewController_create ()
 }
 
 
-@interface ReflexViewController ()
+@interface ReflexView ()
 
-	@property(nonatomic, strong) GLKView* glkView;
+	@property(nonatomic, strong) ReflexViewController* reflexViewController;
+
+@end
+
+
+@implementation ReflexView
+
+	- (void) layoutSubviews
+	{
+		[super layoutSubviews];
+		[self.reflexViewController viewDidResize];
+	}
+
+@end
+
+
+@interface ReflexViewController () <GLKViewDelegate>
+
+	@property(nonatomic, strong) ReflexView* reflexView;
 
 	@property(nonatomic, strong) CADisplayLink* displayLink;
 
@@ -63,7 +81,7 @@ ReflexViewController_create ()
 
 	- (void) dealloc
 	{
-		[self cleanupGLKView];
+		[self cleanupReflexView];
 		[self unbind];
 
 		[super dealloc];
@@ -129,19 +147,19 @@ ReflexViewController_create ()
 		[super didReceiveMemoryWarning];
 
 		if ([self isViewLoaded] && !self.view.window)
-			[self cleanupGLKView];
+			[self cleanupReflexView];
 	}
 
 	- (void) viewDidLoad
 	{
 		[super viewDidLoad];
 
-		[self setupGLKView];
+		[self setupReflexView];
 	}
 
-	- (void) setupGLKView
+	- (void) setupReflexView
 	{
-		GLKView* view = [self createGLKView];
+		ReflexView* view = [self createReflexView];
 		if (!view)
 		{
 			Reflex::reflex_error(
@@ -155,6 +173,7 @@ ReflexViewController_create ()
 				__FILE__, __LINE__, "failed to setup OpenGL context.");
 		}
 
+		view.reflexViewController  = self;
 		view.delegate              = self;
 		view.context               = context;
 		view.enableSetNeedsDisplay = YES;
@@ -164,17 +183,17 @@ ReflexViewController_create ()
 
 		[self.view addSubview: view];
 
-		self.glkView = view;
+		self.reflexView = view;
 	}
 
-	- (GLKView*) createGLKView
+	- (ReflexView*) createReflexView
 	{
-		return [[[GLKView alloc] initWithFrame: self.view.bounds] autorelease];
+		return [[[ReflexView alloc] initWithFrame: self.view.bounds] autorelease];
 	}
 
-	- (void) cleanupGLKView
+	- (void) cleanupReflexView
 	{
-		GLKView* view = self.glkView;
+		ReflexView* view = self.reflexView;
 		if (!view) return;
 
 		EAGLContext* context = view.context;
@@ -183,7 +202,7 @@ ReflexViewController_create ()
 
 		[view removeFromSuperview];
 
-		self.glkView = nil;
+		self.reflexView = nil;
 	}
 
 	- (void) viewDidAppear: (BOOL) animated
@@ -236,7 +255,7 @@ ReflexViewController_create ()
 
 		if (win->self->redraw)
 		{
-			[self.glkView setNeedsDisplay];
+			[self.reflexView setNeedsDisplay];
 			win->self->redraw = false;
 		}
 	}
@@ -246,7 +265,7 @@ ReflexViewController_create ()
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		EAGLContext* context = self.glkView.context;
+		EAGLContext* context = self.reflexView.context;
 		if (!context) return;
 
 		[EAGLContext setCurrentContext: context];
@@ -279,7 +298,7 @@ ReflexViewController_create ()
 		e.painter->end();
 	}
 
-	- (void) viewWillLayoutSubviews
+	- (void) viewDidResize
 	{
 		Reflex::Window* win = self.window;
 		if (!win) return;
