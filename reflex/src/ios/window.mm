@@ -77,8 +77,8 @@ namespace Reflex
 	void
 	Window_show (Window* window)
 	{
-		UIWindow* win        = get_window();
-		UIViewController* vc = get_vc(window);
+		UIWindow* win            = get_window();
+		ReflexViewController* vc = get_vc(window);
 
 		if (!win.rootViewController)
 			win.rootViewController = vc;

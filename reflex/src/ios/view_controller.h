@@ -28,6 +28,6 @@ void ReflexViewController_set_create_fun (ReflexViewController_CreateFun fun);
 
 void ReflexViewController_set_show_fun   (ReflexViewController_ShowFun   fun);
 
-ReflexViewController_CreateFun* ReflexViewController_get_create_fun ();
+ReflexViewController_CreateFun ReflexViewController_get_create_fun ();
 
-ReflexViewController_ShowFun*   ReflexViewController_get_show_fun ();
+ReflexViewController_ShowFun   ReflexViewController_get_show_fun ();
