@@ -13,10 +13,64 @@
 //#define TRANSPARENT_BACKGROUND
 
 
+static ReflexViewController*
+createReflexViewController ()
+{
+	return [[ReflexViewController alloc] init];
+}
+
+static UIViewController*
+get_next_view_controller (UIViewController* vc)
+{
+	assert(vc);
+
+	if ([vc isKindOfClass: UINavigationController.class])
+		return ((UINavigationController*) vc).topViewController;
+
+	if ([vc isKindOfClass: UITabBarController.class])
+		return ((UITabBarController*) vc).selectedViewController;
+
+	if ([vc isKindOfClass: UISplitViewController.class])
+	{
+		UISplitViewController* split = (UISplitViewController*) vc;
+		return split.viewControllers[split.viewControllers.count - 1];
+	}
+
+	return vc.presentedViewController;
+}
+
+static UIViewController*
+get_top_view_controller (UIViewController* vc)
+{
+	assert(vc);
+
+	UIViewController* next;
+	while (next = get_next_view_controller(vc))
+		vc = next;
+
+	return vc;
+}
+
+static void
+showReflexViewController (
+	UIViewController* root_vc, ReflexViewController* reflex_vc)
+{
+	UIViewController* top = get_top_view_controller(root_vc);
+	if (!top) return;
+
+	if (top.navigationController)
+		[top.navigationController pushViewController: reflex_vc animated: YES];
+	else
+		[top presentViewController: reflex_vc animated: YES completion: nil];
+}
+
+
 namespace global
 {
 
 	static ReflexViewController_CreateFun create_fun = NULL;
+
+	static ReflexViewController_ShowFun   show_fun   = NULL;
 
 }// global
 
@@ -27,12 +81,22 @@ ReflexViewController_set_create_fun (ReflexViewController_CreateFun fun)
 	global::create_fun = fun;
 }
 
-ReflexViewController*
-ReflexViewController_create ()
+void
+ReflexViewController_set_show_fun (ReflexViewController_ShowFun fun)
 {
-	return global::create_fun
-		?	global::create_fun()
-		:	[[ReflexViewController alloc] init];
+	global::show_fun = fun;
+}
+
+ReflexViewController_CreateFun
+ReflexViewController_get_create_fun ()
+{
+	return global::create_fun ? global::create_fun : createReflexViewController;
+}
+
+ReflexViewController_ShowFun
+ReflexViewController_get_show_fun ()
+{
+	return global::show_fun ? global::show_fun : showReflexViewController;
 }
 
 

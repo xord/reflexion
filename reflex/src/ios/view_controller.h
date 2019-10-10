@@ -20,6 +20,14 @@
 
 typedef ReflexViewController* (*ReflexViewController_CreateFun) ();
 
+typedef void (*ReflexViewController_ShowFun) (
+	UIViewController* root_vc, ReflexViewController* reflex_vc);
+
+
 void ReflexViewController_set_create_fun (ReflexViewController_CreateFun fun);
 
-ReflexViewController* ReflexViewController_create ();
+void ReflexViewController_set_show_fun   (ReflexViewController_ShowFun   fun);
+
+ReflexViewController_CreateFun* ReflexViewController_get_create_fun ();
+
+ReflexViewController_ShowFun*   ReflexViewController_get_show_fun ();

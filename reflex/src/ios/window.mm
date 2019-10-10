@@ -51,7 +51,8 @@ namespace Reflex
 	void
 	Window_initialize (Window* window)
 	{
-		ReflexViewController* vc = [ReflexViewController_create() autorelease];
+		ReflexViewController* vc =
+			[ReflexViewController_get_create_fun()() autorelease];
 		if (!vc)
 			reflex_error(__FILE__, __LINE__);
 
@@ -73,54 +74,16 @@ namespace Reflex
 		}
 	}
 
-	static UIViewController*
-	get_next_view_controller (UIViewController* vc)
-	{
-		assert(vc);
-
-		if ([vc isKindOfClass: UINavigationController.class])
-			return ((UINavigationController*) vc).topViewController;
-
-		if ([vc isKindOfClass: UITabBarController.class])
-			return ((UITabBarController*) vc).selectedViewController;
-
-		if ([vc isKindOfClass: UISplitViewController.class])
-		{
-			UISplitViewController* split = (UISplitViewController*) vc;
-			return split.viewControllers[split.viewControllers.count - 1];
-		}
-
-		return vc.presentedViewController;
-	}
-
-	static UIViewController*
-	get_top_view_controller (UIViewController* vc)
-	{
-		assert(vc);
-
-		UIViewController* next;
-		while (next = get_next_view_controller(vc))
-			vc = next;
-
-		return vc;
-	}
-
 	void
 	Window_show (Window* window)
 	{
+		UIWindow* win        = get_window();
 		UIViewController* vc = get_vc(window);
 
-		UIWindow* win = get_window();
 		if (!win.rootViewController)
 			win.rootViewController = vc;
 		else
-		{
-			UIViewController* top = get_top_view_controller(win.rootViewController);
-			if (top.navigationController)
-				[top.navigationController pushViewController: vc animated: YES];
-			else
-				[top presentViewController: vc animated: YES completion: nil];
-		}
+			ReflexViewController_get_show_fun()(win.rootViewController, vc);
 	}
 
 	void
