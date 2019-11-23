@@ -88,7 +88,7 @@ namespace :subtree do
 
   task :pull do
     each_target do |target|
-      sh %( git subtree pull --prefix=#{target} --squash #{github}/#{target} master )
+      sh %( git subtree pull --prefix=#{target} #{github}/#{target} master )
     end
   end
 
