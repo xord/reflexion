@@ -24,6 +24,17 @@ def cd_sh (dir, cmd)
   end
 end
 
+def filter_file (path, &block)
+  File.write path, block.call(File.read path)
+end
+
+def module_versions ()
+  MODULES.each_with_object({}) do |mod, hash|
+    version   = File.readlines("#{mod}/VERSION").first.chomp
+    hash[mod] = /(\d+)\.(\d+)\.(\d+)/.match(version)[1..3].map &:to_i
+  end
+end
+
 def each_target (&block)
   (TARGETS.empty? ? MODULES : TARGETS).each do |target|
     block.call target
@@ -70,6 +81,14 @@ namespace :version do
   task :update do
     each_target do |target|
       sh %( cp VERSION #{target}/ )
+
+      ver = module_versions[target][0..1].join '.'
+      re  = /add_runtime_dependency\s*['"]#{target}['"]\s*,\s*['"]~>\s*[\d\.]+['"]\s*$/
+      Dir.glob('*/*.gemspec').each do |path|
+        filter_file path do |gemspec|
+          gemspec.sub(re) {|s| s.sub /[\d\.]+/, ver}
+        end
+      end
     end
   end
 
