@@ -26,10 +26,7 @@ Gem::Specification.new do |s|
   s.homepage = "https://github.com/xord/xot"
 
   s.platform              = Gem::Platform::RUBY
-  s.required_ruby_version = '>=1.9.0'
-
-  s.add_runtime_dependency 'rake'
-  s.add_development_dependency 'gemcutter'
+  s.required_ruby_version = '~> 2'
 
   s.files            = `git ls-files`.split $/
   s.executables      = s.files.grep(%r{^bin/}) {|f| File.basename f}
