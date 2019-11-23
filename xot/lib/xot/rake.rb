@@ -196,7 +196,7 @@ module Xot
 
       alias_task :gem       => gemfile
       alias_task :clean     => 'gem:clean'
-      alias_task :install   => 'gem:uninstall'
+      alias_task :install   => 'gem:install'
       alias_task :uninstall => 'gem:uninstall'
       alias_task :upload    => 'gem:upload'
 
