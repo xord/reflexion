@@ -194,8 +194,9 @@ module Xot
       gemver  = env :GEMVERSION, target.version
       gemfile = "#{gemname}-#{gemver}.gem"
 
-      alias_task :gem   => gemfile
-      alias_task :clean => 'gem:clean'
+      alias_task :gem    => gemfile
+      alias_task :clean  => 'gem:clean'
+      alias_task :upload => 'gem:upload'
 
       namespace :gem do
         file gemfile => [:ext, :doc, gemspec] do
