@@ -127,7 +127,7 @@ module Xot
       libout  = File.join ext_lib_dir, outname
 
       srcs = FileList["#{ext_dir}/**/*.cpp"]
-      libs = modules.map {|m| m.name.downcase}.map {|s| "../#{s}/lib/lib#{s}.a"}
+      libs = modules.map {|m| "#{m.lib_dir}/lib#{m.name.downcase}.a"}
 
       alias_task :ext     => libout
       alias_task :clean   => 'ext:clean'
