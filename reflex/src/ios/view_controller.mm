@@ -180,8 +180,6 @@ ReflexViewController_get_show_fun ()
 			ptr_for_rebind->Xot::template RefCountable<>::release();
 			ptr_for_rebind = NULL;
 		}
-
-		assert(pwindow && !ptr_for_rebind);
 	}
 
 	- (void) unbind
