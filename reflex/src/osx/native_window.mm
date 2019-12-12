@@ -66,7 +66,8 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		if (data.native)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		data.native = [self retain];
+		// ruby value references native window weakly.
+		data.native = self;
 
 		// Reflex::Window is not constructed completely,
 		// so can not call ClassWrapper::retain().
@@ -86,8 +87,6 @@ static const NSUInteger WINDOW_STYLE_MASK =
 			ptr_for_rebind->Xot::template RefCountable<>::release();
 			ptr_for_rebind = NULL;
 		}
-
-		assert(pwindow && !ptr_for_rebind);
 	}
 
 	- (void) unbind
@@ -95,12 +94,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		[self rebind];
 		if (!pwindow) return;
 
-		Reflex::WindowData& data = Window_get_data(pwindow);
-		if (data.native)
-		{
-			[data.native release];
-			data.native = nil;
-		}
+		Window_get_data(pwindow).native = nil;
 
 		pwindow->release();
 		pwindow = NULL;

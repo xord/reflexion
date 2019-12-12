@@ -145,10 +145,14 @@ ReflexViewController_get_show_fun ()
 
 	- (void) dealloc
 	{
+		[self cleanup];
+		[super dealloc];
+	}
+
+	- (void) cleanup
+	{
 		[self cleanupReflexView];
 		[self unbind];
-
-		[super dealloc];
 	}
 
 	- (void) bind: (Reflex::Window*) window
@@ -160,7 +164,8 @@ ReflexViewController_get_show_fun ()
 		if (data.view_controller)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		data.view_controller = [self retain];
+		// ruby value references view controller weakly.
+		data.view_controller = self;
 
 		// Reflex::Window is not constructed completely,
 		// so can not call ClassWrapper::retain().
@@ -187,12 +192,7 @@ ReflexViewController_get_show_fun ()
 		[self rebind];
 		if (!pwindow) return;
 
-		Reflex::WindowData& data = Window_get_data(pwindow);
-		if (data.view_controller)
-		{
-			[data.view_controller release];
-			data.view_controller = nil;
-		}
+		Window_get_data(pwindow).view_controller = nil;
 
 		pwindow->release();
 		pwindow = NULL;
@@ -209,7 +209,7 @@ ReflexViewController_get_show_fun ()
 		[super didReceiveMemoryWarning];
 
 		if ([self isViewLoaded] && !self.view.window)
-			[self cleanupReflexView];
+			[self cleanup];
 	}
 
 	- (void) viewDidLoad
@@ -260,7 +260,7 @@ ReflexViewController_get_show_fun ()
 
 		EAGLContext* context = view.context;
 		if (context && context == [EAGLContext currentContext])
-			[EAGLContext setCurrentContext: nil];
+			[EAGLContext setCurrentContext: (EAGLContext*) Rays::get_offscreen_context()];
 
 		[view removeFromSuperview];
 
