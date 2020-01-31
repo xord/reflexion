@@ -397,7 +397,7 @@ ReflexViewController_get_show_fun ()
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(
-			touches, event, self.view, Reflex::PointerEvent::DOWN);
+			touches, event, self.reflexView, Reflex::PointerEvent::DOWN);
 		win->on_pointer(&e);
 	}
 
@@ -407,7 +407,7 @@ ReflexViewController_get_show_fun ()
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(
-			touches, event, self.view, Reflex::PointerEvent::UP);
+			touches, event, self.reflexView, Reflex::PointerEvent::UP);
 		win->on_pointer(&e);
 	}
 
@@ -417,7 +417,7 @@ ReflexViewController_get_show_fun ()
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(
-			touches, event, self.view, Reflex::PointerEvent::UP);
+			touches, event, self.reflexView, Reflex::PointerEvent::UP);
 		win->on_pointer(&e);
 	}
 
@@ -427,7 +427,7 @@ ReflexViewController_get_show_fun ()
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(
-			touches, event, self.view, Reflex::PointerEvent::MOVE);
+			touches, event, self.reflexView, Reflex::PointerEvent::MOVE);
 		win->on_pointer(&e);
 	}
 
