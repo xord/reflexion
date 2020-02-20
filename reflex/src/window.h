@@ -80,6 +80,8 @@ namespace Reflex
 
 	void Window_set_focus (Window* window, View* view);
 
+	void Window_call_draw_event (Window* window, DrawEvent* event);
+
 
 	typedef View* (*Window_CreateRootViewFun) ();
 

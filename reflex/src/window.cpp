@@ -36,6 +36,31 @@ namespace Reflex
 		}
 	}
 
+	void
+	Window_call_draw_event (Window* window, DrawEvent* event)
+	{
+		if (!window || !event)
+			argument_error(__FILE__, __LINE__);
+
+		Painter* painter = window->painter();
+		if (!painter)
+			Xot::invalid_state_error(__FILE__, __LINE__);
+
+		Rays::Bounds frame = window->frame();
+
+		event->painter = painter;
+		event->bounds.reset(0, 0, frame.width, frame.height);
+
+		painter->begin();
+		painter->clear();
+
+		window->on_draw(event);
+		if (!event->is_blocked())
+			Reflex::View_draw_tree(window->root(), *event, 0, frame.move_to(0));
+
+		painter->end();
+	}
+
 	namespace global
 	{
 

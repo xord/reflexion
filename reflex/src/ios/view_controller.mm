@@ -347,22 +347,7 @@ ReflexViewController_get_show_fun ()
 		win->self->prev_fps       = fps;
 
 		Reflex::DrawEvent e(dt, fps);
-
-		e.painter = win->painter();
-		if (!e.painter)
-			Xot::invalid_state_error(__FILE__, __LINE__);
-
-		Rays::Bounds frame = win->frame();
-		e.bounds.reset(0, 0, frame.width, frame.height);
-
-		e.painter->begin();
-		e.painter->clear();
-
-		win->on_draw(&e);
-		if (!e.is_blocked())
-			Reflex::View_draw_tree(win->root(), e, 0, frame.move_to(0));
-
-		e.painter->end();
+		Window_call_draw_event(win, &e);
 	}
 
 	- (void) viewDidResize
