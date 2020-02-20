@@ -13,6 +13,10 @@
 
 	- (ReflexView*) createReflexView;
 
+	- (void) startTimer;
+
+	- (void) stopTimer;
+
 	- (void) viewDidResize;
 
 @end// ReflexViewController

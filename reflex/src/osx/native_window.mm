@@ -43,7 +43,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 		[self setDelegate: self];
 		[self setupContentView];
-		[self startTimer: 60];
+		[self startTimer];
 
 		return self;
 	}
@@ -112,6 +112,11 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		rect.origin.x = rect.origin.y = 0;
 		view = [[OpenGLView alloc] initWithFrame: rect];
 		[self setContentView: view];
+	}
+
+	- (void) startTimer
+	{
+		[self startTimer: 60];
 	}
 
 	- (void) startTimer: (int) fps

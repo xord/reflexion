@@ -270,13 +270,18 @@ ReflexViewController_get_show_fun ()
 	- (void) viewDidAppear: (BOOL) animated
 	{
 		[super viewDidAppear: animated];
-		[self startTimer: 60];
+		[self startTimer];
 	}
 
 	- (void) viewDidDisappear: (BOOL) animated
 	{
 		[self stopTimer];
 		[super viewDidDisappear: animated];
+	}
+
+	- (void) startTimer
+	{
+		[self startTimer: 60];
 	}
 
 	- (void) startTimer: (int) fps
