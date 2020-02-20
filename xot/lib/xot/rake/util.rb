@@ -165,8 +165,13 @@ module Xot
     end
 
     def make_cflags (flags = '')
+      warning_opts = %w[
+        no-unknown-pragmas
+        no-deprecated-register
+        no-reserved-user-defined-literal
+      ]
       s  = flags.dup
-      s << ' -Wno-unknown-pragmas -Wno-reserved-user-defined-literal'
+      s << warning_opts.map {|s| " -W#{s}"}.join
       s << ' -std=c++11'                                          if gcc?
       s << ' -std=c++11 -stdlib=libc++ -mmacosx-version-min=10.7' if clang?
       s << ' ' + RbConfig::CONFIG['debugflags']                   if debug?
