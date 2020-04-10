@@ -47,6 +47,22 @@ Reflex::Window.new do
         translate 100, 0
         ellipse                       x, y,  w, h, hole: 10, from: 200, to: 300
         polygon Rays::Polygon.ellipse x, y2, w, h, hole: 10, from: 200, to: 300
+
+        translate 100, 0
+        curve                       x, y,  x + w, y,  x + w, y  + h, x, y  + h
+        polygon Rays::Polygon.curve x, y2, x + w, y2, x + w, y2 + h, x, y2 + h
+
+        translate 100, 0
+        curve                       x, y,  x + w, y,  x + w, y  + h, x, y  + h, loop: true
+        polygon Rays::Polygon.curve x, y2, x + w, y2, x + w, y2 + h, x, y2 + h, loop: true
+
+        translate 100, 0
+        bezier                       x, y,  x + w, y,  x + w, y  + h, x, y  + h
+        polygon Rays::Polygon.bezier x, y2, x + w, y2, x + w, y2 + h, x, y2 + h
+
+        translate 100, 0
+        bezier                       x, y,  x + w, y,  x + w, y  + h, x, y  + h, loop: true
+        polygon Rays::Polygon.bezier x, y2, x + w, y2, x + w, y2 + h, x, y2 + h, loop: true
       end
 
       translate 0, 200
