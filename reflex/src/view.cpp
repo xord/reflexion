@@ -189,8 +189,8 @@ namespace Reflex
 			{
 				World* world = parent_world();
 				Body* b      = world
-					? new Body(world, frame.position(), angle)
-					: Body_create_temporary();
+					?	new Body(world, frame.position(), angle)
+					:	Body_create_temporary();
 				assert(b);
 
 				pbody.reset(b);

@@ -52,8 +52,8 @@ namespace Reflex
 		if (!style) return NULL;
 
 		return is_default_shape(shape)
-			? &style->background_fill()
-			: &style->foreground_fill();
+			?	&style->background_fill()
+			:	&style->foreground_fill();
 	}
 
 	static coord
@@ -65,8 +65,8 @@ namespace Reflex
 		if (!style) return 0;
 
 		return is_default_shape(shape)
-			? style->background_stroke_width()
-			: style->foreground_stroke_width();
+			?	style->background_stroke_width()
+			:	style->foreground_stroke_width();
 	}
 
 	static bool
