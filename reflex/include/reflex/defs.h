@@ -215,8 +215,6 @@ namespace Reflex
 
 		POINTER_PEN          = 0x1 << 4,
 
-		POINTER_TYPE_LAST    = POINTER_PEN,
-
 	};// PointType
 
 

@@ -171,7 +171,6 @@ Init_pointer_event ()
 	cPointerEvent.define_const("POINTER_MOUSE_MIDDLE", Reflex::POINTER_MOUSE_MIDDLE);
 	cPointerEvent.define_const("POINTER_TOUCH",        Reflex::POINTER_TOUCH);
 	cPointerEvent.define_const("POINTER_PEN",          Reflex::POINTER_PEN);
-	cPointerEvent.define_const("POINTER_TYPE_LAST",    Reflex::POINTER_TYPE_LAST);
 }
 
 

@@ -54,9 +54,6 @@ namespace Xot
 	}// Types
 
 
-	enum {UNKNOWN = 0};
-
-
 	using namespace Types;
 
 

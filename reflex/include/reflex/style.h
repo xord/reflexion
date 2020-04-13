@@ -24,7 +24,22 @@ namespace Reflex
 
 			typedef coord Value;
 
-			enum Type {NONE = 0, PIXEL, PERCENT, FILL, FIT, TYPE_LAST};
+			enum Type
+			{
+
+				NONE = 0,
+
+				PIXEL,
+
+				PERCENT,
+
+				FILL,
+
+				FIT,
+
+				TYPE_MAX
+
+			};// Type
 
 			StyleLength (Type type = NONE, Value value = 0);
 
@@ -60,9 +75,20 @@ namespace Reflex
 
 			enum Flow
 			{
-				FLOW_NONE = 0, FLOW_RIGHT, FLOW_DOWN, FLOW_LEFT, FLOW_UP,
-				FLOW_LAST
-			};
+
+				FLOW_NONE = 0,
+
+				FLOW_RIGHT,
+
+				FLOW_DOWN,
+
+				FLOW_LEFT,
+
+				FLOW_UP,
+
+				FLOW_MAX
+
+			};// Flow
 
 			Style (const char* name = NULL);
 

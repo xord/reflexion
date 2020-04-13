@@ -5,6 +5,7 @@
 
 
 #include <rucy/module.h>
+#include <reflex/reflex.h>
 
 
 namespace Reflex

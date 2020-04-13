@@ -201,7 +201,7 @@ namespace Reflex
 	void
 	StyleLength::reset (Type type, Value value)
 	{
-		if (type < NONE || TYPE_LAST <= type)
+		if (type < NONE || TYPE_MAX <= type)
 			argument_error(__FILE__, __LINE__);
 
 		if (type == FIT && value != 1)
@@ -225,7 +225,7 @@ namespace Reflex
 
 	StyleLength::operator bool () const
 	{
-		return NONE < self->type && self->type < TYPE_LAST;
+		return NONE < self->type && self->type < TYPE_MAX;
 	}
 
 	bool
@@ -615,8 +615,8 @@ namespace Reflex
 	Style::set_flow (Flow main, Flow sub)
 	{
 		if (
-			main <  FLOW_NONE || FLOW_LAST <= main ||
-			sub  <  FLOW_NONE || FLOW_LAST <= sub  ||
+			main <  FLOW_NONE || FLOW_MAX <= main ||
+			sub  <  FLOW_NONE || FLOW_MAX <= sub  ||
 			(main != FLOW_NONE && (get_flow_dir(main) == get_flow_dir(sub))) ||
 			(main == FLOW_NONE && sub != FLOW_NONE))
 		{

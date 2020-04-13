@@ -1,4 +1,6 @@
-#include "reflex/reflex.h"
+#include "reflex/ruby/reflex.h"
+
+
 #include "reflex/ruby/view.h"
 #include "reflex/ruby/timer.h"
 #include "../../src/window.h"
