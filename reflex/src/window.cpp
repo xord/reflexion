@@ -52,12 +52,14 @@ namespace Reflex
 		event->bounds.reset(0, 0, frame.width, frame.height);
 
 		painter->begin();
+		painter->push_state();
 		painter->clear();
 
 		window->on_draw(event);
 		if (!event->is_blocked())
 			Reflex::View_draw_tree(window->root(), *event, 0, frame.move_to(0));
 
+		painter->pop_state();
 		painter->end();
 	}
 
