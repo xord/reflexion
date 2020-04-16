@@ -1,4 +1,7 @@
-language: objective-c
+os: osx
+language: cpp
+compiler:
+  - clang
 before_install:
   - date
 after_script:
