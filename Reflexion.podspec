@@ -22,6 +22,7 @@ Pod::Spec.new do |s|
     #{root}/rays/vendor/glm
     #{root}/rays/vendor/clipper/cpp
     #{root}/rays/vendor/poly2tri/poly2tri
+    #{root}/rays/vendor/splines-lib
     #{root}/reflex/vendor/Box2D/Box2D
     ${PODS_ROOT}/CRuby/CRuby/include
   ]
@@ -85,6 +86,10 @@ Pod::Spec.new do |s|
 
     spec.subspec "Poly2Tri" do |sub|
       sub.source_files = "#{mod}/vendor/poly2tri/poly2tri/**/*.cc"
+    end
+
+    spec.subspec "SplineLib" do |sub|
+      sub.source_files = "#{mod}/vendor/splines-lib/Splines.cpp"
     end
 
     spec.subspec "Ext" do |ext|
