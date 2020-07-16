@@ -135,10 +135,15 @@ RUCY_DEFN(position)
 RUCY_END
 
 static
-RUCY_DEF1(array_get, index)
+RUCY_DEF1(get_at, index)
 {
 	CHECK;
-	return value((*THIS)[to<int>(index)]);
+
+	int i = to<int>(index);
+	if (i < 0 || THIS->size <= (size_t) i)
+		index_error(__FILE__, __LINE__);
+
+	return value((*THIS)[i]);
 }
 RUCY_END
 
@@ -164,7 +169,7 @@ Init_pointer_event ()
 	cPointerEvent.define_method("x", x);
 	cPointerEvent.define_method("y", y);
 	cPointerEvent.define_method("position", position);
-	cPointerEvent.define_method("[]", array_get);
+	cPointerEvent.define_method("[]", get_at);
 	cPointerEvent.define_const("TYPE_NONE", Reflex::PointerEvent::NONE);
 	cPointerEvent.define_const("TYPE_DOWN", Reflex::PointerEvent::DOWN);
 	cPointerEvent.define_const("TYPE_UP",   Reflex::PointerEvent::UP);

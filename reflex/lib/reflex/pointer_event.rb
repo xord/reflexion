@@ -64,6 +64,10 @@ module Reflex
       (get_pointer_type & POINTER_PEN) != 0
     end
 
+    def positions ()
+      size.times.map {|i| position i}
+    end
+
     def inspect ()
       "#<Reflex::PointerEvent type:#{type}/#{pointer_type} x:#{x} y:#{y} size:#{size} mod:#{modifiers} count:#{count} drag:#{drag?}>"
     end
