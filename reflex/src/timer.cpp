@@ -162,8 +162,7 @@ namespace Reflex
 	{
 		assert(timer && *timer);
 
-		List::iterator end = timers.end();
-		for (List::iterator it = timers.begin(); it != end; ++it)
+		for (auto it = timers.begin(), end = timers.end(); it != end; ++it)
 		{
 			if (timer->self->next_time < (*it)->self->next_time)
 			{
@@ -219,8 +218,7 @@ namespace Reflex
 		if (!timer)
 			argument_error(__FILE__, __LINE__);
 
-		List::iterator end = timers.end();
-		for (List::iterator it = timers.begin(); it != end; ++it)
+		for (auto it = timers.begin(), end = timers.end(); it != end; ++it)
 		{
 			if (timer->id() == (*it)->id())
 				timers.erase(it);
@@ -261,8 +259,7 @@ namespace Reflex
 	void
 	Timers::fire (double now)
 	{
-		List::iterator end = timers.end();
-		for (List::iterator it = timers.begin(); it != end; ++it)
+		for (auto it = timers.begin(), end = timers.end(); it != end; ++it)
 		{
 			Timer* timer = it->get();
 			if (!is_time_to_fire(timer, now))

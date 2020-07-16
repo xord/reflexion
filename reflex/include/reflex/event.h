@@ -115,14 +115,14 @@ namespace Reflex
 		{
 			struct {coord x, y, z;};
 
-			Rays::Coord3 scroll_;
+			Coord3 scroll_;
 		};
 
 		union
 		{
 			struct {coord dx, dy, dz;};
 
-			Rays::Coord3 delta_;
+			Coord3 delta_;
 		};
 
 		ScrollEvent ();
@@ -203,7 +203,7 @@ namespace Reflex
 		{
 			struct {coord x, y, z;};
 
-			Rays::Coord3 positions[MAX];
+			Coord3 positions[MAX];
 		};
 
 		PointerEvent ();
@@ -234,14 +234,14 @@ namespace Reflex
 		{
 			struct {coord dx, dy, dz;};
 
-			Rays::Coord3 delta_;
+			Coord3 delta_;
 		};
 
 		union
 		{
 			struct {coord x, y, z;};
 
-			Rays::Coord3 position_;
+			Coord3 position_;
 		};
 
 		uint modifiers;
