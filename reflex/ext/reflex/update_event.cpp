@@ -19,13 +19,12 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF2(initialize, now, dt)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "UpdateEvent#initialize", argc, 0, 1, 2);
 
-	THIS->now = (argc >= 1) ? to<double>(argv[0]) : 0;
-	THIS->dt  = (argc >= 2) ? to<float>(argv[1])  : 0;
+	THIS->now = to<double>(now);
+	THIS->dt  = to<float>(dt);
 
 	return rb_call_super(0, NULL);
 }

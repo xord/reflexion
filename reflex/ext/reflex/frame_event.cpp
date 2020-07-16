@@ -21,16 +21,15 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF5(initialize, frame, dx, dy, dwidth, dheight)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "FrameEvent#initialize", argc, 0, 1, 2, 3, 4, 5);
 
-	THIS->frame   = (argc >= 1) ? to<Rays::Bounds&>(argv[0]) : Rays::Bounds(0);
-	THIS->dx      = (argc >= 2) ? to<coord>(argv[1]) : 0;
-	THIS->dy      = (argc >= 3) ? to<coord>(argv[2]) : 0;
-	THIS->dwidth  = (argc >= 4) ? to<coord>(argv[3]) : 0;
-	THIS->dheight = (argc >= 5) ? to<coord>(argv[4]) : 0;
+	THIS->frame   = to<Rays::Bounds>(frame);
+	THIS->dx      = to<coord>(dx);
+	THIS->dy      = to<coord>(dy);
+	THIS->dwidth  = to<coord>(dwidth);
+	THIS->dheight = to<coord>(dheight);
 
 	return rb_call_super(0, NULL);
 }

@@ -21,12 +21,11 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF1(initialize, dt)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "DrawEvent#initialize", argc, 0, 1);
 
-	THIS->dt = (argc >= 1) ? to<float>(argv[0]) : 0;
+	THIS->dt = to<float>(dt);
 
 	return rb_call_super(0, NULL);
 }

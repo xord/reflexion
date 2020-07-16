@@ -19,16 +19,15 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF5(initialize, type, chars, code, repeat, modifiers)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "KeyEvent#initialize", argc, 0, 1, 2, 3, 4, 5);
 
-	THIS->type      = (argc >= 1) ? (Reflex::KeyEvent::Type) to<int>(argv[0]) : Reflex::KeyEvent::NONE;
-	THIS->chars     = (argc >= 2) ? argv[1].c_str()   : NULL;
-	THIS->code      = (argc >= 3) ? to<int>(argv[2])  : Reflex::KEY_NONE;
-	THIS->repeat    = (argc >= 4) ? to<int>(argv[3])  : 1;
-	THIS->modifiers = (argc >= 5) ? to<uint>(argv[4]) : (uint) Reflex::MOD_NONE;
+	THIS->type      = (Reflex::KeyEvent::Type) to<int>(type);
+	THIS->chars     = chars.c_str();
+	THIS->code      = to<int>(code);
+	THIS->repeat    = to<int>(repeat);
+	THIS->modifiers = to<uint>(modifiers);
 
 	return rb_call_super(0, NULL);
 }

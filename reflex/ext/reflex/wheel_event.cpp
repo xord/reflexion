@@ -20,14 +20,13 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF3(initialize, dx, dy, dz)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "WheelEvent#initialize", argc, 0, 1, 2, 3);
 
-	THIS->dx = (argc >= 1) ? to<coord>(argv[0]) : 0;
-	THIS->dy = (argc >= 2) ? to<coord>(argv[1]) : 0;
-	THIS->dz = (argc >= 3) ? to<coord>(argv[2]) : 0;
+	THIS->dx = to<coord>(dx);
+	THIS->dy = to<coord>(dy);
+	THIS->dz = to<coord>(dz);
 
 	return rb_call_super(0, NULL);
 }

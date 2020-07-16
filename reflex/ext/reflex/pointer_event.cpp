@@ -20,19 +20,23 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF6(initialize, type, pointer_type, modifiers, count, drag, positions)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "PointerEvent#initialize", argc, 0, 1, 2, 3, 4, 5, 6, 7);
 
-	THIS->type         = (argc >= 1) ? (Reflex::PointerEvent::Type) to<int>(argv[0]) : Reflex::PointerEvent::NONE;
-	THIS->pointer_type = (argc >= 2) ? to<uint>(argv[1])  : Reflex::POINTER_NONE;
-	THIS->x            = (argc >= 3) ? to<coord>(argv[2]) : 0;
-	THIS->y            = (argc >= 4) ? to<coord>(argv[3]) : 0;
-	THIS->size         = 1;
-	THIS->modifiers    = (argc >= 5) ? to<uint>(argv[4])  : (uint) Reflex::MOD_NONE;
-	THIS->count        = (argc >= 6) ? to<uint>(argv[5])  : 0;
-	THIS->drag         = (argc >= 7) ? to<bool>(argv[6])  : false;
+	int size = positions.size();
+	if (size <= 0 || Reflex::PointerEvent::MAX < size)
+		argument_error(__FILE__, __LINE__);
+
+	THIS->type         = (Reflex::PointerEvent::Type) to<int>(type);
+	THIS->pointer_type = to<uint>(pointer_type);
+	THIS->modifiers    = to<uint>(modifiers);
+	THIS->count        = to<uint>(count);
+	THIS->drag         = to<bool>(drag);
+	THIS->size         = (size_t) size;
+
+	for (int i = 0; i < size; ++i)
+		THIS->positions[i] = to<Rays::Point>(positions[i]);
 
 	return rb_call_super(0, NULL);
 }

@@ -20,17 +20,16 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF6(initialize, x, y, z, dx, dy, dz)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "ScrollEvent#initialize", argc, 0, 1, 2, 3, 4, 5, 6);
 
-	THIS->x       = (argc >= 1) ? to<coord>(argv[0]) : 0;
-	THIS->y       = (argc >= 2) ? to<coord>(argv[1]) : 0;
-	THIS->z       = (argc >= 3) ? to<coord>(argv[2]) : 0;
-	THIS->dx      = (argc >= 4) ? to<coord>(argv[3]) : 0;
-	THIS->dy      = (argc >= 5) ? to<coord>(argv[4]) : 0;
-	THIS->dz      = (argc >= 6) ? to<coord>(argv[5]) : 0;
+	THIS->x  = to<coord>(x);
+	THIS->y  = to<coord>(y);
+	THIS->z  = to<coord>(z);
+	THIS->dx = to<coord>(dx);
+	THIS->dy = to<coord>(dy);
+	THIS->dz = to<coord>(dz);
 
 	return rb_call_super(0, NULL);
 }

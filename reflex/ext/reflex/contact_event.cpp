@@ -21,15 +21,12 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF2(initialize, type, shape)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "ContactEvent#initialize", argc, 0, 2);
 
-	THIS->type  = (argc >= 1)
-		?	(Reflex::ContactEvent::Type) to<int>(argv[0])
-		:	Reflex::ContactEvent::NONE;
-	THIS->shape = (argc >= 2) ? to<Reflex::Shape*>(argv[1]) : NULL;
+	THIS->type  = (Reflex::ContactEvent::Type) to<int>(type);
+	THIS->shape = to<Reflex::Shape*>(shape);
 
 	return rb_call_super(0, NULL);
 }

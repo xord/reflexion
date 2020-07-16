@@ -20,13 +20,12 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF2(initialize, begin, end)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "CaptureEvent#initialize", argc, 0, 1, 2);
 
-	THIS->begin = (argc >= 1) ? to<uint>(argv[0]) : 0;
-	THIS->end   = (argc >= 2) ? to<uint>(argv[1]) : 0;
+	THIS->begin = to<uint>(begin);
+	THIS->end   = to<uint>(end);
 
 	return rb_call_super(0, NULL);
 }

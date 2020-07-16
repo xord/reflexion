@@ -20,13 +20,11 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEFN(initialize)
+RUCY_DEF1(initialize, gravity)
 {
 	CHECK;
-	check_arg_count(__FILE__, __LINE__, "MotionEvent#initialize", argc, 0, 1);
 
-	if (argc >= 1)
-		THIS->gravity = to<Rays::Point>(argv[0]);
+	THIS->gravity = to<Rays::Point>(gravity);
 
 	return rb_call_super(0, NULL);
 }
