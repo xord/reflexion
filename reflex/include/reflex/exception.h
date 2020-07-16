@@ -38,11 +38,17 @@ namespace Reflex
 
 		using namespace Xot::ErrorFunctions;
 
-		void reflex_error (const char* file, int line, const char* format = NULL, ...);
+		[[noreturn]]
+		void reflex_error (
+			const char* file, int line, const char* format = NULL, ...);
 
-		void layout_error (const char* file, int line, const char* format = NULL, ...);
+		[[noreturn]]
+		void layout_error (
+			const char* file, int line, const char* format = NULL, ...);
 
-		void physics_error (const char* file, int line, const char* format = NULL, ...);
+		[[noreturn]]
+		void physics_error (
+			const char* file, int line, const char* format = NULL, ...);
 
 	}// ErrorFunctions
 

@@ -46,17 +46,29 @@ namespace Xot
 	namespace ErrorFunctions
 	{
 
-		void xot_error             (const char* file, int line, const char* format = NULL, ...);
+		[[noreturn]]
+		void xot_error (
+			const char* file, int line, const char* format = NULL, ...);
 
-		void argument_error        (const char* file, int line, const char* format = NULL, ...);
+		[[noreturn]]
+		void argument_error (
+			const char* file, int line, const char* format = NULL, ...);
 
-		void index_error           (const char* file, int line, const char* format = NULL, ...);
+		[[noreturn]]
+		void index_error (
+			const char* file, int line, const char* format = NULL, ...);
 
-		void invalid_state_error   (const char* file, int line, const char* format = NULL, ...);
+		[[noreturn]]
+		void invalid_state_error (
+			const char* file, int line, const char* format = NULL, ...);
 
-		void system_error          (const char* file, int line, const char* format = NULL, ...);
+		[[noreturn]]
+		void system_error (
+			const char* file, int line, const char* format = NULL, ...);
 
-		void not_implemented_error (const char* file, int line, const char* format = NULL, ...);
+		[[noreturn]]
+		void not_implemented_error (
+			const char* file, int line, const char* format = NULL, ...);
 
 	}// ErrorFunctions
 
