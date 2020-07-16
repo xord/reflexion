@@ -28,12 +28,6 @@ namespace Reflex
 	}
 
 
-	MotionEvent::MotionEvent (const Point& gravity)
-	:	gravity(gravity)
-	{
-	}
-
-
 	UpdateEvent::UpdateEvent (double now, float dt)
 	:	now(now), dt(dt)
 	{
@@ -298,6 +292,12 @@ namespace Reflex
 
 	ContactEvent::ContactEvent (Type type, Shape* shape)
 	:	type(type), shape(shape), view(shape ? shape->owner() : NULL)
+	{
+	}
+
+
+	MotionEvent::MotionEvent (const Point& gravity)
+	:	gravity(gravity)
 	{
 	}
 

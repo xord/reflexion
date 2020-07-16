@@ -37,16 +37,6 @@ namespace Reflex
 	};// Event
 
 
-	struct MotionEvent : public Event
-	{
-
-		Point gravity;
-
-		MotionEvent (const Point& gravity = Point(0, 9.8));
-
-	};// MotionEvent
-
-
 	struct UpdateEvent : public Event
 	{
 
@@ -313,6 +303,16 @@ namespace Reflex
 		ContactEvent (Type type, Shape* shape);
 
 	};// ContactEvent
+
+
+	struct MotionEvent : public Event
+	{
+
+		Point gravity;
+
+		MotionEvent (const Point& gravity = Point(0, 9.8));
+
+	};// MotionEvent
 
 
 }// Reflex
