@@ -175,7 +175,7 @@ module Xot
       namespace :test do
         ::Rake::TestTask.new :full do |t|
           t.libs << lib_dir
-          t.test_files = FileList["#{test_dir}/test_*.rb"] - test_alones - test_excludes
+          t.test_files = FileList["#{test_dir}/**/test_*.rb"] - test_alones - test_excludes
           t.verbose = true
         end
 
