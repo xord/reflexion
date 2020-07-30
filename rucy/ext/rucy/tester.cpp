@@ -56,8 +56,8 @@ Init_tester ()
 	Module mRucy   =       define_module("Rucy");
 	Module mTester = mRucy.define_module("Tester");
 
-	mTester.define_function("all_logs", all_logs);
-	mTester.define_function("clear_logs", clear_logs);
+	mTester.define_module_function("all_logs", all_logs);
+	mTester.define_module_function("clear_logs", clear_logs);
 
 	Init_value();
 	Init_exception();

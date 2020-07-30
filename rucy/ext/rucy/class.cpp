@@ -190,6 +190,6 @@ Init_class ()
 	cSimpleObj = mTester.define_class("SimpleObj");
 	cSimpleObj.define_alloc_func(simpleobj_alloc);
 	cSimpleObj.define_private_method("initialize", simpleobj_initialize);
-	cSimpleObj.define_function("set_refs",   simpleobj_set_refs);
-	cSimpleObj.define_function("clear_refs", simpleobj_clear_refs);
+	cSimpleObj.define_module_function("set_refs",   simpleobj_set_refs);
+	cSimpleObj.define_module_function("clear_refs", simpleobj_clear_refs);
 }
