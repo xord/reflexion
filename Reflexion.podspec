@@ -78,7 +78,7 @@ Pod::Spec.new do |s|
     spec    .source_files = "#{mod}/src/*.cpp"
     spec.osx.source_files = "#{mod}/src/osx/*.{cpp,mm}"
     spec.ios.source_files = "#{mod}/src/ios/*.{cpp,mm}"
-    spec.ios.frameworks   = %w[GLKit MobileCoreServices]# ImageIO
+    spec.ios.frameworks   = %w[GLKit MobileCoreServices AVFoundation]# ImageIO
 
     spec.subspec "Clipper" do |sub|
       sub.source_files = "#{mod}/vendor/clipper/cpp/*.cpp"
