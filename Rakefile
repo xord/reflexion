@@ -81,6 +81,14 @@ MODULES.each do |mod|
 end
 
 
+task :release do
+  ver = version
+  targets.each do |target|
+    sh %( rake #{target} upload ) if version(target) == ver
+  end
+end
+
+
 namespace :version do
 
   namespace :bump do
