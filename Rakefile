@@ -82,10 +82,17 @@ end
 namespace :version do
 
   task :update do
-    each_target do |target|
-      sh %( cp VERSION #{target}/ )
+    def modified? (target)
+      `git diff --name-only v#{version target} -- #{target}`.lines.size > 0
+    end
 
-      ver = module_versions[target][0..1].join '.'
+    each_target do |target|
+      sh %( cp VERSION #{target}/ ) if modified?(target)
+    end
+
+    vers = module_versions
+    each_target do |target|
+      ver = vers[target][0..2].join '.'
       re  = /add_runtime_dependency\s*['"]#{target}['"]\s*,\s*['"]~>\s*[\d\.]+['"]\s*$/
       Dir.glob('*/*.gemspec').each do |path|
         filter_file path do |gemspec|
