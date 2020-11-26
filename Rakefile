@@ -28,10 +28,13 @@ def filter_file (path, &block)
   File.write path, block.call(File.read path)
 end
 
+def version (dir = '.')
+  File.readlines("#{dir}/VERSION").first.chomp
+end
+
 def module_versions ()
   MODULES.each_with_object({}) do |mod, hash|
-    version   = File.readlines("#{mod}/VERSION").first.chomp
-    hash[mod] = /(\d+)\.(\d+)\.(\d+)/.match(version)[1..3].map &:to_i
+    hash[mod] = /(\d+)\.(\d+)\.(\d+)/.match(version mod)[1..3].map &:to_i
   end
 end
 
@@ -91,6 +94,42 @@ namespace :version do
       end
     end
   end
+
+  namespace :bump do
+
+    def bump_version (ver, index)
+      nums         = ver.split('.').map &:to_i
+      nums        << 0 until nums.size > index
+      nums[index] += 1
+      nums.map!.with_index {|num, i| i > index ? 0 : num}
+      nums.pop while nums.last == 0 && nums.size >= 3
+      nums.join '.'
+    end
+
+    def update_version (index)
+      oldver = version
+      newver = bump_version oldver, index
+      File.write 'VERSION', newver
+      newver
+    end
+
+    task :major do
+      update_version 0
+    end
+
+    task :minor do
+      update_version 1
+    end
+
+    task :patch do
+      update_version 2
+    end
+
+    task :build do
+      update_version 3
+    end
+
+  end# bump
 
 end# version
 
