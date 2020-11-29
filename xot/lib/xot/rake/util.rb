@@ -10,6 +10,7 @@ module Xot
 
   module Rake
 
+    VERSION_NAME = 'VERSION'
 
     def modules ()
       env(:MODULES, []).map {|m| m::Module}
@@ -81,6 +82,60 @@ module Xot
         paths.concat Dir.glob(pattern)
       end
       paths
+    end
+
+    def filter_file (path, &block)
+      File.write path, block.call(File.read path)
+    end
+
+    def cd_sh (dir, cmd)
+      Dir.chdir dir do
+        $stderr.puts "(in #{Dir.pwd})"
+        sh cmd
+      end
+    end
+
+    def modified_files (dir: '.', hash: '@')
+      `git diff --name-only #{hash} -- #{dir}`.lines.map &:chomp
+    end
+
+    def version_path (dir = nil)
+      dir ? "#{dir}/#{VERSION_NAME}" : VERSION_NAME
+    end
+
+    def get_version (dir = nil)
+      File.readlines(version_path dir).first.chomp
+    end
+
+    def bump_version (index, version = get_version)
+      nums         = version.split('.').map &:to_i
+      nums        << 0 until nums.size > index
+      nums[index] += 1
+      nums.map!.with_index {|num, i| i > index ? 0 : num}
+      nums.pop while nums.last == 0 && nums.size >= 3
+      nums.join '.'
+    end
+
+    def bump_version_file (index, dir: nil)
+      newver = bump_version index, get_version(dir)
+      File.write version_path(dir), newver
+      newver
+    end
+
+    def update_and_tag_version (index, dir: nil, &block)
+      raise 'modified files exist' unless modified_files.empty?
+
+      message = ENV['message']
+      raise 'no message' unless message
+
+      newver = bump_version_file index, dir: dir
+      raise 'version is not updated' unless modified_files == [version_path(dir)]
+
+      block.call if block
+
+      sh %( git add -u )
+      sh %( git commit -m "#{message}" )
+      sh %( git tag -a -m "#{message}" v#{newver} )
     end
 
     def compile_erb (path, out)
