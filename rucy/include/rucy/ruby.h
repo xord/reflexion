@@ -5,7 +5,6 @@
 
 
 #include <ruby.h>
-#include <ruby/intern.h>
 
 
 namespace Rucy

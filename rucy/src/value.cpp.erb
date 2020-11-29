@@ -3,6 +3,7 @@
 
 
 #include <assert.h>
+#include <ruby/encoding.h>
 #include "rucy/function.h"
 #include "rucy/exception.h"
 #include "rucy/debug.h"
@@ -55,15 +56,29 @@ namespace Rucy
 	{
 	}
 
+	static VALUE
+	str_new (const char* s)
+	{
+		rb_encoding* e = rb_default_internal_encoding();
+		return e ? rb_enc_str_new_cstr(s, e) : rb_str_new_cstr(s);
+	}
+
+	static VALUE
+	str_new (const char* s, size_t len)
+	{
+		rb_encoding* e = rb_default_internal_encoding();
+		return e ? rb_enc_str_new(s, len, e) : rb_str_new(s, len);
+	}
+
 	Value::Value (const char* s)
-	:	val(s ? rb_str_new2(s) : Qnil)
+	:	val(s ? str_new(s) : Qnil)
 	{
 		if (!s)
 			argument_error(__FILE__, __LINE__);
 	}
 
 	Value::Value (const char* s, size_t len)
-	:	val(s ? rb_str_new(s, len) : Qnil)
+	:	val(s ? str_new(s, len) : Qnil)
 	{
 		if (!s)
 			argument_error(__FILE__, __LINE__);
