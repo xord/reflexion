@@ -28,10 +28,10 @@ Gem::Specification.new do |s|
   s.platform              = Gem::Platform::RUBY
   s.required_ruby_version = '~> 2'
 
-  s.add_runtime_dependency 'xot',   '~> 0.1.16'
+  s.add_runtime_dependency 'xot',   '~> 0.1.19'
   s.add_runtime_dependency 'rucy',  '~> 0.1.18'
   s.add_runtime_dependency 'beeps', '~> 0.1.18'
-  s.add_runtime_dependency 'rays',  '~> 0.1.18'
+  s.add_runtime_dependency 'rays',  '~> 0.1.19'
 
   s.files            = `git ls-files`.split $/
   s.executables      = s.files.grep(%r{^bin/}) {|f| File.basename f}
