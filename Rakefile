@@ -28,8 +28,8 @@ def targets ()
 end
 
 def sh_each_targets (cmd)
-  targets.each do |target|
-    cd_sh File.expand_path(target.to_s, __dir__), cmd
+  targets.each do |t|
+    cd_sh File.expand_path(t.to_s, __dir__), cmd
   end
 end
 
@@ -64,8 +64,8 @@ end
 
 task :release do
   ver = get_version
-  targets.each do |target|
-    sh %( rake #{target} upload ) if get_version(target) == ver
+  targets.each do |t|
+    sh %( rake #{t} upload ) if get_version(t) == ver
   end
 end
 
@@ -81,8 +81,8 @@ namespace :version do
     end
 
     def update_module_versions ()
-      modified_targets.each do |target|
-        sh %( cp #{VERSION_NAME} #{target}/ )
+      modified_targets.each do |t|
+        sh %( cp #{VERSION_NAME} #{t}/ )
       end
     end
 
@@ -90,9 +90,9 @@ namespace :version do
       update_module_versions
 
       vers = module_versions
-      targets.each do |target|
-        ver = vers[target][0..2].join '.'
-        re  = /add_runtime_dependency\s*['"]#{target}['"]\s*,\s*['"]~>\s*[\d\.]+['"]\s*$/
+      targets.each do |t|
+        ver = vers[t][0..2].join '.'
+        re  = /add_runtime_dependency\s*['"]#{t}['"]\s*,\s*['"]~>\s*[\d\.]+['"]\s*$/
         Dir.glob('*/*.gemspec').each do |path|
           filter_file path do |gemspec|
             gemspec.sub(re) {|s| s.sub /[\d\.]+/, ver}
@@ -135,14 +135,14 @@ namespace :subtree do
   github = 'git@github.com:xord'
 
   task :push do
-    targets.each do |target|
-      sh %( git subtree push --prefix=#{target} #{github}/#{target} master )
+    targets.each do |t|
+      sh %( git subtree push --prefix=#{t} #{github}/#{t} master )
     end
   end
 
   task :pull do
-    target.each do |target|
-      sh %( git subtree pull --prefix=#{target} #{github}/#{target} master )
+    target.each do |t|
+      sh %( git subtree pull --prefix=#{t} #{github}/#{t} master )
     end
   end
 
