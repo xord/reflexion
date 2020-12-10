@@ -62,26 +62,12 @@ MODULES.each do |mod|
 end
 
 
-task :release do
-  ver = get_version
-  targets.each do |t|
-    sh %( rake #{t} upload ) if get_version(t) == ver
-  end
-end
-
-
 namespace :version do
 
   namespace :bump do
 
-    def modified_targets ()
-      targets.select {|t|
-        modified_files(dir: t, hash: "v#{get_version t}").size > 0
-      }
-    end
-
     def update_module_versions ()
-      modified_targets.each do |t|
+      targets.each do |t|
         sh %( cp #{VERSION_NAME} #{t}/ )
       end
     end
