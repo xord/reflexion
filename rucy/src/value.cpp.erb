@@ -56,39 +56,29 @@ namespace Rucy
 	{
 	}
 
-	static rb_encoding*
-	get_encoding (Value::Encoding e)
+	static VALUE
+	str_new (const char* s)
 	{
-		switch (e)
-		{
-			case Value::UTF8: return rb_utf8_encoding();
-			default:          return rb_default_internal_encoding();
-		}
+		rb_encoding* e = rb_default_internal_encoding();
+		return e ? rb_enc_str_new_cstr(s, e) : rb_str_new_cstr(s);
 	}
 
 	static VALUE
-	str_new (const char* s, Value::Encoding e)
+	str_new (const char* s, size_t len)
 	{
-		rb_encoding* enc = get_encoding(e);
-		return enc ? rb_enc_str_new_cstr(s, enc) : rb_str_new_cstr(s);
+		rb_encoding* e = rb_default_internal_encoding();
+		return e ? rb_enc_str_new(s, len, e) : rb_str_new(s, len);
 	}
 
-	static VALUE
-	str_new (const char* s, size_t len, Value::Encoding e)
-	{
-		rb_encoding* enc = get_encoding(e);
-		return enc ? rb_enc_str_new(s, len, enc) : rb_str_new(s, len);
-	}
-
-	Value::Value (const char* s, Encoding e)
-	:	val(s ? str_new(s, e) : Qnil)
+	Value::Value (const char* s)
+	:	val(s ? str_new(s) : Qnil)
 	{
 		if (!s)
 			argument_error(__FILE__, __LINE__);
 	}
 
-	Value::Value (const char* s, size_t len, Encoding e)
-	:	val(s ? str_new(s, len, e) : Qnil)
+	Value::Value (const char* s, size_t len)
+	:	val(s ? str_new(s, len) : Qnil)
 	{
 		if (!s)
 			argument_error(__FILE__, __LINE__);
@@ -441,14 +431,14 @@ namespace Rucy
 		init(gc_);
 	}
 
-	GlobalValue::GlobalValue (const char* s, Encoding e, bool gc_)
-	:	Super(s, e)
+	GlobalValue::GlobalValue (const char* s, bool gc_)
+	:	Super(s)
 	{
 		init(gc_);
 	}
 
-	GlobalValue::GlobalValue (const char* s, size_t len, Encoding e, bool gc_)
-	:	Super(s, len, e)
+	GlobalValue::GlobalValue (const char* s, size_t len, bool gc_)
+	:	Super(s, len)
 	{
 		init(gc_);
 	}
@@ -604,15 +594,15 @@ namespace Rucy
 	}
 
 	Value
-	value (const char* s, Value::Encoding e)
+	value (const char* s)
 	{
-		return Value(s, e);
+		return Value(s);
 	}
 
 	Value
-	value (const char* s, size_t len, Value::Encoding e)
+	value (const char* s, size_t len)
 	{
-		return Value(s, len, e);
+		return Value(s, len);
 	}
 
 	Value
