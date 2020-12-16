@@ -133,7 +133,7 @@ namespace Reflex
 	void
 	Window_set_resizable (Window* window, bool state)
 	{
-		not_implemented_error(__FILE__, __LINE__);
+		//not_implemented_error(__FILE__, __LINE__);
 	}
 
 	bool
