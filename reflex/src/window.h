@@ -78,6 +78,10 @@ namespace Reflex
 
 	Bounds Window_get_frame (const Window& window);
 
+	void Window_set_resizable (Window* window, bool state);
+
+	bool Window_is_resizable (const Window& window);
+
 	void Window_set_focus (Window* window, View* view);
 
 	void Window_call_draw_event (Window* window, DrawEvent* event);

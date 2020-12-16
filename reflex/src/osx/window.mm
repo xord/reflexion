@@ -112,6 +112,22 @@ namespace Reflex
 			rect.size.height);
 	}
 
+	void
+	Window_set_resizable (Window* window, bool state)
+	{
+		NativeWindow* native = get_native(window);
+		if (state)
+			native.styleMask |= NSResizableWindowMask;
+		else
+			native.styleMask &= ~NSResizableWindowMask;
+	}
+
+	bool
+	Window_is_resizable (const Window& window)
+	{
+		return get_native(&window).styleMask & NSResizableWindowMask;
+	}
+
 
 	WindowData::WindowData ()
 	{

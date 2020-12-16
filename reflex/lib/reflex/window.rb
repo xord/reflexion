@@ -48,7 +48,8 @@ module Reflex
       :friction=,    :friction,
       :restitution=, :restitution
 
-    universal_accessor :title, :frame
+    universal_accessor :title, :frame,
+      resizable: {reader: :resizable?}
 
     def initialize (options = nil, &block)
       super()

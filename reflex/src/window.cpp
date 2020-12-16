@@ -221,6 +221,18 @@ namespace Reflex
 		return Window_get_frame(*this);
 	}
 
+	void
+	Window::set_resizable (bool state)
+	{
+		Window_set_resizable(this, state);
+	}
+
+	bool
+	Window::is_resizable () const
+	{
+		Window_is_resizable(*this);
+	}
+
 	bool
 	Window::hidden () const
 	{

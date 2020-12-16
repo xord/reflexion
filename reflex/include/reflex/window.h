@@ -49,6 +49,10 @@ namespace Reflex
 
 			virtual Bounds   frame () const;
 
+			virtual void set_resizable (bool state = true);
+
+			virtual bool  is_resizable () const;
+
 			virtual bool hidden () const;
 
 			virtual       View* root ();

@@ -130,6 +130,18 @@ namespace Reflex
 			rect.size.height);
 	}
 
+	void
+	Window_set_resizable (Window* window, bool state)
+	{
+		not_implemented_error(__FILE__, __LINE__);
+	}
+
+	bool
+	Window_is_resizable (const Window& window)
+	{
+		return false;
+	}
+
 
 	WindowData::WindowData ()
 	{

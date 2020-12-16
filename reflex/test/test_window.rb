@@ -68,6 +68,23 @@ class TestWindow < Test::Unit::TestCase
     w.frame = [bounds(1, 2, 3, 4, 5, 6)]; assert_equal [1, 2, 0, 4, 5, 0], w.frame.to_a(3)
   end
 
+  def test_resizable? ()
+    w = win
+    assert_true  w.resizable?
+
+    w.resizable = false
+    assert_false w.resizable?
+
+    w.resizable = true
+    assert_true  w.resizable?
+
+    w.resizable false
+    assert_false w.resizable?
+
+    w.resizable true
+    assert_true  w.resizable?
+  end
+
   def test_title ()
     w = win
     assert_equal '', w.title

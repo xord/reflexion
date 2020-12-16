@@ -94,6 +94,23 @@ RUCY_DEF0(get_frame)
 RUCY_END
 
 static
+RUCY_DEF1(set_resizable, state)
+{
+	CHECK;
+	THIS->set_resizable(to<bool>(state));
+	return value(THIS->is_resizable());
+}
+RUCY_END
+
+static
+RUCY_DEF0(is_resizable)
+{
+	CHECK;
+	return value(THIS->is_resizable());
+}
+RUCY_END
+
+static
 RUCY_DEF0(hidden)
 {
 	CHECK;
@@ -267,6 +284,8 @@ Init_window ()
 	cWindow.define_method("title", get_title);
 	cWindow.define_method("frame=", set_frame);
 	cWindow.define_method("frame",  get_frame);
+	cWindow.define_method("resizable=", set_resizable);
+	cWindow.define_method("resizable?",  is_resizable);
 	cWindow.define_method("hidden", hidden);
 	cWindow.define_method("root", root);
 	cWindow.define_method("focus", focus);
