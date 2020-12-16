@@ -230,7 +230,7 @@ namespace Reflex
 	bool
 	Window::is_resizable () const
 	{
-		Window_is_resizable(*this);
+		return Window_is_resizable(*this);
 	}
 
 	bool
