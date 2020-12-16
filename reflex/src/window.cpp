@@ -133,7 +133,7 @@ namespace Reflex
 		self->root->set_name(VIEW_TAG_ROOT);
 		View_set_window(self->root.get(), this);
 
-		self->painter.canvas(0, 0, 1, 1);
+		self->painter.canvas(0, 0, 1, 1, Window_get_pixel_density(*this));
 	}
 
 	Window::~Window ()

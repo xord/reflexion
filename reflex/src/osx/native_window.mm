@@ -250,7 +250,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 				b.move_to(0, 0);
 
 				if (win->painter())
-					win->painter()->canvas(b, self.backingScaleFactor);
+					win->painter()->canvas(b, win->painter()->pixel_density());
 
 				if (win->root())
 					View_set_frame(win->root(), b);

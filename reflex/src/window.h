@@ -86,6 +86,8 @@ namespace Reflex
 
 	void Window_call_draw_event (Window* window, DrawEvent* event);
 
+	float Window_get_pixel_density (const Window& window);
+
 
 	typedef View* (*Window_CreateRootViewFun) ();
 

@@ -128,6 +128,12 @@ namespace Reflex
 		return get_native(&window).styleMask & NSResizableWindowMask;
 	}
 
+	float
+	Window_get_pixel_density (const Window& window)
+	{
+		return get_native(&window).backingScaleFactor;
+	}
+
 
 	WindowData::WindowData ()
 	{

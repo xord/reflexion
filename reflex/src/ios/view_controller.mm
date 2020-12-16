@@ -371,7 +371,7 @@ ReflexViewController_get_show_fun ()
 				b.move_to(0, 0);
 
 				if (win->painter())
-					win->painter()->canvas(b, UIScreen.mainScreen.scale);
+					win->painter()->canvas(b, win->painter()->pixel_density());
 
 				if (win->root())
 					View_set_frame(win->root(), b);
