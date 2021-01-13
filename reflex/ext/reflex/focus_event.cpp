@@ -42,7 +42,7 @@ RUCY_DEF1(initialize_copy, obj)
 RUCY_END
 
 static
-RUCY_DEF0(type)
+RUCY_DEF0(get_type)
 {
 	CHECK;
 	return value(THIS->type);
@@ -50,7 +50,7 @@ RUCY_DEF0(type)
 RUCY_END
 
 static
-RUCY_DEF0(current)
+RUCY_DEF0(get_current)
 {
 	CHECK;
 	return THIS->current ? value(THIS->current) : nil();
@@ -58,7 +58,7 @@ RUCY_DEF0(current)
 RUCY_END
 
 static
-RUCY_DEF0(last)
+RUCY_DEF0(get_last)
 {
 	CHECK;
 	return THIS->last ? value(THIS->last) : nil();
@@ -77,9 +77,9 @@ Init_focus_event ()
 	cFocusEvent.define_alloc_func(alloc);
 	cFocusEvent.define_private_method("initialize",      initialize);
 	cFocusEvent.define_private_method("initialize_copy", initialize_copy);
-	cFocusEvent.define_method("type", type);
-	cFocusEvent.define_method("current", current);
-	cFocusEvent.define_method("last", last);
+	cFocusEvent.define_method("type",    get_type);
+	cFocusEvent.define_method("current", get_current);
+	cFocusEvent.define_method("last",    get_last);
 	cFocusEvent.define_const("TYPE_NONE",  Reflex::FocusEvent::NONE);
 	cFocusEvent.define_const("TYPE_FOCUS", Reflex::FocusEvent::FOCUS);
 	cFocusEvent.define_const("TYPE_BLUR",  Reflex::FocusEvent::BLUR);
