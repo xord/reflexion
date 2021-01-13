@@ -52,7 +52,7 @@ RUCY_DEF1(initialize_copy, obj)
 RUCY_END
 
 static
-RUCY_DEF0(type)
+RUCY_DEF0(get_type)
 {
 	CHECK;
 	return value(THIS->type);
@@ -60,7 +60,7 @@ RUCY_DEF0(type)
 RUCY_END
 
 static
-RUCY_DEF0(pointer_type)
+RUCY_DEF0(get_pointer_type)
 {
 	CHECK;
 	return value(THIS->pointer_type);
@@ -68,7 +68,7 @@ RUCY_DEF0(pointer_type)
 RUCY_END
 
 static
-RUCY_DEF0(size)
+RUCY_DEF0(get_size)
 {
 	CHECK;
 	return value(THIS->size);
@@ -76,7 +76,7 @@ RUCY_DEF0(size)
 RUCY_END
 
 static
-RUCY_DEF0(modifiers)
+RUCY_DEF0(get_modifiers)
 {
 	CHECK;
 	return value(THIS->modifiers);
@@ -84,7 +84,7 @@ RUCY_DEF0(modifiers)
 RUCY_END
 
 static
-RUCY_DEF0(count)
+RUCY_DEF0(get_count)
 {
 	CHECK;
 	return value(THIS->count);
@@ -92,7 +92,7 @@ RUCY_DEF0(count)
 RUCY_END
 
 static
-RUCY_DEF0(drag)
+RUCY_DEF0(is_drag)
 {
 	CHECK;
 	return value(THIS->drag);
@@ -100,7 +100,7 @@ RUCY_DEF0(drag)
 RUCY_END
 
 static
-RUCY_DEF0(capture)
+RUCY_DEF0(is_capture)
 {
 	CHECK;
 	return value(THIS->capture);
@@ -108,7 +108,7 @@ RUCY_DEF0(capture)
 RUCY_END
 
 static
-RUCY_DEF0(x)
+RUCY_DEF0(get_x)
 {
 	CHECK;
 	return value(THIS->x);
@@ -116,7 +116,7 @@ RUCY_DEF0(x)
 RUCY_END
 
 static
-RUCY_DEF0(y)
+RUCY_DEF0(get_y)
 {
 	CHECK;
 	return value(THIS->y);
@@ -124,7 +124,7 @@ RUCY_DEF0(y)
 RUCY_END
 
 static
-RUCY_DEFN(position)
+RUCY_DEFN(get_position)
 {
 	CHECK;
 	check_arg_count(__FILE__, __LINE__, "PointerEvent#position", argc, 0, 1);
@@ -159,17 +159,17 @@ Init_pointer_event ()
 	cPointerEvent.define_alloc_func(alloc);
 	cPointerEvent.define_private_method("initialize",      initialize);
 	cPointerEvent.define_private_method("initialize_copy", initialize_copy);
-	cPointerEvent.define_method("type", type);
-	cPointerEvent.define_method("pointer_type", pointer_type);
-	cPointerEvent.define_method("size", size);
-	cPointerEvent.define_method("modifiers", modifiers);
-	cPointerEvent.define_method("count", count);
-	cPointerEvent.define_method("drag?", drag);
-	cPointerEvent.define_method("capture?", capture);
-	cPointerEvent.define_method("x", x);
-	cPointerEvent.define_method("y", y);
-	cPointerEvent.define_method("position", position);
-	cPointerEvent.define_method("[]", get_at);
+	cPointerEvent.define_method("type",         get_type);
+	cPointerEvent.define_method("pointer_type", get_pointer_type);
+	cPointerEvent.define_method("size",         get_size);
+	cPointerEvent.define_method("modifiers",    get_modifiers);
+	cPointerEvent.define_method("count",        get_count);
+	cPointerEvent.define_method("drag?",        is_drag);
+	cPointerEvent.define_method("capture?",     is_capture);
+	cPointerEvent.define_method("x",            get_x);
+	cPointerEvent.define_method("y",            get_y);
+	cPointerEvent.define_method("position",     get_position);
+	cPointerEvent.define_method("[]",           get_at);
 	cPointerEvent.define_const("TYPE_NONE", Reflex::PointerEvent::NONE);
 	cPointerEvent.define_const("TYPE_DOWN", Reflex::PointerEvent::DOWN);
 	cPointerEvent.define_const("TYPE_UP",   Reflex::PointerEvent::UP);
