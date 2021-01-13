@@ -43,7 +43,7 @@ RUCY_DEF1(initialize_copy, obj)
 RUCY_END
 
 static
-RUCY_DEF0(type)
+RUCY_DEF0(get_type)
 {
 	CHECK;
 	return value(THIS->type);
@@ -51,7 +51,7 @@ RUCY_DEF0(type)
 RUCY_END
 
 static
-RUCY_DEF0(chars)
+RUCY_DEF0(get_chars)
 {
 	CHECK;
 	return value(THIS->chars.c_str());
@@ -59,7 +59,7 @@ RUCY_DEF0(chars)
 RUCY_END
 
 static
-RUCY_DEF0(code)
+RUCY_DEF0(get_code)
 {
 	CHECK;
 	return value(THIS->code);
@@ -67,7 +67,7 @@ RUCY_DEF0(code)
 RUCY_END
 
 static
-RUCY_DEF0(modifiers)
+RUCY_DEF0(get_modifiers)
 {
 	CHECK;
 	return value(THIS->modifiers);
@@ -75,7 +75,7 @@ RUCY_DEF0(modifiers)
 RUCY_END
 
 static
-RUCY_DEF0(repeat)
+RUCY_DEF0(get_repeat)
 {
 	CHECK;
 	return value(THIS->repeat);
@@ -83,7 +83,7 @@ RUCY_DEF0(repeat)
 RUCY_END
 
 static
-RUCY_DEF0(capture)
+RUCY_DEF0(is_capture)
 {
 	CHECK;
 	return value(THIS->capture);
@@ -102,12 +102,12 @@ Init_key_event ()
 	cKeyEvent.define_alloc_func(alloc);
 	cKeyEvent.define_private_method("initialize",      initialize);
 	cKeyEvent.define_private_method("initialize_copy", initialize_copy);
-	cKeyEvent.define_method("type", type);
-	cKeyEvent.define_method("chars", chars);
-	cKeyEvent.define_method("code", code);
-	cKeyEvent.define_method("modifiers", modifiers);
-	cKeyEvent.define_method("repeat", repeat);
-	cKeyEvent.define_method("capture?", capture);
+	cKeyEvent.define_method("type",      get_type);
+	cKeyEvent.define_method("chars",     get_chars);
+	cKeyEvent.define_method("code",      get_code);
+	cKeyEvent.define_method("modifiers", get_modifiers);
+	cKeyEvent.define_method("repeat",    get_repeat);
+	cKeyEvent.define_method("capture?",  is_capture);
 	cKeyEvent.define_const("TYPE_NONE", Reflex::KeyEvent::NONE);
 	cKeyEvent.define_const("TYPE_DOWN", Reflex::KeyEvent::DOWN);
 	cKeyEvent.define_const("TYPE_UP",   Reflex::KeyEvent::UP);
