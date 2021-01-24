@@ -13,13 +13,13 @@ module Xot
 
     alias make_bit bit
 
-    def initialize (auto: false, none: 0, **flags, &block)
+    def initialize(auto: false, none: 0, **flags, &block)
       @bit2sym, @sym2bit, @auto, @next = {}, {none: none, no: none}, auto, 1
       flags.each {|sym, value| flag sym, value}
       BlockUtil.instance_eval_or_block_call self, &block if block
     end
 
-    def flag (symbol, value = nil, bit: nil)
+    def flag(symbol, value = nil, bit: nil)
       bit = value || make_bit(bit) || (@auto ? @next : nil)
 
       raise ArgumentError if !bit
@@ -35,7 +35,7 @@ module Xot
       bit
     end
 
-    def bits2symbols (bits)
+    def bits2symbols(bits)
       array = []
       bits.to_s(2).reverse.each_char.with_index do |char, index|
         next unless char == '1'
@@ -46,13 +46,13 @@ module Xot
       array
     end
 
-    def symbols2bits (*symbols)
+    def symbols2bits(*symbols)
       symbols.flatten.reduce(0) {|value, symbol| value | sym2bit(symbol)}
     end
 
     private
 
-      def sym2bit (symbol)
+      def sym2bit(symbol)
         bit = @sym2bit[symbol]
         bit = flag symbol if !bit && @auto
         raise "unknown symbol #{symbol.inspect} for flag." unless bit

@@ -6,7 +6,7 @@ module Xot
 
   module Setter
 
-    def set (*args)
+    def set(*args)
       first = args.shift
       if first.kind_of? Hash
         first.each {|name, value| set_value__ name, value}
@@ -17,7 +17,7 @@ module Xot
 
     private
 
-      def set_value__ (name, *values)
+      def set_value__(name, *values)
         raise ArgumentError, "set '#{values}' to '#{name}'" if
           !name || name.empty? || values.empty?
         __send__ "#{name}=", *values

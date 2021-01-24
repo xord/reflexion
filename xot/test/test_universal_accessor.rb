@@ -12,7 +12,7 @@ class TestUniversalAccessor < Test::Unit::TestCase
 
     attr_reader :args
 
-    def args= (*args)
+    def args=(*args)
       @args = args
     end
 
@@ -20,11 +20,11 @@ class TestUniversalAccessor < Test::Unit::TestCase
 
   end# Accessor
 
-  def accessor (*args)
-    Accessor.new *args
+  def accessor(*args)
+    Accessor.new(*args)
   end
 
-  def test_accessor ()
+  def test_accessor()
     a = accessor
     assert_equal nil, a.val
 
@@ -36,7 +36,7 @@ class TestUniversalAccessor < Test::Unit::TestCase
     assert_equal 3, a.val
   end
 
-  def test_accessor_splat_args ()
+  def test_accessor_splat_args()
     a = accessor
 
     a.args =   1, 2, 3;  assert_equal [[1, 2, 3]], a.args

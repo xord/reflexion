@@ -6,7 +6,7 @@ require_relative 'helper'
 
 class TestTester < Test::Unit::TestCase
 
-  def test_native ()
+  def test_native()
     assert Xot::Tester.test_native
   end
 

@@ -12,7 +12,7 @@ module Xot
 
     class AliasTask < ::Rake::Task
 
-      def timestamp ()
+      def timestamp()
         prerequisite_tasks.map {|pre| pre.timestamp}.max || ::Rake::EARLY
       end
 
@@ -27,8 +27,8 @@ end# Xot
 
 module Rake
   module DSL
-    def alias_task (*args, &block)
-      Xot::Rake::AliasTask.define_task *args, &block
+    def alias_task(*args, &block)
+      Xot::Rake::AliasTask.define_task(*args, &block)
     end
   end
 end
