@@ -8,7 +8,7 @@ class TestFunction < Test::Unit::TestCase
 
   include Rucy::Tester
 
-  def test_to_value ()
+  def test_to_value()
     assert_equal true, true_to_value
     assert_equal false, false_to_value
     assert_equal nil, null_to_value

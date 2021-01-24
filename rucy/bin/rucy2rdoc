@@ -3,12 +3,12 @@
 
 class Parser
 
-  def initialize (lines)
+  def initialize(lines)
     @funs = {}
     @lines = lines
   end
 
-  def parse ()
+  def parse()
     parse_functions @lines
     parse_Init @lines
     @lines
@@ -16,7 +16,7 @@ class Parser
 
   private
 
-    def process_lines (lines, regexp, &block)
+    def process_lines(lines, regexp, &block)
       lines.gsub! regexp do |str|
         params = $~[1..-1]
         params.unshift str
@@ -24,7 +24,7 @@ class Parser
       end
     end
 
-    def parse_functions (lines)
+    def parse_functions(lines)
       re = %r{
         (?:RUCY_)?DEF(\d+|N|_ALLOC)\( (\w+) \s* ((?:\, \s* \w+)*) \s* \) \s*
         (\{ \s*
@@ -50,7 +50,7 @@ class Parser
       end
     end
 
-    def parse_Init (lines)
+    def parse_Init(lines)
       re = %r{
         Init_(\w*) \s* \( \s* \) \s*
         \{ \s*
@@ -64,7 +64,7 @@ class Parser
       end
     end
 
-    def parse_module_and_class (lines)
+    def parse_module_and_class(lines)
       re = %r{
         (\w+) \s* \= \s*
           (?: (\w+) \s* \. )? \s* (define_(?:module|class)) \s*
@@ -79,7 +79,7 @@ class Parser
       end
     end
 
-    def parse_methods (lines)
+    def parse_methods(lines)
       re = %r{
         (\w+) \s* \. \s* (define_\w+) \s*
           \( \s* (?: (\"\w+(?:\=|\?\!)?\") \s* \, \s* )? (\w+) \s* \) \s* ;
@@ -100,11 +100,11 @@ class Parser
 end# Parser
 
 
-def usage ()
+def usage()
   "rucy2rdoc FILE"
 end
 
-def main (argv)
+def main(argv)
   if path = argv.shift
     print Parser.new(File.read path).parse
   else
