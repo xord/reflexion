@@ -14,13 +14,13 @@ module Reflex
 
     alias view owner
 
-    def inspect ()
+    def inspect()
       "#<Reflex::Timer owner:#{owner} id:#{id} interval:#{interval} count:#{count}>"
     end
 
     private
 
-      def call_timer_block ()
+      def call_timer_block()
         @block.call self if @block
       end
 

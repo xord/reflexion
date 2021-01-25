@@ -10,15 +10,15 @@ module Reflex
 
   extend module ClassMethods
 
-    def start (*args, &block)
+    def start(*args, &block)
       Application.new(*args, &block).start
     end
 
-    def quit ()
+    def quit()
       Application.instance.quit
     end
 
-    def window (*args, &block)
+    def window(*args, &block)
       Window.new(*args, &block).tap {|w| w.show}
     end
 

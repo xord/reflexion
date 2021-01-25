@@ -11,7 +11,7 @@ module Reflex
 
     include ModelOwner
 
-    def on_data_update (e)
+    def on_data_update(e)
       resize_to_fit
       redraw
     end

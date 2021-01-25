@@ -9,7 +9,7 @@ module Reflex
 
   class StyleLength
 
-    def inspect ()
+    def inspect()
       "#<#{self.class.name} #{to_s}>"
     end
 

@@ -15,22 +15,22 @@ module Reflex
     include Xot::Setter
     include HasTags
 
-    def self.selector (*args)
+    def self.selector(*args)
       arg0 = args.first
       arg0.kind_of?(Selector) ? arg0 : self.new(*args)
     end
 
-    def initialize (options = nil, &block)
+    def initialize(options = nil, &block)
       super()
       set options if options
       Xot::BlockUtil.instance_eval_or_block_call self, &block if block
     end
 
-    def to_s ()
+    def to_s()
       "{name:#{name}, tags:[#{tags.to_a.join ', '}]}"
     end
 
-    def inspect ()
+    def inspect()
       "#<#{self.class} #{to_s}>"
     end
 

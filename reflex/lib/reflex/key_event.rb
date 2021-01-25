@@ -12,25 +12,25 @@ module Reflex
 
     alias get_type type
 
-    const_symbol_reader :type, {
+    const_symbol_reader :type, **{
       none: TYPE_NONE,
       down: TYPE_DOWN,
       up:   TYPE_UP
     }
 
-    def down? ()
+    def down?()
       get_type == TYPE_DOWN
     end
 
-    def up? ()
+    def up?()
       get_type == TYPE_UP
     end
 
-    def repeat? ()
+    def repeat?()
       repeat >= 1
     end
 
-    def inspect ()
+    def inspect()
       "#<Reflex::KeyEvent type:#{type} chars:'#{chars}' code:#{code} mod:#{modifiers} repeat:#{repeat} capture?:#{capture?}>"
     end
 

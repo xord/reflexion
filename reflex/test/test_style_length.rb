@@ -6,11 +6,11 @@ require_relative 'helper'
 
 class TestStyleLength < Test::Unit::TestCase
 
-  def len (*args, &block)
-    Reflex::StyleLength.new *args, &block
+  def len(*args, &block)
+    Reflex::StyleLength.new(*args, &block)
   end
 
-  def test_initialize ()
+  def test_initialize()
     assert_equal nil, len.type
     assert_equal 0,   len.value
 
@@ -48,7 +48,7 @@ class TestStyleLength < Test::Unit::TestCase
     assert_raise(ArgumentError) {len 'fit 0.5'}
   end
 
-  def test_to_s ()
+  def test_to_s()
     assert_equal '',        len.to_s
     assert_equal '',        len(nil).to_s
     assert_equal '100px',   len('100px').to_s
@@ -59,7 +59,7 @@ class TestStyleLength < Test::Unit::TestCase
     assert_equal '0.5fill', len('0.5 fill').to_s
   end
 
-  def test_inspect ()
+  def test_inspect()
     assert_nothing_raised {len.inspect}
   end
 

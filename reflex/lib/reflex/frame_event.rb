@@ -13,26 +13,26 @@ module Reflex
     alias dh   dheight
     alias dpos dposition
 
-    def x ()
+    def x()
       frame.x
     end
 
-    def y ()
+    def y()
       frame.y
     end
 
-    def width ()
+    def width()
       frame.width
     end
 
-    def height ()
+    def height()
       frame.height
     end
 
     alias w width
     alias h height
 
-    def inspect ()
+    def inspect()
       "#<Reflex::FrameEvent x:#{x} y:#{y} w:#{w} h:#{h} dx:#{dx} dy:#{dy} dw:#{dw} dh:#{dh}>"
     end
 

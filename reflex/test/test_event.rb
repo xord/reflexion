@@ -6,11 +6,11 @@ require_relative 'helper'
 
 class TestEvent < Test::Unit::TestCase
 
-  def event ()
+  def event()
     Reflex::Event.new
   end
 
-  def test_block ()
+  def test_block()
     e = event
     assert_equal false, e.block?
     e.block

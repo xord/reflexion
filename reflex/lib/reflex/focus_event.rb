@@ -12,21 +12,21 @@ module Reflex
 
     alias get_type type
 
-    const_symbol_reader :type, {
+    const_symbol_reader :type, **{
       none:  TYPE_NONE,
       focus: TYPE_FOCUS,
       blur:  TYPE_BLUR
     }
 
-    def focus? ()
+    def focus?()
       get_type == TYPE_FOCUS
     end
 
-    def blur? ()
+    def blur?()
       get_type == TYPE_BLUR
     end
 
-    def inspect ()
+    def inspect()
       "#<Reflex::FocusEvent type:#{type} current:#{current} last:#{last}>"
     end
 

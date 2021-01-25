@@ -6,11 +6,11 @@ require_relative 'helper'
 
 class TestShape < Test::Unit::TestCase
 
-  def shape (*args, &block)
-    Reflex::RectShape.new *args, &block
+  def shape(*args, &block)
+    Reflex::RectShape.new(*args, &block)
   end
 
-  def test_density ()
+  def test_density()
     s = shape
     assert_equal 0, s.density
     s.density = 1
@@ -19,7 +19,7 @@ class TestShape < Test::Unit::TestCase
     assert_equal 2, s.density
   end
 
-  def test_friction ()
+  def test_friction()
     s = shape
     assert_equal 0, s.friction
     s.friction = 1
@@ -28,7 +28,7 @@ class TestShape < Test::Unit::TestCase
     assert_equal 2, s.friction
   end
 
-  def test_restitution ()
+  def test_restitution()
     s = shape
     assert_equal 0, s.restitution
     s.restitution = 1
@@ -37,7 +37,7 @@ class TestShape < Test::Unit::TestCase
     assert_equal 2, s.restitution
   end
 
-  def test_sensor ()
+  def test_sensor()
     s = shape
     assert_equal false, s.sensor?
     s.sensor = true
@@ -46,7 +46,7 @@ class TestShape < Test::Unit::TestCase
     assert_equal false, s.sensor?
   end
 
-  def test_category ()
+  def test_category()
     s = shape
     assert_equal 0b1,    s.category_bits
     s.category_bits  =  0b1010
@@ -57,7 +57,7 @@ class TestShape < Test::Unit::TestCase
     assert_equal 0b1100, s.category_bits
   end
 
-  def test_collision ()
+  def test_collision()
     s = shape
     assert_equal 0xffff, s.collision_mask
     s.collision_mask  =  0b1010

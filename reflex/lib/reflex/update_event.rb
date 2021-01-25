@@ -9,7 +9,7 @@ module Reflex
 
   class UpdateEvent < Event
 
-    def inspect ()
+    def inspect()
       "#<Reflex::UpdateEvent dt:#{dt}>"
     end
 

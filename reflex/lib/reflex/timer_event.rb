@@ -19,7 +19,7 @@ module Reflex
 
     alias view owner
 
-    def inspect ()
+    def inspect()
       "#<Reflex::TimerEvent owner:#{owner} id:#{id} interval:#{interval} count:#{count}>"
     end
 

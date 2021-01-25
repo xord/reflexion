@@ -18,7 +18,7 @@ module Reflexion
   }
 
 
-  def call_event (event, *args, &block)
+  def call_event(event, *args, &block)
     $event = event
     Xot::BlockUtil.instance_eval_or_block_call *args, &block if block
     $event = nil
@@ -27,7 +27,7 @@ module Reflexion
 
   class App < Application
 
-    def on_motion (e)
+    def on_motion(e)
       super
       call_event e, e, &$motion
     end
@@ -39,29 +39,29 @@ module Reflexion
 
     attr_reader :event
 
-    def initialize (*args, &block)
+    def initialize(*args, &block)
       super
       $window = self
       call_event nil, self, &$setup
     end
 
-    def on_update (e)
+    def on_update(e)
       super
       redraw
       call_event e, e, &$update
     end
 
-    def on_draw (e)
+    def on_draw(e)
       super
       call_event e, e.painter, &$draw
     end
 
-    def on_key (e)
+    def on_key(e)
       super
       call_event e, e, &$key
     end
 
-    def on_pointer (e)
+    def on_pointer(e)
       super
       call_event e, e, &$pointer
     end
@@ -71,43 +71,43 @@ module Reflexion
 
   module_function
 
-  def window ()
+  def window()
     $window ||= MainWindow.new DEFAULTS
   end
 
-  def event ()
+  def event()
     $event
   end
 
-  def setup (&block)
+  def setup(&block)
     $setup = block
   end
 
-  def update (&block)
+  def update(&block)
     $update = block
   end
 
-  def draw (&block)
+  def draw(&block)
     $draw = block
   end
 
-  def key (&block)
+  def key(&block)
     $key = block
   end
 
-  def pointer (&block)
+  def pointer(&block)
     $pointer = block
   end
 
-  def motion (&block)
+  def motion(&block)
     $motion = block
   end
 
-  def start ()
+  def start()
     App.new {window.show}.start
   end
 
-  def quit ()
+  def quit()
     window.close
   end
 
