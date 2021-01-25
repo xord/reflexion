@@ -6,26 +6,26 @@ require_relative 'helper'
 
 class TestView < Test::Unit::TestCase
 
-  def view (*args, &block)
-    Reflex::View.new *args, &block
+  def view(*args, &block)
+    Reflex::View.new(*args, &block)
   end
 
-  def style (*args, &block)
-    Reflex::Style.new *args, &block
+  def style(*args, &block)
+    Reflex::Style.new(*args, &block)
   end
 
-  def shape (*args, &block)
-    Reflex::RectShape.new *args, &block
+  def shape(*args, &block)
+    Reflex::RectShape.new(*args, &block)
   end
 
-  def selector (*args, &block)
-    Reflex::Selector.new *args, &block
+  def selector(*args, &block)
+    Reflex::Selector.new(*args, &block)
   end
 
-  def point  (*args) Rays::Point.new *args end
-  def bounds (*args) Rays::Bounds.new *args end
+  def point(*args)  Rays::Point.new(*args) end
+  def bounds(*args) Rays::Bounds.new(*args) end
 
-  def test_hidden ()
+  def test_hidden()
     v = view
     assert_equal false, v.hidden?
     v.hide
@@ -34,7 +34,7 @@ class TestView < Test::Unit::TestCase
     assert_equal false, v.hidden?
   end
 
-  def test_hidden_count ()
+  def test_hidden_count()
     v = view
     v.show
     assert_equal false, v.hidden?
@@ -44,7 +44,7 @@ class TestView < Test::Unit::TestCase
     assert_equal true, v.hidden?
   end
 
-  def test_add_child ()
+  def test_add_child()
     assert_raise(ArgumentError) {view.add_child}
     assert_raise(TypeError) {view.add_child nil}
     assert_raise(TypeError) {view.add_child 1}
@@ -53,7 +53,7 @@ class TestView < Test::Unit::TestCase
     assert_nothing_raised {v.add_child view}
   end
 
-  def test_remove_child ()
+  def test_remove_child()
     assert_raise(ArgumentError) {view.remove_child}
     assert_raise(TypeError) {view.remove_child nil}
     assert_raise(TypeError) {view.remove_child 1}
@@ -64,13 +64,13 @@ class TestView < Test::Unit::TestCase
     assert_nothing_raised {v.remove_child child}
   end
 
-  def test_find_children ()
+  def test_find_children()
     v = view
     v.add_child child = view(:name => :Test)
     assert_equal [child], v.find_children(:Test)
   end
 
-  def test_children ()
+  def test_children()
     me = self
     v = view
     v.add view{set name: '1'}
@@ -78,7 +78,7 @@ class TestView < Test::Unit::TestCase
     assert_equal %w[1 2], v.children.map(&:name)
   end
 
-  def test_style ()
+  def test_style()
     v = view
     s = v.style
     assert_equal 0,   s.margin_left.value
@@ -91,7 +91,7 @@ class TestView < Test::Unit::TestCase
     assert_equal '100px', s.margin_left.to_s
   end
 
-  def test_add_remove_style ()
+  def test_add_remove_style()
     v, s = view, style(name: :N)
     assert_equal 0,     v.styles.to_a.size
 
@@ -104,7 +104,7 @@ class TestView < Test::Unit::TestCase
     assert_not_includes v.find_styles(selector name: :N), s
   end
 
-  def test_shape ()
+  def test_shape()
     s = shape
     assert_equal 0, s.density
     s.density =  1
@@ -127,7 +127,7 @@ class TestView < Test::Unit::TestCase
     assert_raise(Rucy::NativeError) {v.density = 3}
   end
 
-  def test_content_bounds_with_shapes ()
+  def test_content_bounds_with_shapes()
     v = view
     assert_equal Reflex::Bounds.invalid, v.content_bounds
 
@@ -153,7 +153,7 @@ class TestView < Test::Unit::TestCase
     assert_equal [-10, -20, 200, 210],   v.content_bounds.to_a
   end
 
-  def test_add_remove_shape ()
+  def test_add_remove_shape()
     s = shape name: :S
     s.density =  1
     assert_equal 1, s.density
@@ -176,7 +176,7 @@ class TestView < Test::Unit::TestCase
     assert_equal 0,     v.shapes.to_a.size
   end
 
-  def test_name ()
+  def test_name()
     v = view
     assert_equal nil, v.name
     v.name =     'A'
@@ -186,7 +186,7 @@ class TestView < Test::Unit::TestCase
     assert_equal 'C', view(:name => 'C').name
   end
 
-  def test_frame ()
+  def test_frame()
     v = view
     b = v.frame.dup
     assert_equal b, v.frame
@@ -215,14 +215,14 @@ class TestView < Test::Unit::TestCase
     v.frame = [bounds(1, 2, 3, 4, 5, 6)]; assert_equal [1, 2, 3, 4, 5, 6], v.frame.to_a(3)
   end
 
-  def test_parent ()
+  def test_parent()
     parent, child = view, view
     parent.add_child child
     assert_nil parent.parent
     assert_equal parent, child.parent
   end
 
-  def test_density ()
+  def test_density()
     v = view
     assert_equal 0, v.density
     v.density =  1
@@ -231,7 +231,7 @@ class TestView < Test::Unit::TestCase
     assert_equal 2, v.density
   end
 
-  def test_friction ()
+  def test_friction()
     v = view
     assert_equal 0, v.friction
     v.friction = 1
@@ -240,7 +240,7 @@ class TestView < Test::Unit::TestCase
     assert_equal 2, v.friction
   end
 
-  def test_restitution ()
+  def test_restitution()
     v = view
     assert_equal    0, v.restitution
     v.restitution = 1
@@ -249,7 +249,7 @@ class TestView < Test::Unit::TestCase
     assert_equal    2, v.restitution
   end
 
-  def test_sensor ()
+  def test_sensor()
     v = view
     assert_equal false, v.sensor?
     v.sensor =   true
@@ -258,13 +258,13 @@ class TestView < Test::Unit::TestCase
     assert_equal false, v.sensor?
   end
 
-  def test_category ()
+  def test_category()
     p, v = view, view
     p.add v
     assert_equal [:all], v.category
   end
 
-  def test_collision ()
+  def test_collision()
     p, v = view, view
     p.add v
     #assert_equal [:all], v.collision

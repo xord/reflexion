@@ -15,7 +15,7 @@ module Xot
   module Rake
 
 
-    def srcs_map ()
+    def srcs_map()
       paths = glob("#{src_dir}/**/*.{#{src_exts.join ','}}") +
         erbs_map.values.grep(/\.(#{src_exts.join '|'})$/)
       paths.reject! {|path| excluded? path}
@@ -25,36 +25,36 @@ module Xot
       make_path_map paths, src_ext_map
     end
 
-    def erbs_map ()
-      paths = glob *[inc_dir, src_dir].map {|s| "#{s}/**/*.erb"}
+    def erbs_map()
+      paths = glob(*[inc_dir, src_dir].map {|s| "#{s}/**/*.erb"})
       paths.reject! {|path| excluded? path}
       make_path_map paths, {".erb" => ""}
     end
 
-    def vendor_srcs_map (*dirs)
+    def vendor_srcs_map(*dirs)
       dirs  = src_dirs if dirs.empty?
       paths = dirs.map {|dir| glob "#{dir}/**/*.{#{src_exts.join ','}}"}.flatten
       paths.reject! {|path| excluded? path}
       make_path_map paths.flatten, src_ext_map
     end
 
-    def src_ext_map (to = '.o')
+    def src_ext_map(to = '.o')
       Hash[*src_exts.map {|ext| [".#{ext}", to]}.flatten]
     end
 
-    def defs ()
+    def defs()
       env_array :DEFS, []
     end
 
-    def test_alones ()
+    def test_alones()
       env :TESTS_ALONE, []
     end
 
-    def test_excludes ()
+    def test_excludes()
       env :TESTS_EXCLUDE, []
     end
 
-    def build_native_library ()
+    def build_native_library()
       outname = "lib#{target_name}.a"
       out     = File.join lib_dir, outname
       erbs    = erbs_map
@@ -114,7 +114,7 @@ module Xot
       end
     end
 
-    def build_ruby_extension (dlname: 'native', dlext: 'so')
+    def build_ruby_extension(dlname: 'native', dlext: 'so')
       dlname = env :DLNAME, dlname
       dlext  = env :DLEXT,  RbConfig::CONFIG['DLEXT'] || dlext
 
@@ -169,7 +169,7 @@ module Xot
       end
     end
 
-    def test_ruby_extension ()
+    def test_ruby_extension()
       alias_task :test => [:ext, 'test:full', 'test:alones']
 
       namespace :test do
@@ -188,7 +188,7 @@ module Xot
       end
     end
 
-    def build_ruby_gem ()
+    def build_ruby_gem()
       gemspec = "#{target_name}.gemspec"
       gemname = env :GEMNAME,    target_name
       gemver  = env :GEMVERSION, target.version
@@ -229,7 +229,7 @@ module Xot
       end
     end
 
-    def build_application ()
+    def build_application()
       bindir    = env :BINDIR, 'bin'
       bin       = "#{bindir}/#{target_name}"
       appdir    = "#{target.name}.app"
@@ -257,7 +257,7 @@ module Xot
       end
     end
 
-    def use_external_library (
+    def use_external_library(
       repos, branch: nil, tag: nil,
       incdir: nil, srcdir: nil, excludes: [],
       submodules: [], post_submodules: nil)
@@ -312,7 +312,7 @@ module Xot
       end
     end
 
-    def use_boost_library (modules = [], branch: nil, tag: nil)
+    def use_boost_library(modules = [], branch: nil, tag: nil)
       default_modules = %w[tools/build libs/config]
       use_external_library 'https://github.com/boostorg/boost',
         branch:          branch,
@@ -322,7 +322,7 @@ module Xot
         post_submodules: './bootstrap.sh && ./b2 headers'
     end
 
-    def define_placeholder_tasks ()
+    def define_placeholder_tasks()
       desc "delete temporary files"
       alias_task :clean
 

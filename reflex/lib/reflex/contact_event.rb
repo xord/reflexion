@@ -12,21 +12,21 @@ module Reflex
 
     alias get_type type
 
-    const_symbol_reader :type, {
+    const_symbol_reader :type, **{
       none:  TYPE_NONE,
       begin: TYPE_BEGIN,
       end:   TYPE_END
     }
 
-    def begin? ()
+    def begin?()
       get_type == TYPE_BEGIN
     end
 
-    def end? ()
+    def end?()
       get_type == TYPE_END
     end
 
-    def inspect ()
+    def inspect()
       "#<Reflex::ContactEvent type:#{type} shape:#{shape} view:#{view}>"
     end
 

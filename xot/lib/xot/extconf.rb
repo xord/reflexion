@@ -14,18 +14,18 @@ module Xot
 
     attr_reader :modules, :defs, :inc_dirs, :lib_dirs, :headers, :libs, :local_libs, :frameworks
 
-    def initialize (*modules, &block)
+    def initialize(*modules, &block)
       @modules = modules.map {|m| m.const_get :Module}
       @defs, @inc_dirs, @lib_dirs, @headers, @libs, @local_libs, @frameworks =
-        ([[]] * 7).map &:dup
+        ([[]] * 7).map(&:dup)
       Xot::BlockUtil.instance_eval_or_block_call self, &block if block
     end
 
-    def debug ()
+    def debug()
       env :DEBUG, false
     end
 
-    def setup ()
+    def setup()
       yield if block_given?
 
       modules.each do |m|
@@ -43,7 +43,7 @@ module Xot
       $LOCAL_LIBS << local_libs.map {|s| " -l#{s}"}.join
     end
 
-    def create_makefile (*args)
+    def create_makefile(*args)
       modules.each do |m|
         dir_config m.name.downcase, m.inc_dir, m.lib_dir
       end

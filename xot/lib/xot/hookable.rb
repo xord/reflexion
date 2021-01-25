@@ -6,28 +6,28 @@ module Xot
 
   module Hookable
 
-    def hook (name, &block)
+    def hook(name, &block)
       c = class << self; self; end
       c.__send__ :define_method, name, &block
       self
     end
 
-    def on (name, &block)
+    def on(name, &block)
       hook name do |*a, &b|
-        block.call *a, &b
+        block.call(*a, &b)
       end
     end
 
-    def before (name, &block)
+    def before(name, &block)
       hook name do |*a, &b|
-        super *a, &b unless block.call(*a, &b) == :skip
+        super(*a, &b) unless block.call(*a, &b) == :skip
       end
     end
 
-    def after (name, &block)
+    def after(name, &block)
       hook name do |*a, &b|
-        ret = super *a, &b
-        block.call *a, &b
+        ret = super(*a, &b)
+        block.call(*a, &b)
         ret
       end
     end

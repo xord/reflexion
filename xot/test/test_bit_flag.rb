@@ -8,8 +8,8 @@ class TestBitFlag < Test::Unit::TestCase
 
   include Xot::BitUtil
 
-  def flag (*args, &block)
-    bf = Xot::BitFlag.new *args, &block
+  def flag(*args, &block)
+    bf = Xot::BitFlag.new(*args, &block)
     bf.flag :bit1, bit(1)
     bf.flag :bit2, bit(2)
     bf.flag :bit3, bit(3)
@@ -18,7 +18,7 @@ class TestBitFlag < Test::Unit::TestCase
     bf
   end
 
-  def test_bits2symbols ()
+  def test_bits2symbols()
     assert_equal [], flag.bits2symbols(0)
     assert_equal [:bit1], flag.bits2symbols(bit 1)
     assert_equal [:bit2], flag.bits2symbols(bit 2)
@@ -34,7 +34,7 @@ class TestBitFlag < Test::Unit::TestCase
     assert_raise(RuntimeError) {flag.bits2symbols(bit 0, 1)}
   end
 
-  def test_symbols2bits ()
+  def test_symbols2bits()
     assert_equal bit(1), flag.symbols2bits(:bit1)
     assert_equal bit(2), flag.symbols2bits(:bit2)
     assert_equal bit(5), flag.symbols2bits(:bit5)

@@ -54,84 +54,84 @@ module Reflex
       flag :all,     CAPTURE_ALL
     end
 
-    def initialize (options = nil, &block)
+    def initialize(options = nil, &block)
       super()
       set options if options
       Xot::BlockUtil.instance_eval_or_block_call self, &block if block
     end
 
-    def timeout (seconds = 0, count: 1, &block)
+    def timeout(seconds = 0, count: 1, &block)
       timer = start_timer seconds, count
       timer.block = block if block
       timer
     end
 
-    def interval (seconds = 0, &block)
+    def interval(seconds = 0, &block)
       timeout seconds, count: -1, &block
     end
 
-    def delay (seconds = 0, &block)
+    def delay(seconds = 0, &block)
       timeout seconds, &block
     end
 
-    def remove_self ()
+    def remove_self()
       parent.remove self if parent
     end
 
-    def find_child (*args)
+    def find_child(*args)
       find_children(*args).first
     end
 
-    def children ()
+    def children()
       to_enum :each_child
     end
 
-    def styles ()
+    def styles()
       to_enum :each_style
     end
 
-    def style (*args, &block)
+    def style(*args, &block)
       s = get_style args.empty? ? nil : Selector.selector(*args)
       Xot::BlockUtil.instance_eval_or_block_call s, &block if block
       s
     end
 
-    def shapes ()
+    def shapes()
       to_enum :each_shape
     end
 
-    def categories ()
+    def categories()
       @categories ||= Xot::BitFlag.new(auto: true, all: 1)
     end
 
-    def category= (*symbols)
-      set_category_bits parent_categories.symbols2bits *symbols
+    def category=(*symbols)
+      set_category_bits parent_categories.symbols2bits(*symbols)
     end
 
-    def category ()
+    def category()
       parent_categories.bits2symbols get_category_bits
     end
 
-    def collision= (*categories)
-      set_collision_mask parent_categories.symbols2bits *categories
+    def collision=(*categories)
+      set_collision_mask parent_categories.symbols2bits(*categories)
     end
 
-    def collision ()
+    def collision()
       parent_categories.bits2symbols get_collision_mask
     end
 
-    def capturing? (*args)
+    def capturing?(*args)
       cap = capture
       args.all? {|type| cap.include? type}
     end
 
-    def on_contact (e)
+    def on_contact(e)
     end
 
-    def on_contact_begin (e)
+    def on_contact_begin(e)
     end
 
-    def on_contact_end (e)
+    def on_contact_end(e)
     end
 
     universal_accessor :shape, :name, :selector, :frame, :angle, :zoom, :capture,
@@ -157,32 +157,32 @@ module Reflex
 
     alias meter  meter2pixel
 
-    def self.has_model ()
+    def self.has_model()
       include ModelView
     end
 
     protected
 
-      def parent_categories ()
+      def parent_categories()
         raise InvalidStateError unless parent
         parent.categories
       end
 
     private
 
-      def on_contact! (*args)
-        call_contact! *args
-        delay {on_contact *args}# delay to avoid physics world lock
+      def on_contact!(*args)
+        call_contact!(*args)
+        delay {on_contact(*args)}# delay to avoid physics world lock
       end
 
-      def on_contact_begin! (*args)
-        call_contact_begin! *args
-        delay {on_contact_begin *args}
+      def on_contact_begin!(*args)
+        call_contact_begin!(*args)
+        delay {on_contact_begin(*args)}
       end
 
-      def on_contact_end! (*args)
-        call_contact_end! *args
-        delay {on_contact_end *args}
+      def on_contact_end!(*args)
+        call_contact_end!(*args)
+        delay {on_contact_end(*args)}
       end
 
   end# View

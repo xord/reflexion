@@ -11,7 +11,7 @@ module Reflex
 
     attr_reader :model
 
-    def model= (model)
+    def model=(model)
       return if model == @model
       @model.remove_handler self if @model
       @model = model
@@ -19,7 +19,7 @@ module Reflex
       model
     end
 
-    def data= (data)
+    def data=(data)
       unless data.nil?
         self.model = Model.new unless @model
         @model.data = data
@@ -29,19 +29,19 @@ module Reflex
       data
     end
 
-    def data ()
+    def data()
       @model ? @model.data : nil
     end
 
-    def invoke (*args)
-      @model.invoke *args if @model
+    def invoke(*args)
+      @model.invoke(*args) if @model
     end
 
-    def on_data_attach (e)
+    def on_data_attach(e)
       invoke :update, {}, only: self
     end
 
-    def on_data_detach (e)
+    def on_data_detach(e)
       invoke :update, {}, only: self
     end
 

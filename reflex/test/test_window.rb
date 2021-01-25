@@ -6,26 +6,26 @@ require_relative 'helper'
 
 class TestWindow < Test::Unit::TestCase
 
-  def win (*args, &block)
-    Reflex::Window.new *args, &block
+  def win(*args, &block)
+    Reflex::Window.new(*args, &block)
   end
 
-  def point  (*args) Reflex::Point.new *args end
-  def bounds (*args) Reflex::Bounds.new *args end
+  def point(*args)  Reflex::Point.new(*args) end
+  def bounds(*args) Reflex::Bounds.new(*args) end
 
-  def test_root ()
+  def test_root()
     w = win
     assert_not_nil w.root
     assert_nil     w.root.parent
     assert_equal 'ROOT', w.root.name
   end
 
-  def test_window ()
+  def test_window()
     w = win
     assert_equal w, w.root.window
   end
 
-  def test_hidden ()
+  def test_hidden()
     w = win
     assert_equal true, w.hidden
     w.show
@@ -40,7 +40,7 @@ class TestWindow < Test::Unit::TestCase
     assert_equal false, w.hidden
   end
 
-  def test_frame ()
+  def test_frame()
     w = win
     b = w.frame.dup
     assert_equal b, w.frame
@@ -68,7 +68,7 @@ class TestWindow < Test::Unit::TestCase
     w.frame = [bounds(1, 2, 3, 4, 5, 6)]; assert_equal [1, 2, 0, 4, 5, 0], w.frame.to_a(3)
   end
 
-  def test_resizable? ()
+  def test_resizable?()
     w = win
     assert_true  w.resizable?
 
@@ -85,7 +85,7 @@ class TestWindow < Test::Unit::TestCase
     assert_true  w.resizable?
   end
 
-  def test_title ()
+  def test_title()
     w = win
     assert_equal '', w.title
     w.title = 'A'

@@ -51,23 +51,23 @@ module Reflex
     universal_accessor :title, :frame,
       resizable: {reader: :resizable?}
 
-    def initialize (options = nil, &block)
+    def initialize(options = nil, &block)
       super()
       set options if options
       @show_block = block
     end
 
-    def paint (&block)
-      painter.begin &block
+    def paint(&block)
+      painter.begin(&block)
     end
 
-    def self.show (*args, &block)
+    def self.show(*args, &block)
       new(*args, &block).show
     end
 
     private
 
-      def call_show_block ()
+      def call_show_block()
         return unless @show_block
         Xot::BlockUtil.instance_eval_or_block_call self, &@show_block
         @show_block = nil

@@ -14,11 +14,11 @@ class TestBlockUtil < Test::Unit::TestCase
 
   end# Temp
 
-  def temp (*args)
+  def temp(*args)
     Temp.new
   end
 
-  def test_instance_eval_or_block_call ()
+  def test_instance_eval_or_block_call()
     t = temp
     t.value = 1
 

@@ -6,12 +6,12 @@ module Xot
 
   module ConstSymbolAccessor
 
-    def const_symbol_accessor (name, **symbol2const)
+    def const_symbol_accessor(name, **symbol2const)
       const_symbol_writer name, **symbol2const
       const_symbol_reader name, **symbol2const
     end
 
-    def const_symbol_writer (name, **symbol2const)
+    def const_symbol_writer(name, **symbol2const)
       writer = "#{name}=".intern
       setter = "cs_set_#{name}__".intern
 
@@ -27,7 +27,7 @@ module Xot
       name
     end
 
-    def const_symbol_reader (name, **symbol2const)
+    def const_symbol_reader(name, **symbol2const)
       reader = name.intern
       getter = "cs_get_#{name}__".intern
 

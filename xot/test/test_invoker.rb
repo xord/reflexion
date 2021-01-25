@@ -10,17 +10,17 @@ class TestInvoker < Test::Unit::TestCase
     include Xot::Invoker
   end
 
-  def invoker (*args, &block)
-    Invoker.new *args, &block
+  def invoker(*args, &block)
+    Invoker.new(*args, &block)
   end
 
-  def handler (method, &block)
+  def handler(method, &block)
     o = Object.new
     o.define_singleton_method method, &block
     o
   end
 
-  def test_add_handler ()
+  def test_add_handler()
     inv, var = invoker, nil
 
     assert_equal nil, var

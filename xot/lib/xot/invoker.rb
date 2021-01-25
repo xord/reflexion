@@ -9,10 +9,10 @@ module Xot
 
   module Invoker
 
-    def initialize ()
+    def initialize()
     end
 
-    def handlers (create = false)
+    def handlers(create = false)
       if create
         @handlers ||= []
       else
@@ -20,18 +20,18 @@ module Xot
       end
     end
 
-    def add_handler (handler)
+    def add_handler(handler)
       return unless handler
       a = self.handlers true
       a.push handler unless a.include? handler
     end
 
-    def remove_handler (handler)
+    def remove_handler(handler)
       return unless handler
       self.handlers.delete handler
     end
 
-    def invoke (name, attributes = {}, options = {})
+    def invoke(name, attributes = {}, options = {})
       only     = options[:only]
       only     = [only] if only && !only.kind_of?(Array)
       handlers = only ? only : @handlers

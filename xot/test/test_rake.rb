@@ -20,7 +20,7 @@ class TestRake < Test::Unit::TestCase
 
   include Xot::Rake
 
-  def test_set ()
+  def test_set()
     assert_equal 'const', env(:Const, :dummy)
     assert_equal 0, env(:Zero, :dummy)
     assert_equal 1, env(:NonZero, :dummy)

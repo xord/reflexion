@@ -6,13 +6,13 @@ require_relative 'helper'
 
 class TestCaptureEvent < Test::Unit::TestCase
 
-  def event (*args)
-    Reflex::CaptureEvent.new *args.map {|arg|
-      Reflex::View.capture_flag.symbols2bits *arg
-    }
+  def event(*args)
+    Reflex::CaptureEvent.new(*args.map {|arg|
+      Reflex::View.capture_flag.symbols2bits(*arg)
+    })
   end
 
-  def test_begin ()
+  def test_begin()
     c = event [:key, :pointer], []
     assert_equal [:key, :pointer], c.begin
     assert_equal true, c.begin?(:key)
@@ -26,7 +26,7 @@ class TestCaptureEvent < Test::Unit::TestCase
     assert_equal false, c.begin?(:all)
   end
 
-  def test_end ()
+  def test_end()
     c = event [], [:key, :pointer]
     assert_equal [:key, :pointer], c.end
     assert_equal true, c.end?(:key)

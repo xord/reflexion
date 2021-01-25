@@ -16,35 +16,35 @@ module Reflex
     include Xot::Setter
     include HasTags
 
-    def initialize (options = nil, &block)
+    def initialize(options = nil, &block)
       super()
       set options if options
       Xot::BlockUtil.instance_eval_or_block_call self, &block if block
     end
 
-    def flow= (*syms)
-      set_flow *syms.flatten.map {|sym| sym2flow sym}
+    def flow=(*syms)
+      set_flow(*syms.flatten.map {|sym| sym2flow sym})
     end
 
-    def flow ()
+    def flow()
       get_flow.map {|n| flow2sym n}
     end
 
-    def foreground= (fill, stroke = nil)
+    def foreground=(fill, stroke = nil)
       self.foreground_fill   = fill
       self.foreground_stroke = stroke
     end
 
-    def foreground ()
+    def foreground()
       return foreground_fill, foreground_stroke
     end
 
-    def background= (fill, stroke = nil)
+    def background=(fill, stroke = nil)
       self.background_fill   = fill
       self.background_stroke = stroke
     end
 
-    def background ()
+    def background()
       return background_fill, background_stroke
     end
 
@@ -95,7 +95,7 @@ module Reflex
     alias stroke_width= foreground_stroke_width=
     alias stroke_width  foreground_stroke_width
 
-    def inspect ()
+    def inspect()
       attrs = {
         selector:   selector,
         flow:       flow,
@@ -123,11 +123,11 @@ module Reflex
 
       FLOW2SYM = SYM2FLOW.inject({}) {|h, (k, v)| h[v] = k; h}
 
-      def sym2flow (sym)
+      def sym2flow(sym)
         SYM2FLOW[sym] || FLOW_NONE
       end
 
-      def flow2sym (flow)
+      def flow2sym(flow)
         FLOW2SYM[flow] || :none
       end
 

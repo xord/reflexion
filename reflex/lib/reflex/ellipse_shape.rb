@@ -10,12 +10,12 @@ module Reflex
 
   class EllipseShape < Shape
 
-    def angle= (range)
+    def angle=(range)
       angle_from range.min
       angle_to   range.max
     end
 
-    def angle ()
+    def angle()
       angle_from..angle_to
     end
 

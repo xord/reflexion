@@ -16,14 +16,14 @@ module Reflex
     alias get_type         type
     alias get_pointer_type pointer_type
 
-    const_symbol_reader :type, {
+    const_symbol_reader :type, **{
       none: TYPE_NONE,
       down: TYPE_DOWN,
       up:   TYPE_UP,
       move: TYPE_MOVE
     }
 
-    bit_flag_reader :pointer_type, {
+    bit_flag_reader :pointer_type, **{
       none:         POINTER_NONE,
       mouse_left:   POINTER_MOUSE_LEFT,
       mouse_right:  POINTER_MOUSE_RIGHT,
@@ -32,43 +32,43 @@ module Reflex
       pen:          POINTER_PEN
     }
 
-    def down? ()
+    def down?()
       get_type == TYPE_DOWN
     end
 
-    def up? ()
+    def up?()
       get_type == TYPE_UP
     end
 
-    def move? ()
+    def move?()
       get_type == TYPE_MOVE
     end
 
-    def left? ()
+    def left?()
       (get_pointer_type & POINTER_MOUSE_LEFT) != 0
     end
 
-    def right? ()
+    def right?()
       (get_pointer_type & POINTER_MOUSE_RIGHT) != 0
     end
 
-    def middle? ()
+    def middle?()
       (get_pointer_type & POINTER_MOUSE_MIDDLE) != 0
     end
 
-    def touch? ()
+    def touch?()
       (get_pointer_type & POINTER_TOUCH) != 0
     end
 
-    def pen? ()
+    def pen?()
       (get_pointer_type & POINTER_PEN) != 0
     end
 
-    def positions ()
+    def positions()
       size.times.map {|i| position i}
     end
 
-    def inspect ()
+    def inspect()
       "#<Reflex::PointerEvent type:#{type}/#{pointer_type} x:#{x} y:#{y} size:#{size} mod:#{modifiers} count:#{count} drag:#{drag?}>"
     end
 

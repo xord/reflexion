@@ -10,11 +10,11 @@ module Reflex
 
   class DrawEvent < Event
 
-    def paint (&block)
+    def paint(&block)
       Xot::BlockUtil.instance_eval_or_block_call painter, &block if block
     end
 
-    def inspect ()
+    def inspect()
       "#<Reflex::DrawEvent painter:#{painter} bounds:#{bounds} dt:#{dt} fps:#{fps}>"
     end
 

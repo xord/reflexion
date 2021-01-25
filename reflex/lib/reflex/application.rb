@@ -18,19 +18,19 @@ module Reflex
 
     universal_accessor :name
 
-    def initialize (options = nil, &block)
+    def initialize(options = nil, &block)
       super()
       set options if options
       @start_block = block if block
     end
 
-    def self.start (*args, &block)
+    def self.start(*args, &block)
       new(*args, &block).start
     end
 
     private
 
-      def call_start_block ()
+      def call_start_block()
         return unless @start_block
         Xot::BlockUtil.instance_eval_or_block_call self, &@start_block
         @start_block = nil

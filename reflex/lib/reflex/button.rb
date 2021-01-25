@@ -13,21 +13,21 @@ module Reflex
 
     attr_accessor :text
 
-    def initialize (*args, &block)
+    def initialize(*args, &block)
       self.data = false
       super
       self.text = self.name unless self.text
     end
 
-    def content_bounds ()
+    def content_bounds()
       f = window.painter.font
       return f.width(@text) + 2, f.height + 2
     end
 
-    def on_press (e)
+    def on_press(e)
     end
 
-    def on_draw (e)
+    def on_draw(e)
       e.painter.push fill: (pressing? ? :white : :none), stroke: :white do |p|
         p.rect e.bounds
 
@@ -43,7 +43,7 @@ module Reflex
       end
     end
 
-    def on_pointer (e)
+    def on_pointer(e)
       case e.type
       when :down
         self.capture += [:pointer]
@@ -60,13 +60,13 @@ module Reflex
       end
     end
 
-    def on_data_update (e)
+    def on_data_update(e)
       on_press({}) if e.data
     end
 
     private
 
-      def pressing? ()
+      def pressing?()
         capturing? :pointer
       end
 

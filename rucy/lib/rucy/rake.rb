@@ -10,15 +10,15 @@ module Rucy
   module Rake
 
 
-    def rdoc ()
+    def rdoc()
       env :RDOC, 'rdoc'# 'yardoc'
     end
 
-    def rucy2rdoc ()
+    def rucy2rdoc()
       env :RUCY2RDOC, 'rucy2rdoc'
     end
 
-    def generate_documents ()
+    def generate_documents()
       rdocdir = ".doc/#{ext_dir}"
       srcs    = FileList["#{ext_dir}/**/*.{#{src_exts.join ','}}"]
       rdocs   = Hash[srcs.map{|path| [path, "#{rdocdir}/#{File.basename path}"]}]

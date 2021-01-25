@@ -13,6 +13,6 @@ include Xot::Test
 
 
 unless $REFLEX_NOAUTOINIT
-  def Rays.fin! () end
-  def Reflex.fin! () end
+  def Rays.fin!() end
+  def Reflex.fin!() end
 end

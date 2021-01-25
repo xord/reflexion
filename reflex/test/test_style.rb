@@ -6,15 +6,15 @@ require_relative 'helper'
 
 class TestStyle < Test::Unit::TestCase
 
-  def style (*args, &block)
-    Reflex::Style.new *args, &block
+  def style(*args, &block)
+    Reflex::Style.new(*args, &block)
   end
 
-  def color (*args)
-    Reflex::Color.new *args
+  def color(*args)
+    Reflex::Color.new(*args)
   end
 
-  def setup ()
+  def setup()
     {
       rgb100: color(1, 0, 0),
       rgb010: color(0, 1, 0)
@@ -23,18 +23,18 @@ class TestStyle < Test::Unit::TestCase
     end
   end
 
-  def test_initialize ()
+  def test_initialize()
     assert_equal nil, style.name
     assert_equal 'A', style(name: :A).name
     assert_equal 'A', style{self.name = :A}.name
   end
 
-  def test_selector ()
+  def test_selector()
     assert_equal 'A', style(name: :A).selector.name
     assert_equal %w[T], style(tag: :T).selector.tags.to_a
   end
 
-  def test_flow ()
+  def test_flow()
     s = style
     assert_equal [:none, :none], s.flow
 
@@ -57,12 +57,12 @@ class TestStyle < Test::Unit::TestCase
     assert_raise(ArgumentError) {s.flow = [:right, :down, :none]}
   end
 
-  def test_position ()
+  def test_position()
     s = style
     assert_equal [0, 0, 0, 0], s.position.map(&:value)
   end
 
-  def test_margin_padding ()
+  def test_margin_padding()
     s = style
 
     assert_equal [0, 0, 0, 0], s.margin.to_a.map(&:value)
@@ -90,7 +90,7 @@ class TestStyle < Test::Unit::TestCase
 =end
   end
 
-  def test_foreground ()
+  def test_foreground()
     s, white, transp = style, color(1, 1, 1, 1), color(0, 0, 0, 0)
 
     assert_equal white,  s.foreground_fill
@@ -112,7 +112,7 @@ class TestStyle < Test::Unit::TestCase
     assert_equal [color(1, 0, 0), color(0, 1, 0)], s.foreground
   end
 
-  def test_background ()
+  def test_background()
     s, transp = style, color(0, 0, 0, 0)
 
     assert_equal transp, s.background_fill
@@ -134,7 +134,7 @@ class TestStyle < Test::Unit::TestCase
     assert_equal [color(1, 0, 0), color(0, 1, 0)], s.background
   end
 
-  def test_image ()
+  def test_image()
     assert_equal nil, style.image
   end
 

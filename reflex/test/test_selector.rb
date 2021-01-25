@@ -6,11 +6,11 @@ require_relative 'helper'
 
 class TestSelector < Test::Unit::TestCase
 
-  def sel (*args, &block)
-    Reflex::Selector.new *args, &block
+  def sel(*args, &block)
+    Reflex::Selector.new(*args, &block)
   end
 
-  def test_initialize ()
+  def test_initialize()
     assert_equal 'A', sel(name: :A).name
     assert_equal 'B', sel(name: :A){set name: :B}.name
     assert_equal %w[T1],    sel(tag:    :T1      ).tags.to_a
@@ -19,14 +19,14 @@ class TestSelector < Test::Unit::TestCase
     assert_equal %w[T1 T2], sel(tags:  [:T1, :T2]).tags.to_a
   end
 
-  def test_name ()
+  def test_name()
     s = sel
     assert_equal nil, s.name
     s.name = 'Test'
     assert_equal 'Test', s.name
   end
 
-  def test_tags ()
+  def test_tags()
     s = sel
     assert_equal [], s.tags.to_a
     s.tag 'A'
@@ -40,13 +40,13 @@ class TestSelector < Test::Unit::TestCase
     assert_equal %w[a d], s.tags.map(&:downcase).to_a
   end
 
-  def test_clear_tags ()
+  def test_clear_tags()
     s = sel tag: [:T1, :T2]
     s.clear_tags
     assert_equal [], s.tags.to_a
   end
 
-  def test_contains ()
+  def test_contains()
     assert_not sel.contains(sel name: :A, tag: :T)
     assert     sel(name: :A).contains(sel name: :A)
     assert_not sel(name: :A).contains(sel name: :B)
@@ -61,7 +61,7 @@ class TestSelector < Test::Unit::TestCase
     assert_not sel(tag: :T1).contains(sel name: :A, tag: :T1)
   end
 
-  def test_compare ()
+  def test_compare()
     assert_equal     sel(name: :A), sel(name: :A)
     assert_not_equal sel(name: :A), sel(name: :X)
     assert_equal     sel(tag: [:A, :B]), sel(tag: [:A, :B])
