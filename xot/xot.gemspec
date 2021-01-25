@@ -28,6 +28,8 @@ Gem::Specification.new do |s|
   s.platform              = Gem::Platform::RUBY
   s.required_ruby_version = '~> 2'
 
+  s.add_development_dependency 'test-unit'
+
   s.files            = `git ls-files`.split $/
   s.executables      = s.files.grep(%r{^bin/}) {|f| File.basename f}
   s.test_files       = s.files.grep %r{^(test|spec|features)/}
