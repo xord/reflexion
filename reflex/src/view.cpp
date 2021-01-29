@@ -1989,18 +1989,23 @@ namespace Reflex
 	void
 	View::scroll_to (coord x, coord y, coord z)
 	{
-		Point old = self->scroll();
-		self->scroll().reset(x, y, z);
-		ScrollEvent e(x, y, z, x - old.x, y - old.y, z - old.z);
-		on_scroll(&e);
-
-		redraw();
+		scroll_to(Point(x, y, z));
 	}
 
 	void
 	View::scroll_to (const Point& scroll)
 	{
-		scroll_to(scroll.x, scroll.y, scroll.z);
+		if (scroll == this->scroll()) return;
+
+		Point old = self->scroll();
+		self->scroll() = scroll;
+
+		ScrollEvent e(
+			scroll.x,         scroll.y,         scroll.z,
+			scroll.x - old.x, scroll.y - old.y, scroll.z - old.z);
+		on_scroll(&e);
+
+		redraw();
 	}
 
 	void
@@ -2028,6 +2033,8 @@ namespace Reflex
 	void
 	View::set_zoom (float zoom)
 	{
+		if (zoom == self->zoom) return;
+
 		self->zoom = zoom;
 		redraw();
 	}
