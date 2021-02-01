@@ -48,7 +48,7 @@ class W < Reflex::Window
   end
 
   def on_pointer_move (e)
-    $scroll = [-e.x.floor, -e.y.floor]
+    $scroll = [e.x.floor, e.y.floor]
   end
 
 end# W

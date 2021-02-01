@@ -1279,6 +1279,24 @@ namespace Reflex
 		}
 	}
 
+	static void
+	scroll_and_zoom_positions (PointerEvent* e, const Point* scroll, float zoom)
+	{
+		static const Point ZERO = 0;
+
+		assert(zoom != 0);
+
+		if (!scroll) scroll = &ZERO;
+		if (*scroll == 0 && zoom == 1)
+			return;
+
+		for (size_t i = 0; i < e->size; ++i)
+		{
+			e->position(i) -= *scroll;
+			e->position(i) /= zoom;
+		}
+	}
+
 	void
 	View_call_pointer_event (View* view, const PointerEvent& event)
 	{
@@ -1288,13 +1306,13 @@ namespace Reflex
 		bool capturing = view->capture() & View::CAPTURE_POINTER;
 		if (capturing != event.capture) return;
 
-		const Bounds& frame = view->frame();
-
 		PointerEvent e = event;
-		filter_pointer_event(&e, event, frame);
+		filter_pointer_event(&e, event, view->frame());
 
 		if (!capturing && e.size == 0)
 			return;
+
+		scroll_and_zoom_positions(&e, view->self->pscroll.get(), view->zoom());
 
 		view->on_pointer(&e);
 
@@ -2034,6 +2052,9 @@ namespace Reflex
 	View::set_zoom (float zoom)
 	{
 		if (zoom == self->zoom) return;
+
+		if (zoom == 0)
+			argument_error(__FILE__, __LINE__);
 
 		self->zoom = zoom;
 		redraw();
