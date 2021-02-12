@@ -280,7 +280,11 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) flagsChanged: (NSEvent*) event
 	{
-		// TODO: implement later.
+		Reflex::Window* win = self.window;
+		if (!win) return;
+
+		Reflex::NativeFlagKeyEvent e(event);
+		win->on_key(&e);
 	}
 
 	- (void) mouseDown: (NSEvent*) event

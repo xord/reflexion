@@ -20,6 +20,14 @@ namespace Reflex
 	};// NativeKeyEvent
 
 
+	struct NativeFlagKeyEvent : public KeyEvent
+	{
+
+		NativeFlagKeyEvent (NSEvent* event);
+
+	};// NativeFlagKeyEvent
+
+
 	struct NativePointerEvent : public PointerEvent
 	{
 

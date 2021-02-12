@@ -18,7 +18,7 @@ namespace Reflex
 		return [chars UTF8String];
 	}
 
-	static const KeyCode
+	static KeyCode
 	get_code (UInt16 code)
 	{
 		switch (code)
@@ -151,6 +151,36 @@ namespace Reflex
 	}
 
 	static uint
+	get_modifier_flag_mask (const NSEvent* e)
+	{
+		switch ([e keyCode])
+		{
+			case kVK_Shift:
+			case kVK_RightShift:   return NSShiftKeyMask;
+			case kVK_Control:
+			case kVK_RightControl: return NSControlKeyMask;
+			case kVK_Option:
+			case kVK_RightOption:  return NSAlternateKeyMask;
+			case kVK_Command:
+			case kVK_RightCommand: return NSCommandKeyMask;
+			case kVK_CapsLock:     return NSAlphaShiftKeyMask;
+			case kVK_Function:     return NSFunctionKeyMask;
+		}
+		return 0;
+	}
+
+	static KeyEvent::Type
+	get_flag_key_event_type(const NSEvent* e)
+	{
+		uint mask = get_modifier_flag_mask(e);
+		if (mask == 0) return Reflex::KeyEvent::NONE;
+
+		return [e modifierFlags] & mask
+			?	Reflex::KeyEvent::DOWN
+			:	Reflex::KeyEvent::UP;
+	}
+
+	static uint
 	get_current_pointer_type ()
 	{
 		NSUInteger buttons = [NSEvent pressedMouseButtons];
@@ -216,6 +246,14 @@ namespace Reflex
 	:	KeyEvent(
 			type, get_chars(e), get_code([e keyCode]), get_modifiers(e),
 			[e isARepeat] ? 1 : 0)
+	{
+	}
+
+
+	NativeFlagKeyEvent::NativeFlagKeyEvent (NSEvent* e)
+	:	KeyEvent(
+			get_flag_key_event_type(e), "", get_code([e keyCode]), get_modifiers(e),
+			0)
 	{
 	}
 
