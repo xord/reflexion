@@ -19,7 +19,7 @@ TARGETS = []
 
 def module_versions ()
   MODULES.each_with_object({}) do |mod, hash|
-    hash[mod] = /(\d+)\.(\d+)\.(\d+)/.match(get_version mod)[1..3].map &:to_i
+    hash[mod] = get_version(mod).split('.').map(&:to_i)
   end
 end
 
