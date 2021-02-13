@@ -12,7 +12,7 @@ require 'reflex'
 include Xot::Test
 
 
-unless $REFLEX_NOAUTOINIT
+unless defined?($REFLEX_NOAUTOINIT) && $REFLEX_NOAUTOINIT
   def Rays.fin!() end
   def Reflex.fin!() end
 end
