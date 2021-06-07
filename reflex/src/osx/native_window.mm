@@ -26,6 +26,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window *pwindow, *ptr_for_rebind;
 		OpenGLView* view;
 		NSTimer* timer;
+		int update_count;
 	}
 
 	- (id) init
@@ -38,8 +39,9 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		if (!self) return nil;
 
 		pwindow = ptr_for_rebind = NULL;
-		view    = nil;
-		timer   = nil;
+		view         = nil;
+		timer        = nil;
+		update_count = 0;
 
 		[self setDelegate: self];
 		[self setupContentView];
@@ -152,6 +154,8 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
+		++update_count;
+
 		double now = Xot::time();
 		Reflex::UpdateEvent e(now, now - win->self->prev_time_update);
 		win->self->prev_time_update = now;
@@ -171,6 +175,9 @@ static const NSUInteger WINDOW_STYLE_MASK =
 	{
 		Reflex::Window* win = self.window;
 		if (!win) return;
+
+		if (update_count == 0)
+			[self update];
 
 		double now = Xot::time();
 		double dt  = now - win->self->prev_time_draw;

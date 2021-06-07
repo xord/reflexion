@@ -131,6 +131,7 @@ ReflexViewController_get_show_fun ()
 
 	{
 		Reflex::Window *pwindow, *ptr_for_rebind;
+		int update_count;
 	}
 
 	- (id) init
@@ -139,6 +140,7 @@ ReflexViewController_get_show_fun ()
 		if (!self) return nil;
 
 		pwindow = ptr_for_rebind = NULL;
+		update_count = 0;
 
 		return self;
 	}
@@ -312,6 +314,8 @@ ReflexViewController_get_show_fun ()
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
+		++update_count;
+
 		double now = Xot::time();
 		Reflex::UpdateEvent e(now, now - win->self->prev_time_update);
 		win->self->prev_time_update = now;
@@ -331,6 +335,9 @@ ReflexViewController_get_show_fun ()
 	{
 		Reflex::Window* win = self.window;
 		if (!win) return;
+
+		if (update_count == 0)
+			[self update];
 
 		EAGLContext* context = self.reflexView.context;
 		if (!context) return;
