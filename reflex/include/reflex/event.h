@@ -4,6 +4,7 @@
 #define __REFLEX_EVENT_H__
 
 
+#include <vector>
 #include <rays/point.h>
 #include <rays/bounds.h>
 #include <rays/painter.h>
@@ -175,44 +176,38 @@ namespace Reflex
 	struct PointerEvent : public Event
 	{
 
-		enum Type {NONE = 0, DOWN, UP, MOVE};
+		enum Action {ACTION_NONE = 0, DOWN, UP, MOVE, STAY, CANCEL};
 
-		enum {MAX = 10};
-
-		Type type;
-
-		uint pointer_type;
-
-		size_t size;
-
-		uint modifiers, count;
-
-		bool drag, capture;
-
-		union
+		struct PointerPoint
 		{
-			struct {coord x, y, z;};
 
-			Coord3 positions[MAX];
-		};
+			Action action;
+
+			uint pointer_type;
+
+			Coord3 position;
+
+			uint modifiers, click_count;
+
+			bool drag;
+
+			PointerPoint (
+				Action action, uint pointer_type, const Coord3& position,
+				uint modifiers, uint click_count, bool drag);
+
+		};// PointerPoint
+
+		typedef std::vector<PointerPoint> Pointer;
+
+		typedef std::vector<Pointer>      PointerList;
+
+		PointerList pointers;
+
+		bool capture;
 
 		PointerEvent ();
 
-		PointerEvent (
-			Type type, uint pointer_type, coord x, coord y,
-			uint modifiers = 0, uint count = 1, bool drag = false);
-
-		PointerEvent (
-			Type type, uint pointer_type, const Point* positions, size_t size,
-			uint modifiers = 0, uint count = 1, bool drag = false);
-
-		      Point& position (size_t i = 0);
-
-		const Point& position (size_t i = 0) const;
-
-		      Point& operator [] (size_t i);
-
-		const Point& operator [] (size_t i) const;
+		PointerEvent (const PointerList& pointers);
 
 	};// PointerEvent
 

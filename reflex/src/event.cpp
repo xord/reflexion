@@ -135,64 +135,31 @@ namespace Reflex
 	}
 
 
+	PointerEvent::PointerPoint::PointerPoint (
+		Action action, uint pointer_type, const Coord3& position,
+		uint modifiers, uint click_count, bool drag)
+	:	action(action), pointer_type(pointer_type), position(position),
+		modifiers(modifiers), click_count(click_count), drag(drag)
+	{
+	}
+
+
 	PointerEvent::PointerEvent ()
-	:	type(NONE), pointer_type(POINTER_NONE),
-		size(0), modifiers(MOD_NONE), count(0), drag(false), capture(false),
-		x(0), y(0), z(0)
+	:	capture(false)
 	{
 	}
 
-	PointerEvent::PointerEvent (
-		Type type, uint pointer_type, coord x, coord y, uint modifiers, uint count, bool drag)
-	:	type(type), pointer_type(pointer_type),
-		size(1), modifiers(modifiers), count(count), drag(drag), capture(false),
-		x(x), y(y), z(0)
+	PointerEvent::PointerEvent (const PointerList& pointers)
+	:	pointers(pointers), capture(false)
 	{
-	}
-
-	PointerEvent::PointerEvent (
-		Type type, uint pointer_type, const Point* positions_, size_t size,
-		uint modifiers, uint count, bool drag)
-	:	type(type), pointer_type(pointer_type),
-		size(size), modifiers(modifiers), count(count), drag(drag), capture(false)
-	{
-		if (!positions_ && size > 0)
+		if (pointers.empty())
 			argument_error(__FILE__, __LINE__);
 
-		if (size > MAX) size = MAX;
-
-		if (positions_)
+		for (const auto& pointer : pointers)
 		{
-			for (size_t i = 0; i < size; ++i)
-				positions[i] = *(Coord3*) &positions_[i];
+			if (pointer.empty())
+				argument_error(__FILE__, __LINE__);
 		}
-	}
-
-	Point&
-	PointerEvent::position (size_t i)
-	{
-		if (i >= size)
-			index_error(__FILE__, __LINE__);
-
-		return *(Point*) &positions[i];
-	}
-
-	const Point&
-	PointerEvent::position (size_t i) const
-	{
-		return const_cast<PointerEvent*>(this)->position(i);
-	}
-
-	Point&
-	PointerEvent::operator [] (size_t i)
-	{
-		return position(i);
-	}
-
-	const Point&
-	PointerEvent::operator [] (size_t i) const
-	{
-		return position(i);
 	}
 
 
