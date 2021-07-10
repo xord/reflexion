@@ -31,7 +31,7 @@ namespace Reflex
 	struct NativePointerEvent : public PointerEvent
 	{
 
-		NativePointerEvent (NSEvent* event, NSView* view, Type type);
+		NativePointerEvent (NSEvent* event, NSView* view, Action action);
 
 	};// NativePointerEvent
 

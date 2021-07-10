@@ -241,6 +241,22 @@ namespace Reflex
 		return p;
 	}
 
+	static Point
+	get_pointer_position (NSEvent* e, NSView* view)
+	{
+		NSPoint p = correct_point(view, [e locationInWindow]);
+		return Point(p.x, p.y);
+	}
+
+	static bool
+	is_pointer_dragging (NSEvent* e)
+	{
+		return
+			[e type] == NSLeftMouseDragged  ||
+			[e type] == NSRightMouseDragged ||
+			[e type] == NSOtherMouseDragged;
+	}
+
 
 	NativeKeyEvent::NativeKeyEvent (NSEvent* e, Type type)
 	:	KeyEvent(
@@ -258,15 +274,16 @@ namespace Reflex
 	}
 
 
-	NativePointerEvent::NativePointerEvent (NSEvent* e, NSView* view, Type type)
+	NativePointerEvent::NativePointerEvent (NSEvent* e, NSView* view, Action action)
 	:	PointerEvent(
-			type, get_pointer_type(e), (coord) 0, (coord) 0,
-			get_modifiers(e), (uint) [e clickCount],
-			[e type] == NSLeftMouseDragged || [e type] == NSRightMouseDragged || [e type] == NSOtherMouseDragged)
+			PointerEvent::PointerList{
+				PointerEvent::Pointer{
+					PointerEvent::PointerPoint(
+						action, get_pointer_type(e), get_pointer_position(e, view),
+						get_modifiers(e), (uint) [e clickCount], is_pointer_dragging(e))
+					}
+				})
 	{
-		NSPoint p = correct_point(view, [e locationInWindow]);
-		x = p.x;
-		y = p.y;
 	}
 
 
