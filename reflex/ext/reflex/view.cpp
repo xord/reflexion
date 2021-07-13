@@ -1035,6 +1035,14 @@ RUCY_DEF1(on_pointer_move, event)
 RUCY_END
 
 static
+RUCY_DEF1(on_pointer_cancel, event)
+{
+	CHECK;
+	CALL(on_pointer_cancel(to<Reflex::PointerEvent*>(event)));
+}
+RUCY_END
+
+static
 RUCY_DEF1(on_wheel, event)
 {
 	CHECK;
@@ -1201,9 +1209,10 @@ Init_view ()
 	cView.define_method("on_key_down", on_key_down);
 	cView.define_method("on_key_up",   on_key_up);
 	cView.define_method("on_pointer",      on_pointer);
-	cView.define_method("on_pointer_down", on_pointer_down);
-	cView.define_method("on_pointer_up",   on_pointer_up);
-	cView.define_method("on_pointer_move", on_pointer_move);
+	cView.define_method("on_pointer_down",   on_pointer_down);
+	cView.define_method("on_pointer_up",     on_pointer_up);
+	cView.define_method("on_pointer_move",   on_pointer_move);
+	cView.define_method("on_pointer_cancel", on_pointer_cancel);
 	cView.define_method("on_wheel", on_wheel);
 	cView.define_method("on_capture", on_capture);
 	cView.define_method("on_timer", on_timer);

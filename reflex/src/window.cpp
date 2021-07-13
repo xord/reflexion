@@ -369,10 +369,11 @@ namespace Reflex
 
 		switch (e->pointers[0].points[0].action)
 		{
-			case PointerEvent::DOWN: on_pointer_down(e); break;
-			case PointerEvent::UP:   on_pointer_up(e);   break;
-			case PointerEvent::MOVE: on_pointer_move(e); break;
-			case PointerEvent::NONE:                     break;
+			case PointerEvent::DOWN:   on_pointer_down(e);   break;
+			case PointerEvent::UP:     on_pointer_up(e);     break;
+			case PointerEvent::MOVE:   on_pointer_move(e);   break;
+			case PointerEvent::CANCEL: on_pointer_cancel(e); break;
+			default: break;
 		}
 
 		auto end = self->capturing_views.end();
@@ -402,6 +403,11 @@ namespace Reflex
 
 	void
 	Window::on_pointer_move (PointerEvent* e)
+	{
+	}
+
+	void
+	Window::on_pointer_cancel (PointerEvent* e)
 	{
 	}
 

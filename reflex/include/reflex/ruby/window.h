@@ -153,6 +153,15 @@ namespace Reflex
 					Super::on_pointer_move(e);
 			}
 
+			virtual void on_pointer_cancel (PointerEvent* e)
+			{
+				RUCY_SYM(on_pointer_cancel);
+				if (this->is_overridable())
+					this->value.call(on_pointer_cancel, Rucy::value(e));
+				else
+					Super::on_pointer_cancel(e);
+			}
+
 			virtual void on_wheel (WheelEvent* e)
 			{
 				RUCY_SYM(on_wheel);

@@ -91,13 +91,15 @@ namespace Reflex
 
 			virtual void on_key_up   (KeyEvent* e);
 
-			virtual void on_pointer      (PointerEvent* e);
+			virtual void on_pointer        (PointerEvent* e);
 
-			virtual void on_pointer_down (PointerEvent* e);
+			virtual void on_pointer_down   (PointerEvent* e);
 
-			virtual void on_pointer_up   (PointerEvent* e);
+			virtual void on_pointer_up     (PointerEvent* e);
 
-			virtual void on_pointer_move (PointerEvent* e);
+			virtual void on_pointer_move   (PointerEvent* e);
+
+			virtual void on_pointer_cancel (PointerEvent* e);
 
 			virtual void on_wheel (WheelEvent* e);
 

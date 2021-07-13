@@ -1323,10 +1323,11 @@ namespace Reflex
 
 		switch (e.pointers[0].points[0].action)
 		{
-			case PointerEvent::DOWN: view->on_pointer_down(&e); break;
-			case PointerEvent::UP:   view->on_pointer_up(&e);   break;
-			case PointerEvent::MOVE: view->on_pointer_move(&e); break;
-			case PointerEvent::NONE: break;
+			case PointerEvent::DOWN:   view->on_pointer_down(&e);   break;
+			case PointerEvent::UP:     view->on_pointer_up(&e);     break;
+			case PointerEvent::MOVE:   view->on_pointer_move(&e);   break;
+			case PointerEvent::CANCEL: view->on_pointer_cancel(&e); break;
+			default: break;
 		}
 
 		if (!event.capture)
@@ -2538,6 +2539,11 @@ namespace Reflex
 
 	void
 	View::on_pointer_move (PointerEvent* e)
+	{
+	}
+
+	void
+	View::on_pointer_cancel (PointerEvent* e)
 	{
 	}
 
