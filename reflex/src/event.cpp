@@ -136,7 +136,7 @@ namespace Reflex
 
 
 	PointerEvent::PointerPoint::PointerPoint (
-		Action action, uint pointer_type, const Coord3& position,
+		Action action, uint pointer_type, const Point& position,
 		uint modifiers, uint click_count, bool drag)
 	:	action(action), pointer_type(pointer_type), position(position),
 		modifiers(modifiers), click_count(click_count), drag(drag)
@@ -144,9 +144,24 @@ namespace Reflex
 	}
 
 
+	PointerEvent::Pointer::Pointer (const PointerPoint* points, size_t size)
+	{
+		if (points == NULL || size == 0)
+			argument_error(__FILE__, __LINE__);
+
+		this->points.insert(this->points.begin(), points, points + size);
+	}
+
+
 	PointerEvent::PointerEvent ()
 	:	capture(false)
 	{
+	}
+
+	PointerEvent::PointerEvent (const PointerPoint& point)
+	:	capture(false)
+	{
+		pointers.emplace_back(Pointer(&point, 1));
 	}
 
 	PointerEvent::PointerEvent (const PointerList& pointers)
@@ -157,7 +172,7 @@ namespace Reflex
 
 		for (const auto& pointer : pointers)
 		{
-			if (pointer.empty())
+			if (pointer.points.empty())
 				argument_error(__FILE__, __LINE__);
 		}
 	}

@@ -367,7 +367,7 @@ namespace Reflex
 		if (!e)
 			argument_error(__FILE__, __LINE__);
 
-		switch (e->type)
+		switch (e->pointers[0].points[0].action)
 		{
 			case PointerEvent::DOWN: on_pointer_down(e); break;
 			case PointerEvent::UP:   on_pointer_up(e);   break;

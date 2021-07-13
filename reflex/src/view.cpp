@@ -1268,14 +1268,16 @@ namespace Reflex
 
 		const Point& offset = frame.position();
 
-		to->size = 0;
-		for (size_t i = 0; i < from.size; ++i) {
-			const Point& pos = from.position(i);
-			if (!frame.is_include(pos))
+		to->pointers.clear();
+		for (const auto& pointer : from.pointers) {
+			if (!frame.is_include(pointer.points[0].position))
 				continue;
 
-			to->positions[i] = pos - offset;
-			++to->size;
+			PointerEvent::Pointer pointer2 = pointer;
+			for (auto& point : pointer2.points)
+				point.position -= offset;
+
+			to->pointers.emplace_back(pointer2);
 		}
 	}
 
@@ -1290,10 +1292,13 @@ namespace Reflex
 		if (*scroll == 0 && zoom == 1)
 			return;
 
-		for (size_t i = 0; i < e->size; ++i)
+		for (auto& pointer : e->pointers)
 		{
-			e->position(i) -= *scroll;
-			e->position(i) /= zoom;
+			for (auto& point : pointer.points)
+			{
+				point.position -= *scroll;
+				point.position /= zoom;
+			}
 		}
 	}
 
@@ -1309,14 +1314,14 @@ namespace Reflex
 		PointerEvent e = event;
 		filter_pointer_event(&e, event, view->frame());
 
-		if (!capturing && e.size == 0)
+		if (!capturing && e.pointers.empty())
 			return;
 
 		scroll_and_zoom_positions(&e, view->self->pscroll.get(), view->zoom());
 
 		view->on_pointer(&e);
 
-		switch (e.type)
+		switch (e.pointers[0].points[0].action)
 		{
 			case PointerEvent::DOWN: view->on_pointer_down(&e); break;
 			case PointerEvent::UP:   view->on_pointer_up(&e);   break;

@@ -185,27 +185,36 @@ namespace Reflex
 
 			uint pointer_type;
 
-			Coord3 position;
+			Point position;
 
 			uint modifiers, click_count;
 
 			bool drag;
 
 			PointerPoint (
-				Action action, uint pointer_type, const Coord3& position,
+				Action action, uint pointer_type, const Point& position,
 				uint modifiers, uint click_count, bool drag);
 
 		};// PointerPoint
 
-		typedef std::vector<PointerPoint> Pointer;
+		struct Pointer
+		{
 
-		typedef std::vector<Pointer>      PointerList;
+			std::vector<PointerPoint> points;
+
+			Pointer (const PointerPoint* points, size_t size);
+
+		};// Pointer
+
+		typedef std::vector<Pointer> PointerList;
 
 		PointerList pointers;
 
 		bool capture;
 
 		PointerEvent ();
+
+		PointerEvent (const PointerPoint& point);
 
 		PointerEvent (const PointerList& pointers);
 

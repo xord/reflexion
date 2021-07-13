@@ -213,8 +213,10 @@ namespace Reflex
 
 			case NSMouseMoved:
 				return get_current_pointer_type();
+
+			default:
+				return POINTER_NONE;
 		}
-		return 0;
 	}
 
 	static uint
@@ -275,14 +277,9 @@ namespace Reflex
 
 
 	NativePointerEvent::NativePointerEvent (NSEvent* e, NSView* view, Action action)
-	:	PointerEvent(
-			PointerEvent::PointerList{
-				PointerEvent::Pointer{
-					PointerEvent::PointerPoint(
-						action, get_pointer_type(e), get_pointer_position(e, view),
-						get_modifiers(e), (uint) [e clickCount], is_pointer_dragging(e))
-					}
-				})
+	:	PointerEvent(PointerEvent::PointerPoint(
+			action, get_pointer_type(e), get_pointer_position(e, view),
+			get_modifiers(e), (uint) [e clickCount], is_pointer_dragging(e)))
 	{
 	}
 
