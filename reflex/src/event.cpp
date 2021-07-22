@@ -1,4 +1,4 @@
-#include "reflex/event.h"
+#include "event.h"
 
 
 #include "reflex/timer.h"
@@ -135,46 +135,129 @@ namespace Reflex
 	}
 
 
-	PointerEvent::PointerPoint::PointerPoint (
-		Action action, uint pointer_type, const Point& position,
-		uint modifiers, uint click_count, bool drag)
-	:	action(action), pointer_type(pointer_type), position(position),
-		modifiers(modifiers), click_count(click_count), drag(drag)
+	PointerEvent::Pointer::Data::Data ()
+	:	action(ACTION_NONE), pointer_type(0), position(0),
+		modifiers(0), click_count(0), drag(false)
 	{
 	}
 
 
-	PointerEvent::Pointer::Pointer (const PointerPoint* points, size_t size)
+	PointerEvent::Pointer::Pointer ()
 	{
-		if (points == NULL || size == 0)
-			argument_error(__FILE__, __LINE__);
+	}
 
-		this->points.insert(this->points.begin(), points, points + size);
+	PointerEvent::Pointer::~Pointer ()
+	{
+	}
+
+	PointerEvent::Action
+	PointerEvent::Pointer::action () const
+	{
+		return self->action;
+	}
+
+	uint
+	PointerEvent::Pointer::pointer_type () const
+	{
+		return self->pointer_type;
+	}
+
+	Point
+	PointerEvent::Pointer::position () const
+	{
+		return self->position;
+	}
+
+	uint
+	PointerEvent::Pointer::modifiers () const
+	{
+		return self->modifiers;
+	}
+
+	uint
+	PointerEvent::Pointer::click_count () const
+	{
+		return self->click_count;
+	}
+
+	bool
+	PointerEvent::Pointer::is_drag () const
+	{
+		return self->drag;
+	}
+
+	PointerEvent::Pointer
+	PointerEvent::Pointer::next () const
+	{
+		return self->next;
+	}
+
+	PointerEvent::Pointer::operator bool () const
+	{
+		return ACTION_FIRST <= self->action && self->action <= ACTION_LAST;
+	}
+
+	bool
+	PointerEvent::Pointer::operator ! () const
+	{
+		return !operator bool();
+	}
+
+
+	PointerEvent::Data::Data ()
+	:	capture(false)
+	{
 	}
 
 
 	PointerEvent::PointerEvent ()
-	:	capture(false)
 	{
 	}
 
-	PointerEvent::PointerEvent (const PointerPoint& point)
-	:	capture(false)
+	PointerEvent::~PointerEvent ()
 	{
-		pointers.emplace_back(Pointer(&point, 1));
 	}
 
-	PointerEvent::PointerEvent (const PointerList& pointers)
-	:	pointers(pointers), capture(false)
+	PointerEvent::Action
+	PointerEvent::action () const
 	{
-		if (pointers.empty())
-			argument_error(__FILE__, __LINE__);
+		return self->pointers.front().action();
+	}
 
-		for (const auto& pointer : pointers)
-		{
-			if (pointer.points.empty())
-				argument_error(__FILE__, __LINE__);
-		}
+	uint
+	PointerEvent::pointer_type () const
+	{
+		return self->pointers.front().pointer_type();
+	}
+
+	Point
+	PointerEvent::position () const
+	{
+		return self->pointers.front().position();
+	}
+
+	uint
+	PointerEvent::modifiers () const
+	{
+		return self->pointers.front().modifiers();
+	}
+
+	uint
+	PointerEvent::click_count () const
+	{
+		return self->pointers.front().click_count();
+	}
+
+	bool
+	PointerEvent::is_drag () const
+	{
+		return self->pointers.front().is_drag();
+	}
+
+	const PointerEvent::PointerList&
+	PointerEvent::pointers () const
+	{
+		return self->pointers;
 	}
 
 

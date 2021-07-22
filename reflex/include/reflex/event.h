@@ -5,6 +5,7 @@
 
 
 #include <vector>
+#include <xot/pimpl.h>
 #include <rays/point.h>
 #include <rays/bounds.h>
 #include <rays/painter.h>
@@ -176,47 +177,69 @@ namespace Reflex
 	struct PointerEvent : public Event
 	{
 
-		enum Action {ACTION_NONE = 0, DOWN, UP, MOVE, STAY, CANCEL};
-
-		struct PointerPoint
+		enum Action
 		{
 
-			Action action;
+			ACTION_NONE  = 0, DOWN, UP, MOVE, CANCEL, STAY,
 
-			uint pointer_type;
+			ACTION_FIRST = DOWN, ACTION_LAST = STAY
 
-			Point position;
-
-			uint modifiers, click_count;
-
-			bool drag;
-
-			PointerPoint (
-				Action action, uint pointer_type, const Point& position,
-				uint modifiers, uint click_count, bool drag);
-
-		};// PointerPoint
+		};// Action
 
 		struct Pointer
 		{
 
-			std::vector<PointerPoint> points;
+			Pointer ();
 
-			Pointer (const PointerPoint* points, size_t size);
+			~Pointer ();
+
+			Action action () const;
+
+			uint pointer_type () const;
+
+			Point position () const;
+
+			uint modifiers () const;
+
+			uint click_count () const;
+
+			bool is_drag () const;
+
+			Pointer next () const;
+
+			operator bool () const;
+
+			bool operator ! () const;
+
+			struct Data;
+
+			Xot::PImpl<Data> self;
 
 		};// Pointer
 
 		typedef std::vector<Pointer> PointerList;
 
-		PointerList pointers;
-
-		bool capture;
-
 		PointerEvent ();
 
-		PointerEvent (const PointerPoint& point);
+		~PointerEvent ();
 
-		PointerEvent (const PointerList& pointers);
+		Action action () const;
+
+		uint pointer_type () const;
+
+		Point position () const;
+
+		uint modifiers () const;
+
+		uint click_count () const;
+
+		bool is_drag () const;
+
+		const PointerList& pointers () const;
+
+		struct Data;
+
+		Xot::PImpl<Data> self;
 
 	};// PointerEvent
 

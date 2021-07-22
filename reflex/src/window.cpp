@@ -3,6 +3,7 @@
 
 #include "reflex/exception.h"
 #include "view.h"
+#include "event.h"
 
 
 namespace Reflex
@@ -367,7 +368,7 @@ namespace Reflex
 		if (!e)
 			argument_error(__FILE__, __LINE__);
 
-		switch (e->pointers[0].points[0].action)
+		switch (e->action())
 		{
 			case PointerEvent::DOWN:   on_pointer_down(e);   break;
 			case PointerEvent::UP:     on_pointer_up(e);     break;
@@ -380,9 +381,10 @@ namespace Reflex
 		for (auto it = self->capturing_views.begin(); it != end; ++it)
 		{
 			PointerEvent event = *e;
-			event.capture = true;
-			for (size_t i = 0; i < event.size; ++i)
-				event[i] = it->first.get()->from_window(event[i]);
+			event.self->capture = true;
+			for (auto& pointer : event.self->pointers)
+				pointer.self->position = it->first.get()->from_window(pointer.self->position);
+
 			View_call_pointer_event(const_cast<View*>(it->first.get()), event);
 		}
 

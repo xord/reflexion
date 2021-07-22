@@ -276,22 +276,29 @@ namespace Reflex
 	}
 
 
-	NativePointerEvent::NativePointerEvent (NSEvent* e, NSView* view, Action action)
-	:	PointerEvent(PointerEvent::PointerPoint(
-			action, get_pointer_type(e), get_pointer_position(e, view),
-			get_modifiers(e), (uint) [e clickCount], is_pointer_dragging(e)))
+	NativeWheelEvent::NativeWheelEvent (NSEvent* e, NSView* view)
+	:	WheelEvent(0, 0, 0, [e deltaX], [e deltaY], [e deltaZ], get_modifiers(e))
 	{
+		position_ = get_pointer_position(e, view);
 	}
 
 
-	NativeWheelEvent::NativeWheelEvent (NSEvent* e, NSView* view)
-	:	WheelEvent([e deltaX], [e deltaY], [e deltaZ])
+	PointerEvent
+	create_pointer_event (
+		NSEvent* event, NSView* view, PointerEvent::Action action)
 	{
-		NSPoint p = correct_point(view, [e locationInWindow]);
-		x         = p.x;
-		y         = p.y;
-		z         = 0;
-		modifiers = get_modifiers(e);
+		PointerEvent::Pointer p;
+		p.self->action       = action;
+		p.self->pointer_type = get_pointer_type(event);
+		p.self->position     = get_pointer_position(event, view);
+		p.self->modifiers    = get_modifiers(event);
+		p.self->click_count  = (uint) [event clickCount];
+		p.self->drag         = is_pointer_dragging(event);
+
+		PointerEvent e;
+		e.self->pointers.emplace_back(p);
+
+		return e;
 	}
 
 

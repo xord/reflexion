@@ -299,7 +299,8 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::DOWN);
+		Reflex::PointerEvent e =
+			Reflex::create_pointer_event(event, view, Reflex::PointerEvent::DOWN);
 		win->on_pointer(&e);
 	}
 
@@ -308,7 +309,8 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::UP);
+		Reflex::PointerEvent e =
+			Reflex::create_pointer_event(event, view, Reflex::PointerEvent::UP);
 		win->on_pointer(&e);
 	}
 
@@ -317,7 +319,8 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::MOVE);
+		Reflex::PointerEvent e =
+			create_pointer_event(event, view, Reflex::PointerEvent::MOVE);
 		win->on_pointer(&e);
 	}
 
@@ -326,7 +329,8 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::MOVE);
+		Reflex::PointerEvent e =
+			create_pointer_event(event, view, Reflex::PointerEvent::MOVE);
 		win->on_pointer(&e);
 	}
 

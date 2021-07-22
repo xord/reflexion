@@ -9,6 +9,7 @@
 #include "reflex/exception.h"
 #include "reflex/debug.h"
 #include "window.h"
+#include "event.h"
 #include "selector.h"
 #include "timer.h"
 #include "style.h"
@@ -1268,16 +1269,15 @@ namespace Reflex
 
 		const Point& offset = frame.position();
 
-		to->pointers.clear();
-		for (const auto& pointer : from.pointers) {
-			if (!frame.is_include(pointer.points[0].position))
+		to->self->pointers.clear();
+		for (const auto& pointer : from.self->pointers) {
+			if (!frame.is_include(pointer.self->position))
 				continue;
 
 			PointerEvent::Pointer pointer2 = pointer;
-			for (auto& point : pointer2.points)
-				point.position -= offset;
+			pointer2.self->position -= offset;
 
-			to->pointers.emplace_back(pointer2);
+			to->self->pointers.emplace_back(pointer2);
 		}
 	}
 
@@ -1292,13 +1292,10 @@ namespace Reflex
 		if (*scroll == 0 && zoom == 1)
 			return;
 
-		for (auto& pointer : e->pointers)
+		for (auto& pointer : e->self->pointers)
 		{
-			for (auto& point : pointer.points)
-			{
-				point.position -= *scroll;
-				point.position /= zoom;
-			}
+			pointer.self->position -= *scroll;
+			pointer.self->position /= zoom;
 		}
 	}
 
@@ -1309,19 +1306,19 @@ namespace Reflex
 			argument_error(__FILE__, __LINE__);
 
 		bool capturing = view->capture() & View::CAPTURE_POINTER;
-		if (capturing != event.capture) return;
+		if (capturing != event.self->capture) return;
 
 		PointerEvent e = event;
 		filter_pointer_event(&e, event, view->frame());
 
-		if (!capturing && e.pointers.empty())
+		if (!capturing && e.self->pointers.empty())
 			return;
 
 		scroll_and_zoom_positions(&e, view->self->pscroll.get(), view->zoom());
 
 		view->on_pointer(&e);
 
-		switch (e.pointers[0].points[0].action)
+		switch (e.action())
 		{
 			case PointerEvent::DOWN:   view->on_pointer_down(&e);   break;
 			case PointerEvent::UP:     view->on_pointer_up(&e);     break;
@@ -1330,7 +1327,7 @@ namespace Reflex
 			default: break;
 		}
 
-		if (!event.capture)
+		if (!event.self->capture)
 			call_children(view, View_call_pointer_event, e);
 	}
 
