@@ -4,6 +4,8 @@
 #include "reflex/timer.h"
 #include "reflex/shape.h"
 #include "reflex/exception.h"
+#include "view.h"
+#include "pointer.h"
 
 
 namespace Reflex
@@ -135,78 +137,68 @@ namespace Reflex
 	}
 
 
-	PointerEvent::Pointer::Data::Data ()
-	:	action(ACTION_NONE), pointer_type(0), position(0),
-		modifiers(0), click_count(0), drag(false)
+	struct PointerEvent::Data
 	{
+
+		std::vector<Pointer> pointers;
+
+		bool capture;
+
+		Data ()
+		:	capture(false)
+		{
+		}
+
+	};// PointerEvent::Data
+
+
+	void
+	PointerEvent_update_positions_for_capturing_views (
+		PointerEvent* pthis, const View* view)
+	{
+		pthis->self->capture = true;
+
+		for (auto& pointer : pthis->self->pointers)
+			Pointer_set_position(&pointer, view->from_window(pointer.position()));
 	}
 
-
-	PointerEvent::Pointer::Pointer ()
+	void
+	PointerEvent_filter_and_update_positions (PointerEvent* pthis, const Bounds& frame)
 	{
+		assert(pthis);
+
+		const Point& offset = frame.position();
+
+		std::vector<Pointer> pointers;
+		for (const auto& pointer : pthis->self->pointers) {
+			if (!frame.is_include(pointer.position()))
+				continue;
+
+			pointers.emplace_back(pointer);
+			Pointer_set_position(&pointers.back(), pointers.back().position() - offset);
+		}
+
+		pthis->self->pointers = pointers;
 	}
 
-	PointerEvent::Pointer::~Pointer ()
+	void
+	PointerEvent_scroll_and_zoom_positions (PointerEvent* pthis, const Point* scroll, float zoom)
 	{
-	}
+		static const Point ZERO = 0;
 
-	PointerEvent::Action
-	PointerEvent::Pointer::action () const
-	{
-		return self->action;
-	}
+		assert(zoom != 0);
 
-	uint
-	PointerEvent::Pointer::pointer_type () const
-	{
-		return self->pointer_type;
-	}
+		if (!scroll) scroll = &ZERO;
+		if (*scroll == 0 && zoom == 1)
+			return;
 
-	Point
-	PointerEvent::Pointer::position () const
-	{
-		return self->position;
-	}
-
-	uint
-	PointerEvent::Pointer::modifiers () const
-	{
-		return self->modifiers;
-	}
-
-	uint
-	PointerEvent::Pointer::click_count () const
-	{
-		return self->click_count;
-	}
-
-	bool
-	PointerEvent::Pointer::is_drag () const
-	{
-		return self->drag;
-	}
-
-	PointerEvent::Pointer
-	PointerEvent::Pointer::next () const
-	{
-		return self->next;
-	}
-
-	PointerEvent::Pointer::operator bool () const
-	{
-		return ACTION_FIRST <= self->action && self->action <= ACTION_LAST;
-	}
-
-	bool
-	PointerEvent::Pointer::operator ! () const
-	{
-		return !operator bool();
-	}
-
-
-	PointerEvent::Data::Data ()
-	:	capture(false)
-	{
+		for (auto& pointer : pthis->self->pointers)
+		{
+			Point p = pointer.position();
+			p -= *scroll;
+			p /= zoom;
+			Pointer_set_position(&pointer, p);
+		}
 	}
 
 
@@ -214,50 +206,60 @@ namespace Reflex
 	{
 	}
 
+	PointerEvent::PointerEvent (const Pointer& pointer)
+	{
+		self->pointers.emplace_back(pointer);
+	}
+
+	PointerEvent::PointerEvent (const Pointer* pointers, size_t size)
+	{
+		for (size_t i = 0; i < size; ++i)
+			self->pointers.emplace_back(pointers[i]);
+	}
+
+	PointerEvent::PointerEvent (const This& obj)
+	:	self(new Data(*obj.self))
+	{
+	}
+
+	PointerEvent&
+	PointerEvent::operator = (const This& obj)
+	{
+		if (&obj == this) return *this;
+
+		*self = *obj.self;
+		return *this;
+	}
+
 	PointerEvent::~PointerEvent ()
 	{
 	}
 
-	PointerEvent::Action
-	PointerEvent::action () const
+	size_t
+	PointerEvent::size () const
 	{
-		return self->pointers.front().action();
-	}
-
-	uint
-	PointerEvent::pointer_type () const
-	{
-		return self->pointers.front().pointer_type();
-	}
-
-	Point
-	PointerEvent::position () const
-	{
-		return self->pointers.front().position();
-	}
-
-	uint
-	PointerEvent::modifiers () const
-	{
-		return self->pointers.front().modifiers();
-	}
-
-	uint
-	PointerEvent::click_count () const
-	{
-		return self->pointers.front().click_count();
+		return self->pointers.size();
 	}
 
 	bool
-	PointerEvent::is_drag () const
+	PointerEvent::empty () const
 	{
-		return self->pointers.front().is_drag();
+		return size() == 0;
 	}
 
-	const PointerEvent::PointerList&
-	PointerEvent::pointers () const
+	bool
+	PointerEvent::is_capture () const
 	{
-		return self->pointers;
+		return self->capture;
+	}
+
+	const Pointer&
+	PointerEvent::operator [] (size_t index) const
+	{
+		if (index >= self->pointers.size())
+			index_error(__FILE__, __LINE__);
+
+		return self->pointers[index];
 	}
 
 

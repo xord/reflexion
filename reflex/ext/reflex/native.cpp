@@ -17,6 +17,7 @@ void Init_frame_event ();
 void Init_scroll_event ();
 void Init_focus_event ();
 void Init_key_event ();
+void Init_pointer ();
 void Init_pointer_event ();
 void Init_wheel_event ();
 void Init_capture_event ();
@@ -63,6 +64,7 @@ extern "C" void
 	Init_scroll_event();
 	Init_focus_event();
 	Init_key_event();
+	Init_pointer();
 	Init_pointer_event();
 	Init_wheel_event();
 	Init_capture_event();

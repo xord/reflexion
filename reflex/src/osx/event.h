@@ -28,16 +28,22 @@ namespace Reflex
 	};// NativeFlagKeyEvent
 
 
+	class NativePointerEvent : public PointerEvent
+	{
+
+		public:
+
+			NativePointerEvent (NSEvent* event, NSView* view, Pointer::Action action);
+
+	};// NativePointerEvent
+
+
 	struct NativeWheelEvent : public WheelEvent
 	{
 
 		NativeWheelEvent (NSEvent* event, NSView* view);
 
 	};// NativeWheelEvent
-
-
-	PointerEvent create_pointer_event (
-		NSEvent* event, NSView* view, PointerEvent::Action action);
 
 
 }// Reflex

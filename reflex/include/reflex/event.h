@@ -4,12 +4,12 @@
 #define __REFLEX_EVENT_H__
 
 
-#include <vector>
 #include <xot/pimpl.h>
 #include <rays/point.h>
 #include <rays/bounds.h>
 #include <rays/painter.h>
 #include <reflex/defs.h>
+#include <reflex/pointer.h>
 #include <reflex/timer.h>
 
 
@@ -174,72 +174,36 @@ namespace Reflex
 	};// KeyEvent
 
 
-	struct PointerEvent : public Event
+	class PointerEvent : public Event
 	{
 
-		enum Action
-		{
+		typedef PointerEvent This;
 
-			ACTION_NONE  = 0, DOWN, UP, MOVE, CANCEL, STAY,
+		public:
 
-			ACTION_FIRST = DOWN, ACTION_LAST = STAY
+			PointerEvent ();
 
-		};// Action
+			PointerEvent (const Pointer& pointers);
 
-		struct Pointer
-		{
+			PointerEvent (const Pointer* pointers, size_t size);
 
-			Pointer ();
+			PointerEvent (const This& obj);
 
-			~Pointer ();
+			PointerEvent& operator = (const This& obj);
 
-			Action action () const;
+			~PointerEvent ();
 
-			uint pointer_type () const;
+			size_t size () const;
 
-			Point position () const;
+			bool empty () const;
 
-			uint modifiers () const;
+			bool is_capture () const;
 
-			uint click_count () const;
-
-			bool is_drag () const;
-
-			Pointer next () const;
-
-			operator bool () const;
-
-			bool operator ! () const;
+			const Pointer& operator [] (size_t index) const;
 
 			struct Data;
 
 			Xot::PImpl<Data> self;
-
-		};// Pointer
-
-		typedef std::vector<Pointer> PointerList;
-
-		PointerEvent ();
-
-		~PointerEvent ();
-
-		Action action () const;
-
-		uint pointer_type () const;
-
-		Point position () const;
-
-		uint modifiers () const;
-
-		uint click_count () const;
-
-		bool is_drag () const;
-
-		const PointerList& pointers () const;
-
-		struct Data;
-
-		Xot::PImpl<Data> self;
 
 	};// PointerEvent
 

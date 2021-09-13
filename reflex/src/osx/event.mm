@@ -185,9 +185,9 @@ namespace Reflex
 	{
 		NSUInteger buttons = [NSEvent pressedMouseButtons];
 		uint ret = 0;
-		if (buttons &  (1 << 0)) ret |= POINTER_MOUSE_LEFT;
-		if (buttons &  (1 << 1)) ret |= POINTER_MOUSE_RIGHT;
-		if (buttons >= (1 << 2)) ret |= POINTER_MOUSE_MIDDLE;
+		if (buttons &  (1 << 0)) ret |= Reflex::Pointer::MOUSE_LEFT;
+		if (buttons &  (1 << 1)) ret |= Reflex::Pointer::MOUSE_RIGHT;
+		if (buttons >= (1 << 2)) ret |= Reflex::Pointer::MOUSE_MIDDLE;
 		return ret;
 	}
 
@@ -199,23 +199,23 @@ namespace Reflex
 			case NSLeftMouseDown:
 			case NSLeftMouseUp:
 			case NSLeftMouseDragged:
-				return POINTER_MOUSE_LEFT;
+				return Reflex::Pointer::MOUSE_LEFT;
 
 			case NSRightMouseDown:
 			case NSRightMouseUp:
 			case NSRightMouseDragged:
-				return POINTER_MOUSE_RIGHT;
+				return Reflex::Pointer::MOUSE_RIGHT;
 
 			case NSOtherMouseDown:
 			case NSOtherMouseUp:
 			case NSOtherMouseDragged:
-				return POINTER_MOUSE_MIDDLE;
+				return Reflex::Pointer::MOUSE_MIDDLE;
 
 			case NSMouseMoved:
 				return get_current_pointer_type();
 
 			default:
-				return POINTER_NONE;
+				return Reflex::Pointer::TYPE_NONE;
 		}
 	}
 
@@ -250,15 +250,6 @@ namespace Reflex
 		return Point(p.x, p.y);
 	}
 
-	static bool
-	is_pointer_dragging (NSEvent* e)
-	{
-		return
-			[e type] == NSLeftMouseDragged  ||
-			[e type] == NSRightMouseDragged ||
-			[e type] == NSOtherMouseDragged;
-	}
-
 
 	NativeKeyEvent::NativeKeyEvent (NSEvent* e, Type type)
 	:	KeyEvent(
@@ -276,29 +267,29 @@ namespace Reflex
 	}
 
 
+	static bool
+	is_pointer_dragging (NSEvent* e)
+	{
+		return
+			[e type] == NSLeftMouseDragged  ||
+			[e type] == NSRightMouseDragged ||
+			[e type] == NSOtherMouseDragged;
+	}
+
+	NativePointerEvent::NativePointerEvent (
+		NSEvent* event, NSView* view, Pointer::Action action)
+	:	PointerEvent(Pointer(
+			get_pointer_type(event), action, get_pointer_position(event, view),
+			get_modifiers(event), (uint) [event clickCount],
+			is_pointer_dragging(event)))
+	{
+	}
+
+
 	NativeWheelEvent::NativeWheelEvent (NSEvent* e, NSView* view)
 	:	WheelEvent(0, 0, 0, [e deltaX], [e deltaY], [e deltaZ], get_modifiers(e))
 	{
 		position_ = get_pointer_position(e, view);
-	}
-
-
-	PointerEvent
-	create_pointer_event (
-		NSEvent* event, NSView* view, PointerEvent::Action action)
-	{
-		PointerEvent::Pointer p;
-		p.self->action       = action;
-		p.self->pointer_type = get_pointer_type(event);
-		p.self->position     = get_pointer_position(event, view);
-		p.self->modifiers    = get_modifiers(event);
-		p.self->click_count  = (uint) [event clickCount];
-		p.self->drag         = is_pointer_dragging(event);
-
-		PointerEvent e;
-		e.self->pointers.emplace_back(p);
-
-		return e;
 	}
 
 
