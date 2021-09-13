@@ -877,7 +877,7 @@ namespace Reflex
 		result->clear();
 
 		Selector* sel = view->self->pselector.get();
-		if (!sel || sel->is_empty())
+		if (!sel || sel->empty())
 			return false;
 
 		get_styles_for_selector(result, view, *sel);
@@ -1211,7 +1211,7 @@ namespace Reflex
 
 		View::Data* self = view->self.get();
 
-		if (selector.is_empty())
+		if (selector.empty())
 			self->add_flag(View::Data::UPDATE_STYLE);
 		else
 			self->selectors_for_update().insert(selector);
@@ -1700,7 +1700,7 @@ namespace Reflex
 	Style*
 	View::get_style (const Selector& selector, bool create)
 	{
-		if (selector.is_empty())
+		if (selector.empty())
 			return style(create);
 
 		StyleList* pstyles = self->pstyles.get();

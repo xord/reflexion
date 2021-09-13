@@ -55,7 +55,7 @@ namespace Reflex
 
 			const_iterator end () const;
 
-			bool is_empty () const;
+			bool empty () const;
 
 			friend bool operator == (const This& lhs, const This& rhs);
 

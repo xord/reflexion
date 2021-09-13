@@ -46,6 +46,13 @@ class TestSelector < Test::Unit::TestCase
     assert_equal [], s.tags.to_a
   end
 
+  def test_empty()
+    assert_equal true,  sel                   .empty?
+    assert_equal false, sel(name: :A         ).empty?
+    assert_equal false, sel(          tag: :T).empty?
+    assert_equal false, sel(name: :A, tag: :T).empty?
+  end
+
   def test_contains()
     assert_not sel.contains(sel name: :A, tag: :T)
     assert     sel(name: :A).contains(sel name: :A)

@@ -139,7 +139,7 @@ namespace Reflex
 	}
 
 	bool
-	Selector::is_empty () const
+	Selector::empty () const
 	{
 		return self->name.empty() && self->tags.empty();
 	}

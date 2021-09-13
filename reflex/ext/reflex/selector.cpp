@@ -91,6 +91,14 @@ RUCY_DEF0(each_tag)
 RUCY_END
 
 static
+RUCY_DEF0(is_empty)
+{
+	CHECK;
+	return value(C_THIS->empty());
+}
+RUCY_END
+
+static
 RUCY_DEF1(contains, selector)
 {
 	CHECK;
@@ -124,6 +132,7 @@ Init_selector ()
 	cSelector.define_method("clear_tags", clear_tags);
 	cSelector.define_method("tag?",       has_tag);
 	cSelector.define_method("each_tag",   each_tag);
+	cSelector.define_method("empty?",     is_empty);
 	cSelector.define_method("contains", contains);
 	cSelector.define_method("==", equal);
 }
