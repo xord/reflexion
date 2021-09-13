@@ -2,6 +2,7 @@
 
 
 require 'rbconfig'
+require 'rake'
 require 'rake/loaders/makefile'
 require 'rake/testtask'
 require 'xot/rake/alias_task'

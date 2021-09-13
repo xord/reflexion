@@ -2,6 +2,7 @@
 
 
 require 'rake/task'
+require 'rake/dsl_definition'
 
 
 module Xot
