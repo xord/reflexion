@@ -381,7 +381,7 @@ namespace Reflex
 		{
 			const View* view = it.first.get();
 			PointerEvent event = *e;
-			PointerEvent_update_for_capturing_views(&event, view);
+			PointerEvent_update_positions_for_capturing_views(&event, view);
 			View_call_pointer_event(const_cast<View*>(view), event);
 		}
 

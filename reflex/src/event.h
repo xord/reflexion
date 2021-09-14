@@ -13,7 +13,7 @@ namespace Reflex
 
 	void PointerEvent_add_pointer (PointerEvent* pthis, const Pointer& pointer);
 
-	void PointerEvent_update_for_capturing_views (
+	void PointerEvent_update_positions_for_capturing_views (
 		PointerEvent* pthis, const View* view);
 
 	void PointerEvent_filter_and_update_positions (
