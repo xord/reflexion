@@ -15,7 +15,8 @@ namespace Reflex
 	struct NativePointerEvent : public PointerEvent
 	{
 
-		NativePointerEvent (NSSet* touches, UIEvent* event, UIView* view, Type type);
+		NativePointerEvent (
+			NSSet* touches, UIEvent* event, UIView* view, Pointer::Action action);
 
 	};// NativePointerEvent
 

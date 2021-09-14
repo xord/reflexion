@@ -153,6 +153,12 @@ namespace Reflex
 
 
 	void
+	PointerEvent_add_pointer (PointerEvent* pthis, const Pointer& pointer)
+	{
+		pthis->self->pointers.emplace_back(pointer);
+	}
+
+	void
 	PointerEvent_update_positions_for_capturing_views (
 		PointerEvent* pthis, const View* view)
 	{

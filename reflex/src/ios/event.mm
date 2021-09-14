@@ -9,24 +9,46 @@ namespace Reflex
 {
 
 
-	static CGPoint
-	correct_point (UIView* view, UITouch* touch)
+	static uint
+	get_type (UITouch* touch)
 	{
-		assert(view && touch);
-		return [touch locationInView: view];
+		switch (touch.type)
+		{
+			case UITouch.TouchType.direct: return Pointer::TOUCH:
+			case UITouch.TouchType.pencil: return Pointer::PEN:
+			default:                       return Pointer::NONE
+		}
 	}
 
+	static uint
+	get_modifiers (const UIEvent* event)
+	{
+		NSInteger flags = [event modifierFlags];
+		return
+			(flags & UIKeyModifierAlphaShift) ? MOD_CAPS    : 0 |
+			(flags & UIKeyModifierShift)      ? MOD_SHIFT   : 0 |
+			(flags & UIKeyModifierControl)    ? MOD_CONTROL : 0 |
+			(flags & UIKeyModifierAlternate)  ? MOD_ALT     : 0 |
+			(flags & UIKeyModifierCommand)    ? MOD_COMMAND : 0 |
+			(flags & UIKeyModifierNumericPad) ? MOD_NUMPAD  : 0;
+	}
+
+	static Pointer
+	create_pointer (
+		UITouch* touch, UIEvent* event, UIView* view, Pointer::Action action)
+	{
+		CGPoint pos = [touch locationInView: view];
+		return Pointer(
+			get_type(touch), action, Point(pos.x, pos.y),
+			get_modifiers(event), touch.tapCount, action == Pointer::MOVE);
+	}
 
 	NativePointerEvent::NativePointerEvent (
-		NSSet* touches, UIEvent* e, UIView* view, Type type)
-	:	PointerEvent(type, POINTER_TOUCH, (coord) 0, (coord) 0, 0, 1, type == MOVE)
+		NSSet* touches, UIEvent* event, UIView* view, Pointer::Action action)
 	{
-		int index = 0;
 		for (UITouch* touch in touches) {
-			CGPoint p = correct_point(view, touch);
-			positions[index++].reset(p.x, p.y);
+			PointerEvent_add_pointer(this, create_pointer(touch, event, view, action));
 		}
-		size = index;
 	}
 
 
