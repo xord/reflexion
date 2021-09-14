@@ -14,9 +14,9 @@ namespace Reflex
 	{
 		switch (touch.type)
 		{
-			case UITouch.TouchType.direct: return Pointer::TOUCH:
-			case UITouch.TouchType.pencil: return Pointer::PEN:
-			default:                       return Pointer::NONE
+			case UITouchTypeDirect: return Pointer::TOUCH;
+			case UITouchTypePencil: return Pointer::PEN;
+			default:                return Pointer::TYPE_NONE;
 		}
 	}
 
