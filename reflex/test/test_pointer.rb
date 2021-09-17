@@ -38,12 +38,13 @@ class TestPointer < Test::Unit::TestCase
       type: TOUCH, action: DOWN, position: [1, 2],
       modifiers: 3, click_count: 4, drag: true)
 
-    assert_equal [:touch], p.type
-    assert_equal :down,    p.action
-    assert_equal [1, 2],   p.position.to_a
-    assert_equal 3,        p.modifiers
-    assert_equal 4,        p.click_count
-    assert_equal true,     p.drag?
+    assert_equal    [:touch],      p.type
+    assert_equal    :down,         p.action
+    assert_equal    [1, 2],        p.position.to_a
+    assert_equal    3,             p.modifiers
+    assert_equal    4,             p.click_count
+    assert_equal    true,          p.drag?
+    assert_in_delta Time.now.to_f, p.time, 0.002
   end
 
   def test_type()

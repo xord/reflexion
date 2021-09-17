@@ -1,6 +1,7 @@
 #include "pointer.h"
 
 
+#include <xot/time.h>
 #include "reflex/exception.h"
 
 
@@ -21,6 +22,8 @@ namespace Reflex
 
 		bool drag;
 
+		double time;
+
 		//Pointer prev;
 
 		Data (
@@ -28,7 +31,8 @@ namespace Reflex
 			const Point& position = 0, uint modifiers = 0, uint click_count = 0,
 			bool drag = false)
 		:	type(type), action(action), position(position),
-			modifiers(modifiers), click_count(click_count), drag(drag)
+			modifiers(modifiers), click_count(click_count), drag(drag),
+			time(Xot::time())
 		{
 		}
 
@@ -105,6 +109,12 @@ namespace Reflex
 	Pointer::is_drag () const
 	{
 		return self->drag;
+	}
+
+	double
+	Pointer::time () const
+	{
+		return self->time;
 	}
 #if 0
 	Pointer

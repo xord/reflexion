@@ -92,6 +92,14 @@ RUCY_DEF0(is_drag)
 }
 RUCY_END
 
+static
+RUCY_DEF0(get_time)
+{
+	CHECK;
+	return value(THIS->time());
+}
+RUCY_END
+
 
 static Class cPointer;
 
@@ -110,6 +118,7 @@ Init_pointer ()
 	cPointer.define_method("modifiers",   get_modifiers);
 	cPointer.define_method("click_count", get_click_count);
 	cPointer.define_method("drag?",       is_drag);
+	cPointer.define_method("time",        get_time);
 	cPointer.define_const("TYPE_NONE",    Reflex::Pointer::TYPE_NONE);
 	cPointer.define_const("MOUSE_LEFT",   Reflex::Pointer::MOUSE_LEFT);
 	cPointer.define_const("MOUSE_RIGHT",  Reflex::Pointer::MOUSE_RIGHT);

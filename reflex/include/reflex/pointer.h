@@ -78,6 +78,8 @@ namespace Reflex
 
 			bool is_drag () const;
 
+			double time () const;
+
 			//Pointer prev () const;
 
 			operator bool () const;
