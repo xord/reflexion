@@ -12,7 +12,10 @@ namespace Reflex
 	static uint
 	get_type (UITouch* touch)
 	{
-		switch (touch.type)
+		NSInteger type = 0;
+		if (@available(iOS 9.0, *)) type = touch.type;
+
+		switch (type)
 		{
 			case UITouchTypeDirect: return Pointer::TOUCH;
 			case UITouchTypePencil: return Pointer::PEN;
@@ -20,19 +23,29 @@ namespace Reflex
 		}
 	}
 
-	static NSInteger
-	get_modifier_flags (const UIEvent* event)
+	static Pointer::Action
+	get_action (UITouch* touch)
 	{
-		if (@available(iOS 13.4, *))
-			return event.modifierFlags;
-		else
-			returr 0;
+		switch (touch.phase)
+		{
+			case UITouchPhaseBegan:         return Pointer::DOWN;
+			case UITouchPhaseEnded:         return Pointer::UP;
+			case UITouchPhaseMoved:         return Pointer::MOVE;
+			case UITouchPhaseStationary:    return Pointer::STAY;
+			case UITouchPhaseCancelled:     return Pointer::CANCEL;
+			//case UITouchPhaseRegionEntered: return Pointer::MOVE;
+			//case UITouchPhaseRegionExited:  return Pointer::MOVE;
+			//case UITouchPhaseRegionMoved:   return Pointer::MOVE;
+			default:                        return Pointer::ACTION_NONE;
+		}
 	}
 
 	static uint
 	get_modifiers (const UIEvent* event)
 	{
-		NSInteger flags = get_modifier_flags(event)
+		NSInteger flags = 0;
+		if (@available(iOS 13.4, *)) flags = event.modifierFlags;
+
 		return
 			(flags & UIKeyModifierAlphaShift) ? MOD_CAPS    : 0 |
 			(flags & UIKeyModifierShift)      ? MOD_SHIFT   : 0 |
@@ -43,20 +56,20 @@ namespace Reflex
 	}
 
 	static Pointer
-	create_pointer (
-		UITouch* touch, UIEvent* event, UIView* view, Pointer::Action action)
+	create_pointer (UITouch* touch, UIEvent* event, UIView* view)
 	{
-		CGPoint pos = [touch locationInView: view];
+		Pointer::Action action = get_action(touch);
+		CGPoint pos            = [touch locationInView: view];
 		return Pointer(
 			get_type(touch), action, Point(pos.x, pos.y),
-			get_modifiers(event), touch.tapCount, action == Pointer::MOVE);
+			get_modifiers(event), (uint) touch.tapCount, action == Pointer::MOVE);
 	}
 
 	NativePointerEvent::NativePointerEvent (
-		NSSet* touches, UIEvent* event, UIView* view, Pointer::Action action)
+		NSSet* touches, UIEvent* event, UIView* view)
 	{
 		for (UITouch* touch in touches) {
-			PointerEvent_add_pointer(this, create_pointer(touch, event, view, action));
+			PointerEvent_add_pointer(this, create_pointer(touch, event, view));
 		}
 	}
 
