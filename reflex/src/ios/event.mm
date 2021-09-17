@@ -20,10 +20,19 @@ namespace Reflex
 		}
 	}
 
+	static NSInteger
+	get_modifier_flags (const UIEvent* event)
+	{
+		if (@available(iOS 13.4, *))
+			return event.modifierFlags;
+		else
+			returr 0;
+	}
+
 	static uint
 	get_modifiers (const UIEvent* event)
 	{
-		NSInteger flags = [event modifierFlags];
+		NSInteger flags = get_modifier_flags(event)
 		return
 			(flags & UIKeyModifierAlphaShift) ? MOD_CAPS    : 0 |
 			(flags & UIKeyModifierShift)      ? MOD_SHIFT   : 0 |
