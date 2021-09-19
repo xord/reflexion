@@ -43,6 +43,14 @@ RUCY_DEF0(is_blocked)
 }
 RUCY_END
 
+static
+RUCY_DEF0(get_time)
+{
+	CHECK;
+	return value(THIS->time());
+}
+RUCY_END
+
 
 static Class cEvent;
 
@@ -54,8 +62,9 @@ Init_event ()
 	cEvent = mReflex.define_class("Event");
 	cEvent.define_alloc_func(alloc);
 	cEvent.define_private_method("initialize_copy", initialize_copy);
-	cEvent.define_method("block", block);
-	cEvent.define_method("block?", is_blocked);
+	cEvent.define_method("block",    block);
+	cEvent.define_method("blocked?", is_blocked);
+	cEvent.define_method("time",     get_time);
 }
 
 

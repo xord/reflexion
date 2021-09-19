@@ -13,7 +13,7 @@ namespace Reflex
 
 
 	Event::Event ()
-	:	blocked(false)
+	:	blocked(false), time_(Xot::time())
 	{
 	}
 
@@ -27,6 +27,12 @@ namespace Reflex
 	Event::is_blocked () const
 	{
 		return blocked;
+	}
+
+	double
+	Event::time () const
+	{
+		return time_;
 	}
 
 
@@ -233,6 +239,7 @@ namespace Reflex
 	{
 		if (&obj == this) return *this;
 
+		Event::operator=(obj);
 		*self = *obj.self;
 		return *this;
 	}

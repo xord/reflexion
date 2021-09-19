@@ -32,9 +32,13 @@ namespace Reflex
 
 			bool is_blocked () const;
 
+			double time () const;
+
 		private:
 
 			bool blocked;
+
+			double time_;
 
 	};// Event
 

@@ -55,6 +55,16 @@ class TestPointerEvent < Test::Unit::TestCase
     assert_equal true,     p1.drag?
   end
 
+  def test_dup()
+    e1 = event pointer
+    e2 = e1.dup
+    e1.block
+    e3 = e1.dup
+    assert_equal true,  e1.blocked?
+    assert_equal false, e2.blocked?
+    assert_equal true,  e3.blocked?
+  end
+
   def test_size()
     assert_equal 1, event(pointer         ).size
     assert_equal 2, event(pointer, pointer).size
