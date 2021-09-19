@@ -278,11 +278,15 @@ namespace Reflex
 
 	NativePointerEvent::NativePointerEvent (
 		NSEvent* event, NSView* view, Pointer::Action action)
-	:	PointerEvent(Pointer(
-			get_pointer_type(event), action, get_pointer_position(event, view),
-			get_modifiers(event), (uint) [event clickCount],
-			is_pointer_dragging(event)))
 	{
+		PointerEvent_add_pointer(this, Pointer(
+			get_pointer_type(event),
+			action,
+			time(),
+			get_pointer_position(event, view),
+			get_modifiers(event),
+			(uint) [event clickCount],
+			is_pointer_dragging(event)));
 	}
 
 

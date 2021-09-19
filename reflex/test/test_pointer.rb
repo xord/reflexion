@@ -24,27 +24,27 @@ class TestPointer < Test::Unit::TestCase
   F = false
 
   def pointer(
-    type: TYPE_NONE, action: ACTION_NONE, position: 0,
-    modifiers: 0, click_count: 0, drag: false)
+    type: TYPE_NONE, action: ACTION_NONE, time: 0,
+    position: 0, modifiers: 0, click_count: 0, drag: false)
 
     Reflex::Pointer.new(
-      type, action, position, modifiers, click_count, drag)
+      type, action, time, position, modifiers, click_count, drag)
   end
 
   def test_initialize()
     assert_nothing_raised {pointer}
 
     p = pointer(
-      type: TOUCH, action: DOWN, position: [1, 2],
-      modifiers: 3, click_count: 4, drag: true)
+      type: TOUCH, action: DOWN, time: 1,
+      position: [2, 3], modifiers: 4, click_count: 5, drag: true)
 
     assert_equal    [:touch],      p.type
     assert_equal    :down,         p.action
-    assert_equal    [1, 2],        p.position.to_a
-    assert_equal    3,             p.modifiers
-    assert_equal    4,             p.click_count
+    assert_equal    1,             p.time
+    assert_equal    [2, 3],        p.position.to_a
+    assert_equal    4,             p.modifiers
+    assert_equal    5,             p.click_count
     assert_equal    true,          p.drag?
-    assert_in_delta Time.now.to_f, p.time, 0.002
   end
 
   def test_type()
@@ -130,9 +130,10 @@ class TestPointer < Test::Unit::TestCase
 
     assert_not_equal pointer, pointer(type:        Reflex::Pointer::PEN)
     assert_not_equal pointer, pointer(action:      Reflex::Pointer::UP)
-    assert_not_equal pointer, pointer(position:    1)
-    assert_not_equal pointer, pointer(modifiers:   2)
-    assert_not_equal pointer, pointer(click_count: 3)
+    assert_not_equal pointer, pointer(time:        1)
+    assert_not_equal pointer, pointer(position:    2)
+    assert_not_equal pointer, pointer(modifiers:   3)
+    assert_not_equal pointer, pointer(click_count: 4)
     assert_not_equal pointer, pointer(drag:        true)
   end
 

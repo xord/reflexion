@@ -12,28 +12,45 @@ namespace Reflex
 	struct Pointer::Data
 	{
 
+		enum Flag
+		{
+
+			DRAG  = Xot::bit(0),
+
+			ENTER = Xot::bit(1),
+
+			EXIT  = Xot::bit(2),
+
+		};// Flag
+
 		uint type;
 
 		Action action;
 
+		double time;
+
 		Point position;
 
-		uint modifiers, click_count;
-
-		bool drag;
-
-		double time;
+		uint modifiers, click_count, flags;
 
 		//Pointer prev;
 
 		Data (
-			uint type = TYPE_NONE, Action action = ACTION_NONE,
+			uint type = TYPE_NONE, Action action = ACTION_NONE, double time = 0,
 			const Point& position = 0, uint modifiers = 0, uint click_count = 0,
 			bool drag = false)
-		:	type(type), action(action), position(position),
-			modifiers(modifiers), click_count(click_count), drag(drag),
-			time(Xot::time())
+		:	type(type), action(action), time(time),
+			position(position), modifiers(modifiers), click_count(click_count),
+			flags(make_flags(drag, false, false))
 		{
+		}
+
+		uint make_flags (bool drag, bool enter, bool exit)
+		{
+			return
+				(drag  ? DRAG  : 0) |
+				(enter ? ENTER : 0) |
+				(exit  ? EXIT  : 0);
 		}
 
 	};// Pointer::Data
@@ -51,9 +68,10 @@ namespace Reflex
 	}
 
 	Pointer::Pointer (
-		uint type, Action action, const Point& position,
-		uint modifiers, uint click_count, bool drag)
-	:	self(new Data(type, action, position, modifiers, click_count, drag))
+		uint type, Action action, double time,
+		const Point& position, uint modifiers, uint click_count,
+		bool drag)
+	:	self(new Data(type, action, time, position, modifiers, click_count, drag))
 	{
 	}
 
@@ -87,6 +105,12 @@ namespace Reflex
 		return self->action;
 	}
 
+	double
+	Pointer::time () const
+	{
+		return self->time;
+	}
+
 	const Point&
 	Pointer::position () const
 	{
@@ -108,13 +132,7 @@ namespace Reflex
 	bool
 	Pointer::is_drag () const
 	{
-		return self->drag;
-	}
-
-	double
-	Pointer::time () const
-	{
-		return self->time;
+		return self->flags & Data::DRAG;
 	}
 #if 0
 	Pointer

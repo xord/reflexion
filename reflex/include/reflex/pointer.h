@@ -5,6 +5,7 @@
 
 
 #include <xot/pimpl.h>
+#include <xot/util.h>
 #include <rays/point.h>
 #include <reflex/defs.h>
 
@@ -25,15 +26,15 @@ namespace Reflex
 
 				TYPE_NONE    = 0,
 
-				MOUSE_LEFT   = 0x1 << 0,
+				MOUSE_LEFT   = Xot::bit(0),
 
-				MOUSE_RIGHT  = 0x1 << 1,
+				MOUSE_RIGHT  = Xot::bit(1),
 
-				MOUSE_MIDDLE = 0x1 << 2,
+				MOUSE_MIDDLE = Xot::bit(2),
 
-				TOUCH        = 0x1 << 3,
+				TOUCH        = Xot::bit(3),
 
-				PEN          = 0x1 << 4,
+				PEN          = Xot::bit(4),
 
 			};// Type
 
@@ -57,8 +58,8 @@ namespace Reflex
 			Pointer ();
 
 			Pointer (
-				uint type, Action action, const Point& position,
-				uint modifiers, uint click_count, bool drag);
+				uint type, Action action, double time,
+				const Point& position, uint modifiers, uint click_count, bool drag);
 
 			Pointer (const This& obj);
 
@@ -70,6 +71,8 @@ namespace Reflex
 
 			Action action () const;
 
+			double time () const;
+
 			const Point& position () const;
 
 			uint modifiers () const;
@@ -77,8 +80,6 @@ namespace Reflex
 			uint click_count () const;
 
 			bool is_drag () const;
-
-			double time () const;
 
 			//Pointer prev () const;
 

@@ -19,11 +19,11 @@ class TestPointerEvent < Test::Unit::TestCase
   end
 
   def pointer(
-    type: TYPE_NONE, action: ACTION_NONE, position: 0,
-    modifiers: 0, click_count: 0, drag: false)
+    type: TYPE_NONE, action: ACTION_NONE, time: 0,
+    position: 0, modifiers: 0, click_count: 0, drag: false)
 
     Reflex::Pointer.new(
-      type, action, position, modifiers, click_count, drag)
+      type, action, time, position, modifiers, click_count, drag)
   end
 
   def test_initialize()
@@ -32,11 +32,11 @@ class TestPointerEvent < Test::Unit::TestCase
     assert_raise(ArgumentError) {event}
 
     p1 = pointer(
-      type: TOUCH, action: DOWN, position: [1, 2],
-      modifiers: 3,  click_count: 4,  drag: true)
+      type: TOUCH, action: DOWN, time: 1,
+      position: [2,  3],  modifiers: 4,  click_count: 5,  drag: true)
     p2 = pointer(
-      type: PEN,   action: UP,   position: [10, 20],
-      modifiers: 30, click_count: 40, drag: false)
+      type: PEN,   action: UP,   time: 10,
+      position: [20, 30], modifiers: 40, click_count: 50, drag: false)
     e = event p1, p2
 
     assert_equal [p1, p2], e.pointers.to_a
@@ -46,12 +46,13 @@ class TestPointerEvent < Test::Unit::TestCase
 
     assert_equal [:touch], p1.type
     assert_equal :down,    p1.action
-    assert_equal [1, 2],   p1.position.to_a
-    assert_equal [1, 2],   p1.pos     .to_a
-    assert_equal 1,        p1.x
-    assert_equal 2,        p1.y
-    assert_equal 3,        p1.modifiers
-    assert_equal 4,        p1.click_count
+    assert_equal 1,        p1.time
+    assert_equal [2, 3],   p1.position.to_a
+    assert_equal [2, 3],   p1.pos     .to_a
+    assert_equal 2,        p1.x
+    assert_equal 3,        p1.y
+    assert_equal 4,        p1.modifiers
+    assert_equal 5,        p1.click_count
     assert_equal true,     p1.drag?
   end
 
