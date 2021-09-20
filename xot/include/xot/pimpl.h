@@ -25,11 +25,16 @@ namespace Xot
 
 			PImpl (T* p) : Super(p) {}
 
-			PImpl (const This& obj) : Super(new T(*obj)) {}
+			PImpl (const This& obj)
+			:	Super(obj ? new T(*obj) : NULL)
+			{
+			}
 
 			This& operator = (const This& obj)
 			{
-				if (&obj != this) reset(new T(*obj));
+				if (&obj == this) return *this;
+
+				this->reset(obj ? new T(*obj) : NULL);
 				return *this;
 			}
 
@@ -42,7 +47,7 @@ namespace Xot
 
 		typedef std::shared_ptr<T> Super;
 
-		typedef PImpl<T> This;
+		typedef PSharedImpl<T> This;
 
 		public:
 
