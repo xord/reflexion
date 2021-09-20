@@ -45,6 +45,7 @@ class TestPointer < Test::Unit::TestCase
     assert_equal    4,             p.modifiers
     assert_equal    5,             p.click_count
     assert_equal    true,          p.drag?
+    assert_nil                     p.prev
   end
 
   def test_type()

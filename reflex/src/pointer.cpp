@@ -9,6 +9,18 @@ namespace Reflex
 {
 
 
+	class PrevPointerPtr : public Xot::PImpl<Pointer>
+	{
+
+		typedef Xot::PImpl<Pointer> Super;
+
+		public:
+
+			PrevPointerPtr () : Super(NULL) {}
+
+	};// PrevPointerPtr
+
+
 	struct Pointer::Data
 	{
 
@@ -33,7 +45,7 @@ namespace Reflex
 
 		uint modifiers, click_count, flags;
 
-		//Pointer prev;
+		PrevPointerPtr prev;
 
 		Data (
 			uint type = TYPE_NONE, Action action = ACTION_NONE, double time = 0,
@@ -57,9 +69,15 @@ namespace Reflex
 
 
 	void
-	Pointer_set_position(Pointer* pthis, const Point& position)
+	Pointer_set_position (Pointer* pthis, const Point& position)
 	{
 		pthis->self->position = position;
+	}
+
+	void
+	Pointer_set_prev (Pointer* pthis, const Pointer& prev)
+	{
+		pthis->self->prev.reset(new Pointer(prev));
 	}
 
 
@@ -134,13 +152,13 @@ namespace Reflex
 	{
 		return self->flags & Data::DRAG;
 	}
-#if 0
-	Pointer
+
+	const Pointer*
 	Pointer::prev () const
 	{
-		return self->prev;
+		return self->prev.get();
 	}
-#endif
+
 	Pointer::operator bool () const
 	{
 		return

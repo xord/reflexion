@@ -13,6 +13,8 @@ namespace Reflex
 
 	void Pointer_set_position (Pointer* pthis, const Point& position);
 
+	void Pointer_set_prev (Pointer* pthis, const Pointer& prev);
+
 
 }// Reflex
 

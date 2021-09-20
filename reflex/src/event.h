@@ -13,6 +13,8 @@ namespace Reflex
 
 	void PointerEvent_add_pointer (PointerEvent* pthis, const Pointer& pointer);
 
+	Pointer& PointerEvent_pointer_at (PointerEvent* pthis, size_t index);
+
 	void PointerEvent_update_positions_for_capturing_views (
 		PointerEvent* pthis, const View* view);
 

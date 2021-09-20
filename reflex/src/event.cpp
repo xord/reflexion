@@ -164,6 +164,16 @@ namespace Reflex
 		pthis->self->pointers.emplace_back(pointer);
 	}
 
+	Pointer&
+	PointerEvent_pointer_at (PointerEvent* pthis, size_t index)
+	{
+		auto& pointers = pthis->self->pointers;
+		if (index >= pointers.size())
+			index_error(__FILE__, __LINE__);
+
+		return pointers[index];
+	}
+
 	void
 	PointerEvent_update_positions_for_capturing_views (
 		PointerEvent* pthis, const View* view)
