@@ -185,9 +185,9 @@ namespace Reflex
 	{
 		NSUInteger buttons = [NSEvent pressedMouseButtons];
 		uint ret = 0;
-		if (buttons &  (1 << 0)) ret |= Reflex::Pointer::MOUSE_LEFT;
-		if (buttons &  (1 << 1)) ret |= Reflex::Pointer::MOUSE_RIGHT;
-		if (buttons >= (1 << 2)) ret |= Reflex::Pointer::MOUSE_MIDDLE;
+		if (buttons &  Xot::bit(0)) ret |= Reflex::Pointer::MOUSE_LEFT;
+		if (buttons &  Xot::bit(1)) ret |= Reflex::Pointer::MOUSE_RIGHT;
+		if (buttons >= Xot::bit(2)) ret |= Reflex::Pointer::MOUSE_MIDDLE;
 		return ret;
 	}
 
@@ -199,20 +199,20 @@ namespace Reflex
 			case NSLeftMouseDown:
 			case NSLeftMouseUp:
 			case NSLeftMouseDragged:
-				return Reflex::Pointer::MOUSE_LEFT;
+				return Reflex::Pointer::MOUSE | Reflex::Pointer::MOUSE_LEFT;
 
 			case NSRightMouseDown:
 			case NSRightMouseUp:
 			case NSRightMouseDragged:
-				return Reflex::Pointer::MOUSE_RIGHT;
+				return Reflex::Pointer::MOUSE | Reflex::Pointer::MOUSE_RIGHT;
 
 			case NSOtherMouseDown:
 			case NSOtherMouseUp:
 			case NSOtherMouseDragged:
-				return Reflex::Pointer::MOUSE_MIDDLE;
+				return Reflex::Pointer::MOUSE | Reflex::Pointer::MOUSE_MIDDLE;
 
 			case NSMouseMoved:
-				return get_current_pointer_type();
+				return Reflex::Pointer::MOUSE | get_current_pointer_type();
 
 			default:
 				return Reflex::Pointer::TYPE_NONE;

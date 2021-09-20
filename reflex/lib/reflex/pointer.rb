@@ -18,6 +18,7 @@ module Reflex
 
     bit_flag_reader :type, **{
       none:         TYPE_NONE,
+      mouse:        MOUSE,
       mouse_left:   MOUSE_LEFT,
       mouse_right:  MOUSE_RIGHT,
       mouse_middle: MOUSE_MIDDLE,
@@ -35,7 +36,7 @@ module Reflex
     }
 
     def mouse?()
-      (get_type & (MOUSE_LEFT | MOUSE_RIGHT | MOUSE_MIDDLE)) != 0
+      (get_type & MOUSE) != 0
     end
 
     def mouse_left?()
@@ -97,7 +98,7 @@ module Reflex
     end
 
     def inspect()
-      "#<Reflex::Pointer #{type}/#{action} time:#{time.to_i} (#{x}, #{y}) mod:#{modifiers} click:#{click_count} drag:#{drag?}>"
+      "#<Reflex::Pointer #{type} #{action} time:#{time.round 2} (#{x.round 2}, #{y.round 2}) mod:#{modifiers} click:#{click_count} drag:#{drag?}>"
     end
 
   end# Pointer

@@ -26,15 +26,17 @@ namespace Reflex
 
 				TYPE_NONE    = 0,
 
-				MOUSE_LEFT   = Xot::bit(0),
+				MOUSE        = Xot::bit(0),
 
-				MOUSE_RIGHT  = Xot::bit(1),
+				MOUSE_LEFT   = Xot::bit(1),
 
-				MOUSE_MIDDLE = Xot::bit(2),
+				MOUSE_RIGHT  = Xot::bit(2),
 
-				TOUCH        = Xot::bit(3),
+				MOUSE_MIDDLE = Xot::bit(3),
 
-				PEN          = Xot::bit(4),
+				TOUCH        = Xot::bit(4),
+
+				PEN          = Xot::bit(5),
 
 			};// Type
 

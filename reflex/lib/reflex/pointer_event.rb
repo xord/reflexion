@@ -16,15 +16,14 @@ module Reflex
       :type, :mouse?, :touch?, :pen?,
       :mouse_left?, :left?, :mouse_right?, :right?, :mouse_middle?, :middle?,
       :action, :down?, :up?, :move?, :cancel?, :stay?,
-      :position, :pos, :x, :y,
-      :modifiers, :click_count, :drag?
+      :time, :position, :pos, :x, :y, :modifiers, :click_count, :drag?, :prev
 
     def pointers()
       to_enum :each
     end
 
     def inspect()
-      "#<Reflex::PointerEvent type:#{type} act:#{action} x:#{x} y:#{y} mod:#{modifiers} click:#{click_count} drag:#{drag?}>"
+      "#<Reflex::PointerEvent #{type} #{action} time:#{time.round 2} (#{x.round 2}, #{y.round 2}) mod:#{modifiers} click:#{click_count} drag:#{drag?}>"
     end
 
     private

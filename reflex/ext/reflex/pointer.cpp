@@ -130,6 +130,7 @@ Init_pointer ()
 	cPointer.define_method("drag?",       is_drag);
 	cPointer.define_method("prev",        get_prev);
 	cPointer.define_const("TYPE_NONE",    Reflex::Pointer::TYPE_NONE);
+	cPointer.define_const("MOUSE",        Reflex::Pointer::MOUSE);
 	cPointer.define_const("MOUSE_LEFT",   Reflex::Pointer::MOUSE_LEFT);
 	cPointer.define_const("MOUSE_RIGHT",  Reflex::Pointer::MOUSE_RIGHT);
 	cPointer.define_const("MOUSE_MIDDLE", Reflex::Pointer::MOUSE_MIDDLE);
