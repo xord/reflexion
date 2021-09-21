@@ -181,7 +181,11 @@ namespace Reflex
 		pthis->self->capture = true;
 
 		for (auto& pointer : pthis->self->pointers)
-			Pointer_set_position(&pointer, view->from_window(pointer.position()));
+		{
+			Pointer_update_positions(&pointer, [=](const Point& p) {
+				return view->from_window(p);
+			});
+		}
 	}
 
 	void
@@ -197,7 +201,9 @@ namespace Reflex
 				continue;
 
 			pointers.emplace_back(pointer);
-			Pointer_set_position(&pointers.back(), pointers.back().position() - offset);
+			Pointer_update_positions(&pointers.back(), [&](const Point& p) {
+				return p - offset;
+			});
 		}
 
 		pthis->self->pointers = pointers;
@@ -216,10 +222,9 @@ namespace Reflex
 
 		for (auto& pointer : pthis->self->pointers)
 		{
-			Point p = pointer.position();
-			p -= *scroll;
-			p /= zoom;
-			Pointer_set_position(&pointer, p);
+			Pointer_update_positions(&pointer, [=](const Point& p) {
+				return (p - *scroll) / zoom;
+			});
 		}
 	}
 

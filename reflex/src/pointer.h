@@ -4,6 +4,7 @@
 #define __REFLEX_SRC_POINTER_H__
 
 
+#include <functional>
 #include <reflex/pointer.h>
 
 
@@ -11,7 +12,8 @@ namespace Reflex
 {
 
 
-	void Pointer_set_position (Pointer* pthis, const Point& position);
+	void Pointer_update_positions (
+		Pointer* pthis, std::function<Point(const Point&)> fun);
 
 	void Pointer_set_prev (Pointer* pthis, const Pointer& prev);
 

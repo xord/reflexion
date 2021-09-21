@@ -69,9 +69,12 @@ namespace Reflex
 
 
 	void
-	Pointer_set_position (Pointer* pthis, const Point& position)
+	Pointer_update_positions (Pointer* pthis, std::function<Point(const Point&)> fun)
 	{
-		pthis->self->position = position;
+		auto& self = pthis->self;
+		self->position = fun(self->position);
+		if (self->prev)
+			self->prev->self->position = fun(self->prev->self->position);
 	}
 
 	void
