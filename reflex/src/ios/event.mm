@@ -3,6 +3,8 @@
 
 
 #include <assert.h>
+#include <algorithm>
+#include "../pointer.h"
 
 
 namespace Reflex
@@ -12,6 +14,8 @@ namespace Reflex
 	static uint
 	get_type (UITouch* touch)
 	{
+		assert(touch);
+
 		NSInteger type = 0;
 		if (@available(iOS 9.0, *)) type = touch.type;
 
@@ -26,6 +30,8 @@ namespace Reflex
 	static Pointer::Action
 	get_action (UITouch* touch)
 	{
+		assert(touch);
+
 		switch (touch.phase)
 		{
 			case UITouchPhaseBegan:         return Pointer::DOWN;
@@ -40,9 +46,17 @@ namespace Reflex
 		}
 	}
 
+	static Point
+	to_point (const CGPoint& point)
+	{
+		return Point(point.x, point.y);
+	}
+
 	static uint
 	get_modifiers (const UIEvent* event)
 	{
+		assert(event);
+
 		NSInteger flags = 0;
 		if (@available(iOS 13.4, *)) flags = event.modifierFlags;
 
@@ -55,21 +69,53 @@ namespace Reflex
 			(flags & UIKeyModifierNumericPad) ? MOD_NUMPAD  : 0;
 	}
 
-	static Pointer
-	create_pointer (UITouch* touch, UIEvent* event, UIView* view)
+	static void
+	attach_prev_pointer (
+		Pointer* pointer, PrevPointerList* prev_pointers, const Point& position)
 	{
-		Pointer::Action action = get_action(touch);
-		CGPoint pos            = [touch locationInView: view];
-		return Pointer(
-			get_type(touch), action, Point(pos.x, pos.y),
-			get_modifiers(event), (uint) touch.tapCount, action == Pointer::MOVE);
+		assert(pointer && prev_pointers);
+
+		auto it = std::find_if(
+			prev_pointers->begin(), prev_pointers->end(),
+			[&](const Reflex::Pointer& p) {return p.position() == position;});
+		if (it == prev_pointers->end()) return;
+
+		Reflex::Pointer_set_prev(pointer, *it);
+		prev_pointers->erase(it);
+	}
+
+	static Pointer
+	create_pointer (
+		UITouch* touch, UIEvent* event, UIView* view, double time,
+		PrevPointerList* prev_pointers)
+	{
+		Reflex::Pointer::Action action = get_action(touch);
+		Reflex::Pointer pointer(
+			get_type(touch),
+			action,
+			time,
+			to_point([touch locationInView: view]),
+			get_modifiers(event),
+			(uint) touch.tapCount,
+			action == Pointer::MOVE);
+
+		if (prev_pointers)
+		{
+			attach_prev_pointer(
+				&pointer, prev_pointers,
+				to_point([touch previousLocationInView: view]));
+		}
+
+		return pointer;
 	}
 
 	NativePointerEvent::NativePointerEvent (
-		NSSet* touches, UIEvent* event, UIView* view)
+		NSSet* touches, UIEvent* event, UIView* view,
+		PrevPointerList* prev_pointers)
 	{
 		for (UITouch* touch in touches) {
-			PointerEvent_add_pointer(this, create_pointer(touch, event, view));
+			PointerEvent_add_pointer(
+				this, create_pointer(touch, event, view, time(), prev_pointers));
 		}
 	}
 
