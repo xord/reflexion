@@ -132,6 +132,7 @@ ReflexViewController_get_show_fun ()
 	{
 		Reflex::Window *pwindow, *ptr_for_rebind;
 		int update_count;
+		int touching_count;
 		Reflex::PrevPointerList prev_pointers;
 	}
 
@@ -140,8 +141,10 @@ ReflexViewController_get_show_fun ()
 		self = [super init];
 		if (!self) return nil;
 
-		pwindow = ptr_for_rebind = NULL;
-		update_count = 0;
+		pwindow        =
+		ptr_for_rebind = NULL;
+		update_count   =
+		tuching_count  = 0;
 
 		return self;
 	}
@@ -397,6 +400,8 @@ ReflexViewController_get_show_fun ()
 		Reflex::NativePointerEvent e(touches, event, self.reflexView);
 		[self addToPrevPointers: e];
 
+		touching_count += e.size();
+
 		win->on_pointer(&e);
 	}
 
@@ -408,18 +413,15 @@ ReflexViewController_get_show_fun ()
 		Reflex::NativePointerEvent e(
 			touches, event, self.reflexView, &prev_pointers);
 
+		touching_count -= e.size();
+		if (touching_count <= 0) prev_pointers.clear();
+
 		win->on_pointer(&e);
 	}
 
 	- (void) touchesCancelled: (NSSet*) touches withEvent: (UIEvent*) event
 	{
-		Reflex::Window* win = self.window;
-		if (!win) return;
-
-		Reflex::NativePointerEvent e(
-			touches, event, self.reflexView, &prev_pointers);
-
-		win->on_pointer(&e);
+		[self touchesEnded: touches withEvent: event];
 	}
 
 	- (void) touchesMoved: (NSSet*) touches withEvent: (UIEvent*) event

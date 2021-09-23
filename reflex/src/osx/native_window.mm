@@ -40,10 +40,11 @@ static const NSUInteger WINDOW_STYLE_MASK =
 			defer: NO];
 		if (!self) return nil;
 
-		pwindow = ptr_for_rebind = NULL;
-		view         = nil;
-		timer        = nil;
-		update_count = 0;
+		pwindow        =
+		ptr_for_rebind = NULL;
+		view           = nil;
+		timer          = nil;
+		update_count   = 0;
 
 		[self setDelegate: self];
 		[self setupContentView];
