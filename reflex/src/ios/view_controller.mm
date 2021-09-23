@@ -14,7 +14,7 @@
 
 
 static ReflexViewController*
-createReflexViewController ()
+create_reflex_view_controller ()
 {
 	return [[ReflexViewController alloc] init];
 }
@@ -52,7 +52,7 @@ get_top_view_controller (UIViewController* vc)
 }
 
 static void
-showReflexViewController (
+show_reflex_view_controller (
 	UIViewController* root_vc, ReflexViewController* reflex_vc)
 {
 	UIViewController* top = get_top_view_controller(root_vc);
@@ -90,13 +90,13 @@ ReflexViewController_set_show_fun (ReflexViewController_ShowFun fun)
 ReflexViewController_CreateFun
 ReflexViewController_get_create_fun ()
 {
-	return global::create_fun ? global::create_fun : createReflexViewController;
+	return global::create_fun ? global::create_fun : create_reflex_view_controller;
 }
 
 ReflexViewController_ShowFun
 ReflexViewController_get_show_fun ()
 {
-	return global::show_fun ? global::show_fun : showReflexViewController;
+	return global::show_fun ? global::show_fun : show_reflex_view_controller;
 }
 
 
