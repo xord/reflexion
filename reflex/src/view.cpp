@@ -9,6 +9,7 @@
 #include "reflex/exception.h"
 #include "reflex/debug.h"
 #include "window.h"
+#include "event.h"
 #include "selector.h"
 #include "timer.h"
 #include "style.h"
@@ -1260,43 +1261,6 @@ namespace Reflex
 		}
 	}
 
-	static void
-	filter_pointer_event (
-		PointerEvent* to, const PointerEvent& from, const Bounds& frame)
-	{
-		assert(to);
-
-		const Point& offset = frame.position();
-
-		to->size = 0;
-		for (size_t i = 0; i < from.size; ++i) {
-			const Point& pos = from.position(i);
-			if (!frame.is_include(pos))
-				continue;
-
-			to->positions[i] = pos - offset;
-			++to->size;
-		}
-	}
-
-	static void
-	scroll_and_zoom_positions (PointerEvent* e, const Point* scroll, float zoom)
-	{
-		static const Point ZERO = 0;
-
-		assert(zoom != 0);
-
-		if (!scroll) scroll = &ZERO;
-		if (*scroll == 0 && zoom == 1)
-			return;
-
-		for (size_t i = 0; i < e->size; ++i)
-		{
-			e->position(i) -= *scroll;
-			e->position(i) /= zoom;
-		}
-	}
-
 	void
 	View_call_pointer_event (View* view, const PointerEvent& event)
 	{
@@ -1304,27 +1268,29 @@ namespace Reflex
 			argument_error(__FILE__, __LINE__);
 
 		bool capturing = view->capture() & View::CAPTURE_POINTER;
-		if (capturing != event.capture) return;
+		if (capturing != event.is_capture()) return;
 
 		PointerEvent e = event;
-		filter_pointer_event(&e, event, view->frame());
+		PointerEvent_filter_and_update_positions(&e, view->frame());
 
-		if (!capturing && e.size == 0)
+		if (!capturing && e.empty())
 			return;
 
-		scroll_and_zoom_positions(&e, view->self->pscroll.get(), view->zoom());
+		PointerEvent_scroll_and_zoom_positions(
+			&e, view->self->pscroll.get(), view->zoom());
 
 		view->on_pointer(&e);
 
-		switch (e.type)
+		switch (e[0].action())
 		{
-			case PointerEvent::DOWN: view->on_pointer_down(&e); break;
-			case PointerEvent::UP:   view->on_pointer_up(&e);   break;
-			case PointerEvent::MOVE: view->on_pointer_move(&e); break;
-			case PointerEvent::NONE: break;
+			case Pointer::DOWN:   view->on_pointer_down(&e);   break;
+			case Pointer::UP:     view->on_pointer_up(&e);     break;
+			case Pointer::MOVE:   view->on_pointer_move(&e);   break;
+			case Pointer::CANCEL: view->on_pointer_cancel(&e); break;
+			default: break;
 		}
 
-		if (!event.capture)
+		if (!event.is_capture())
 			call_children(view, View_call_pointer_event, e);
 	}
 
@@ -2543,6 +2509,11 @@ namespace Reflex
 
 	void
 	View::on_pointer_move (PointerEvent* e)
+	{
+	}
+
+	void
+	View::on_pointer_cancel (PointerEvent* e)
 	{
 	}
 

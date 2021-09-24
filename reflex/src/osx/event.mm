@@ -185,9 +185,9 @@ namespace Reflex
 	{
 		NSUInteger buttons = [NSEvent pressedMouseButtons];
 		uint ret = 0;
-		if (buttons &  (1 << 0)) ret |= POINTER_MOUSE_LEFT;
-		if (buttons &  (1 << 1)) ret |= POINTER_MOUSE_RIGHT;
-		if (buttons >= (1 << 2)) ret |= POINTER_MOUSE_MIDDLE;
+		if (buttons &  Xot::bit(0)) ret |= Reflex::Pointer::MOUSE_LEFT;
+		if (buttons &  Xot::bit(1)) ret |= Reflex::Pointer::MOUSE_RIGHT;
+		if (buttons >= Xot::bit(2)) ret |= Reflex::Pointer::MOUSE_MIDDLE;
 		return ret;
 	}
 
@@ -199,22 +199,24 @@ namespace Reflex
 			case NSLeftMouseDown:
 			case NSLeftMouseUp:
 			case NSLeftMouseDragged:
-				return POINTER_MOUSE_LEFT;
+				return Reflex::Pointer::MOUSE | Reflex::Pointer::MOUSE_LEFT;
 
 			case NSRightMouseDown:
 			case NSRightMouseUp:
 			case NSRightMouseDragged:
-				return POINTER_MOUSE_RIGHT;
+				return Reflex::Pointer::MOUSE | Reflex::Pointer::MOUSE_RIGHT;
 
 			case NSOtherMouseDown:
 			case NSOtherMouseUp:
 			case NSOtherMouseDragged:
-				return POINTER_MOUSE_MIDDLE;
+				return Reflex::Pointer::MOUSE | Reflex::Pointer::MOUSE_MIDDLE;
 
 			case NSMouseMoved:
-				return get_current_pointer_type();
+				return Reflex::Pointer::MOUSE | get_current_pointer_type();
+
+			default:
+				return Reflex::Pointer::TYPE_NONE;
 		}
-		return 0;
 	}
 
 	static uint
@@ -241,6 +243,13 @@ namespace Reflex
 		return p;
 	}
 
+	static Point
+	get_pointer_position (NSEvent* e, NSView* view)
+	{
+		NSPoint p = correct_point(view, [e locationInWindow]);
+		return Point(p.x, p.y);
+	}
+
 
 	NativeKeyEvent::NativeKeyEvent (NSEvent* e, Type type)
 	:	KeyEvent(
@@ -258,26 +267,33 @@ namespace Reflex
 	}
 
 
-	NativePointerEvent::NativePointerEvent (NSEvent* e, NSView* view, Type type)
-	:	PointerEvent(
-			type, get_pointer_type(e), (coord) 0, (coord) 0,
-			get_modifiers(e), (uint) [e clickCount],
-			[e type] == NSLeftMouseDragged || [e type] == NSRightMouseDragged || [e type] == NSOtherMouseDragged)
+	static bool
+	is_pointer_dragging (NSEvent* e)
 	{
-		NSPoint p = correct_point(view, [e locationInWindow]);
-		x = p.x;
-		y = p.y;
+		return
+			[e type] == NSLeftMouseDragged  ||
+			[e type] == NSRightMouseDragged ||
+			[e type] == NSOtherMouseDragged;
+	}
+
+	NativePointerEvent::NativePointerEvent (
+		NSEvent* event, NSView* view, Pointer::Action action)
+	{
+		PointerEvent_add_pointer(this, Pointer(
+			get_pointer_type(event),
+			action,
+			time(),
+			get_pointer_position(event, view),
+			get_modifiers(event),
+			(uint) [event clickCount],
+			is_pointer_dragging(event)));
 	}
 
 
 	NativeWheelEvent::NativeWheelEvent (NSEvent* e, NSView* view)
-	:	WheelEvent([e deltaX], [e deltaY], [e deltaZ])
+	:	WheelEvent(0, 0, 0, [e deltaX], [e deltaY], [e deltaZ], get_modifiers(e))
 	{
-		NSPoint p = correct_point(view, [e locationInWindow]);
-		x         = p.x;
-		y         = p.y;
-		z         = 0;
-		modifiers = get_modifiers(e);
+		position_ = get_pointer_position(e, view);
 	}
 
 

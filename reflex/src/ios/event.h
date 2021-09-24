@@ -4,18 +4,26 @@
 #define __REFLEX_SRC_IOS_EVENT_H__
 
 
+#include <list>
 #import <UIKit/UIEvent.h>
-#include <reflex/event.h>
+#include "../event.h"
 
 
 namespace Reflex
 {
 
 
-	struct NativePointerEvent : public PointerEvent
+	typedef std::list<Pointer> PrevPointerList;
+
+
+	class NativePointerEvent : public PointerEvent
 	{
 
-		NativePointerEvent (NSSet* touches, UIEvent* event, UIView* view, Type type);
+		public:
+
+			NativePointerEvent (
+				NSSet* touches, UIEvent* event, UIView* view,
+				PrevPointerList* prev_pointers = NULL);
 
 	};// NativePointerEvent
 

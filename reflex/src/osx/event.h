@@ -5,7 +5,7 @@
 
 
 #import <AppKit/NSEvent.h>
-#include <reflex/event.h>
+#include "../event.h"
 
 
 namespace Reflex
@@ -28,10 +28,12 @@ namespace Reflex
 	};// NativeFlagKeyEvent
 
 
-	struct NativePointerEvent : public PointerEvent
+	class NativePointerEvent : public PointerEvent
 	{
 
-		NativePointerEvent (NSEvent* event, NSView* view, Type type);
+		public:
+
+			NativePointerEvent (NSEvent* event, NSView* view, Pointer::Action action);
 
 	};// NativePointerEvent
 

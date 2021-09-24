@@ -6,125 +6,87 @@ require_relative 'helper'
 
 class TestPointerEvent < Test::Unit::TestCase
 
-  E = Reflex::PointerEvent
-  T = true
-  F = false
+  TYPE_NONE = Reflex::Pointer::TYPE_NONE
+  TOUCH     = Reflex::Pointer::TOUCH
+  PEN       = Reflex::Pointer::PEN
 
-  TYPE_NONE = E::TYPE_NONE
-  DOWN      = E::TYPE_DOWN
-  UP        = E::TYPE_UP
-  MOVE      = E::TYPE_MOVE
+  ACTION_NONE = Reflex::Pointer::ACTION_NONE
+  DOWN        = Reflex::Pointer::DOWN
+  UP          = Reflex::Pointer::UP
 
-  POINTER_NONE = E::POINTER_NONE
-  LEFT         = E::POINTER_MOUSE_LEFT
-  RIGHT        = E::POINTER_MOUSE_RIGHT
-  MIDDLE       = E::POINTER_MOUSE_MIDDLE
-  TOUCH        = E::POINTER_TOUCH
-  PEN          = E::POINTER_PEN
+  def event(*args)
+    Reflex::PointerEvent.new *args
+  end
 
-  def event(
-    type = TYPE_NONE, pointer_type = POINTER_NONE,
-    modifiers = 0, count = 0, drag = false,
-    positions: [0])
+  def pointer(
+    type: TYPE_NONE, action: ACTION_NONE, time: 0,
+    position: 0, modifiers: 0, click_count: 0, drag: false)
 
-    Reflex::PointerEvent.new type, pointer_type, modifiers, count, drag, positions
+    Reflex::Pointer.new(
+      type, action, time, position, modifiers, click_count, drag)
   end
 
   def test_initialize()
-    assert_nothing_raised       {event positions: 10.times.to_a}
-    assert_raise(ArgumentError) {event positions: 11.times.to_a}
-    assert_raise(ArgumentError) {event positions: []}
+    assert_nothing_raised       {event pointer}
+    assert_nothing_raised       {event pointer, pointer}
+    assert_raise(ArgumentError) {event}
+
+    p1 = pointer(
+      type: TOUCH, action: DOWN, time: 1,
+      position: [2,  3],  modifiers: 4,  click_count: 5,  drag: true)
+    p2 = pointer(
+      type: PEN,   action: UP,   time: 10,
+      position: [20, 30], modifiers: 40, click_count: 50, drag: false)
+    e = event p1, p2
+
+    assert_equal [p1, p2], e.pointers.to_a
+    assert_equal 2,        e.size
+    assert_equal false,    e.empty?
+    assert_equal false,    e.capture?
+
+    assert_equal [:touch], p1.type
+    assert_equal :down,    p1.action
+    assert_equal 1,        p1.time
+    assert_equal [2, 3],   p1.position.to_a
+    assert_equal [2, 3],   p1.pos     .to_a
+    assert_equal 2,        p1.x
+    assert_equal 3,        p1.y
+    assert_equal 4,        p1.modifiers
+    assert_equal 5,        p1.click_count
+    assert_equal true,     p1.drag?
   end
 
-  def test_type()
-    def type(arg)
-      event(arg).tap do |o|
-        def o.test()
-          [type, down?, up?, move?]
-        end
-      end
-    end
-
-    o = type TYPE_NONE
-    assert_equal [:none, F, F, F], o.test
-
-    o = type DOWN
-    assert_equal [:down, T, F, F], o.test
-
-    o = type UP
-    assert_equal [:up,   F, T, F], o.test
-
-    o = type MOVE
-    assert_equal [:move, F, F, T], o.test
-  end
-
-  def test_pointer_type()
-    def pointer_type(arg)
-      event(TYPE_NONE, arg).tap do |o|
-        def o.test()
-          [pointer_type, left?, right?, middle?, touch?, pen?]
-        end
-      end
-    end
-
-    o = pointer_type POINTER_NONE
-    assert_equal [[],              F, F, F, F, F], o.test
-
-    o = pointer_type LEFT
-    assert_equal [[:mouse_left],   T, F, F, F, F], o.test
-
-    o = pointer_type RIGHT
-    assert_equal [[:mouse_right],  F, T, F, F, F], o.test
-
-    o = pointer_type MIDDLE
-    assert_equal [[:mouse_middle], F, F, T, F, F], o.test
-
-    o = pointer_type TOUCH
-    assert_equal [[:touch],        F, F, F, T, F], o.test
-
-    o = pointer_type PEN
-    assert_equal [[:pen],          F, F, F, F, T], o.test
-
-    o = pointer_type LEFT | RIGHT
-    types = [:mouse_left, :mouse_right]
-    assert_equal [types, T, T, F, F, F], o.test
-
-    o = pointer_type LEFT | RIGHT | MIDDLE
-    types = [:mouse_left, :mouse_right, :mouse_middle]
-    assert_equal [types, T, T, T, F, F], o.test
-
-    o = pointer_type LEFT | RIGHT | MIDDLE | TOUCH | PEN
-    types = [:mouse_left, :mouse_right, :mouse_middle, :touch, :pen]
-    assert_equal [types, T, T, T, T, T], o.test
+  def test_dup()
+    e1 = event pointer
+    e2 = e1.dup
+    e1.block
+    e3 = e1.dup
+    assert_equal true,  e1.blocked?
+    assert_equal false, e2.blocked?
+    assert_equal true,  e3.blocked?
   end
 
   def test_size()
-    assert_equal 1, event(positions: [0]   ).size
-    assert_equal 2, event(positions: [0, 1]).size
+    assert_equal 1, event(pointer         ).size
+    assert_equal 2, event(pointer, pointer).size
   end
 
-  def test_xy()
-    assert_equal 0, event(positions: [[0, 1], [2, 3]]).x
-    assert_equal 1, event(positions: [[0, 1], [2, 3]]).y
+  def test_empty?()
+    assert_equal false, event(pointer).empty?
   end
 
-  def test_position()
-    assert_equal [0, 1], event(positions: [[0, 1], [2, 3]]).position.to_a
-  end
+  def test_get_at()
+    p1 = pointer position: 1
+    p2 = pointer position: 2
+    p3 = pointer position: 3
+    e  = event p1, p2, p3
 
-  def test_positions()
-    assert_equal [[0, 0]],         event(positions: [0]   ).positions.map(&:to_a)
-    assert_equal [[0, 0], [1, 1]], event(positions: [0, 1]).positions.map(&:to_a)
-
-    assert_equal [[0, 1]],         event(positions: [[0, 1]]        ).positions.map(&:to_a)
-    assert_equal [[0, 1], [2, 3]], event(positions: [[0, 1], [2, 3]]).positions.map(&:to_a)
-  end
-
-  def test_at()
-    assert_equal [0, 1], event(positions: [[0, 1], [2, 3]])[0].to_a
-    assert_equal [2, 3], event(positions: [[0, 1], [2, 3]])[1].to_a
-    assert_raise(IndexError) {event(positions: [[0, 1], [2, 3]])[-1]}
-    assert_raise(IndexError) {event(positions: [[0, 1], [2, 3]])[2]}
+    assert_equal p1, e[0]
+    assert_equal p3, e[2]
+    assert_nil       e[3]
+    assert_equal p3, e[-1]
+    assert_equal p1, e[-3]
+    assert_nil       e[-4]
   end
 
 end# TestPointerEvent

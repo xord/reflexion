@@ -7,6 +7,7 @@
 #include "rays/bounds.h"
 #include "reflex/exception.h"
 #include "../view.h"
+#include "../pointer.h"
 #include "event.h"
 #include "window.h"
 #import "opengl_view.h"
@@ -27,6 +28,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		OpenGLView* view;
 		NSTimer* timer;
 		int update_count;
+		Reflex::Pointer prevPointer;
 	}
 
 	- (id) init
@@ -38,10 +40,11 @@ static const NSUInteger WINDOW_STYLE_MASK =
 			defer: NO];
 		if (!self) return nil;
 
-		pwindow = ptr_for_rebind = NULL;
-		view         = nil;
-		timer        = nil;
-		update_count = 0;
+		pwindow        =
+		ptr_for_rebind = NULL;
+		view           = nil;
+		timer          = nil;
+		update_count   = 0;
 
 		[self setDelegate: self];
 		[self setupContentView];
@@ -299,7 +302,9 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::DOWN);
+		Reflex::NativePointerEvent e(event, view, Reflex::Pointer::DOWN);
+		[self attachAndUpdatePrevPointer: &e];
+
 		win->on_pointer(&e);
 	}
 
@@ -308,7 +313,9 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::UP);
+		Reflex::NativePointerEvent e(event, view, Reflex::Pointer::UP);
+		[self attachAndUpdatePrevPointer: &e];
+
 		win->on_pointer(&e);
 	}
 
@@ -317,7 +324,9 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::MOVE);
+		Reflex::NativePointerEvent e(event, view, Reflex::Pointer::MOVE);
+		[self attachAndUpdatePrevPointer: &e];
+
 		win->on_pointer(&e);
 	}
 
@@ -326,8 +335,18 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::PointerEvent::MOVE);
+		Reflex::NativePointerEvent e(event, view, Reflex::Pointer::MOVE);
+		[self attachAndUpdatePrevPointer: &e];
+
 		win->on_pointer(&e);
+	}
+
+	- (void) attachAndUpdatePrevPointer: (Reflex::PointerEvent*) e
+	{
+		Reflex::Pointer pointer = PointerEvent_pointer_at(e, 0);
+		if (prevPointer)
+			Pointer_set_prev(&PointerEvent_pointer_at(e, 0), prevPointer);
+		prevPointer = pointer;
 	}
 
 	- (void) scrollWheel: (NSEvent*) event

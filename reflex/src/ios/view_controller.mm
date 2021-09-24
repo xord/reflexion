@@ -132,6 +132,8 @@ ReflexViewController_get_show_fun ()
 	{
 		Reflex::Window *pwindow, *ptr_for_rebind;
 		int update_count;
+		int touching_count;
+		Reflex::PrevPointerList prev_pointers;
 	}
 
 	- (id) init
@@ -139,8 +141,10 @@ ReflexViewController_get_show_fun ()
 		self = [super init];
 		if (!self) return nil;
 
-		pwindow = ptr_for_rebind = NULL;
-		update_count = 0;
+		pwindow        =
+		ptr_for_rebind = NULL;
+		update_count   =
+		tuching_count  = 0;
 
 		return self;
 	}
@@ -393,8 +397,11 @@ ReflexViewController_get_show_fun ()
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(
-			touches, event, self.reflexView, Reflex::PointerEvent::DOWN);
+		Reflex::NativePointerEvent e(touches, event, self.reflexView);
+		[self addToPrevPointers: e];
+
+		touching_count += e.size();
+
 		win->on_pointer(&e);
 	}
 
@@ -404,18 +411,17 @@ ReflexViewController_get_show_fun ()
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(
-			touches, event, self.reflexView, Reflex::PointerEvent::UP);
+			touches, event, self.reflexView, &prev_pointers);
+
+		touching_count -= e.size();
+		if (touching_count <= 0) prev_pointers.clear();
+
 		win->on_pointer(&e);
 	}
 
 	- (void) touchesCancelled: (NSSet*) touches withEvent: (UIEvent*) event
 	{
-		Reflex::Window* win = self.window;
-		if (!win) return;
-
-		Reflex::NativePointerEvent e(
-			touches, event, self.reflexView, Reflex::PointerEvent::UP);
-		win->on_pointer(&e);
+		[self touchesEnded: touches withEvent: event];
 	}
 
 	- (void) touchesMoved: (NSSet*) touches withEvent: (UIEvent*) event
@@ -424,8 +430,19 @@ ReflexViewController_get_show_fun ()
 		if (!win) return;
 
 		Reflex::NativePointerEvent e(
-			touches, event, self.reflexView, Reflex::PointerEvent::MOVE);
+			touches, event, self.reflexView, &prev_pointers);
+		Reflex::NativePointerEvent e_without_prev_pointer(
+			touches, event, self.reflexView);
+		[self addToPrevPointers: e_without_prev_pointer];
+
 		win->on_pointer(&e);
+	}
+
+	- (void) addToPrevPointers: (const Reflex::PointerEvent&) event
+	{
+		size_t size = event.size();
+		for (size_t i = 0; i < size; ++i)
+			prev_pointers.emplace_back(event[i]);
 	}
 
 @end// ReflexViewController

@@ -4,10 +4,12 @@
 #define __REFLEX_EVENT_H__
 
 
+#include <xot/pimpl.h>
 #include <rays/point.h>
 #include <rays/bounds.h>
 #include <rays/painter.h>
 #include <reflex/defs.h>
+#include <reflex/pointer.h>
 #include <reflex/timer.h>
 
 
@@ -30,9 +32,13 @@ namespace Reflex
 
 			bool is_blocked () const;
 
+			double time () const;
+
 		private:
 
 			bool blocked;
+
+			double time_;
 
 	};// Event
 
@@ -172,47 +178,36 @@ namespace Reflex
 	};// KeyEvent
 
 
-	struct PointerEvent : public Event
+	class PointerEvent : public Event
 	{
 
-		enum Type {NONE = 0, DOWN, UP, MOVE};
+		typedef PointerEvent This;
 
-		enum {MAX = 10};
+		public:
 
-		Type type;
+			PointerEvent ();
 
-		uint pointer_type;
+			PointerEvent (const Pointer& pointers);
 
-		size_t size;
+			PointerEvent (const Pointer* pointers, size_t size);
 
-		uint modifiers, count;
+			PointerEvent (const This& obj);
 
-		bool drag, capture;
+			PointerEvent& operator = (const This& obj);
 
-		union
-		{
-			struct {coord x, y, z;};
+			~PointerEvent ();
 
-			Coord3 positions[MAX];
-		};
+			size_t size () const;
 
-		PointerEvent ();
+			bool empty () const;
 
-		PointerEvent (
-			Type type, uint pointer_type, coord x, coord y,
-			uint modifiers = 0, uint count = 1, bool drag = false);
+			bool is_capture () const;
 
-		PointerEvent (
-			Type type, uint pointer_type, const Point* positions, size_t size,
-			uint modifiers = 0, uint count = 1, bool drag = false);
+			const Pointer& operator [] (size_t index) const;
 
-		      Point& position (size_t i = 0);
+			struct Data;
 
-		const Point& position (size_t i = 0) const;
-
-		      Point& operator [] (size_t i);
-
-		const Point& operator [] (size_t i) const;
+			Xot::PImpl<Data> self;
 
 	};// PointerEvent
 

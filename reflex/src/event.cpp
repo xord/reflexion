@@ -1,9 +1,11 @@
-#include "reflex/event.h"
+#include "event.h"
 
 
 #include "reflex/timer.h"
 #include "reflex/shape.h"
 #include "reflex/exception.h"
+#include "view.h"
+#include "pointer.h"
 
 
 namespace Reflex
@@ -11,7 +13,7 @@ namespace Reflex
 
 
 	Event::Event ()
-	:	blocked(false)
+	:	blocked(false), time_(Xot::time())
 	{
 	}
 
@@ -25,6 +27,12 @@ namespace Reflex
 	Event::is_blocked () const
 	{
 		return blocked;
+	}
+
+	double
+	Event::time () const
+	{
+		return time_;
 	}
 
 
@@ -135,64 +143,151 @@ namespace Reflex
 	}
 
 
-	PointerEvent::PointerEvent ()
-	:	type(NONE), pointer_type(POINTER_NONE),
-		size(0), modifiers(MOD_NONE), count(0), drag(false), capture(false),
-		x(0), y(0), z(0)
+	struct PointerEvent::Data
 	{
-	}
 
-	PointerEvent::PointerEvent (
-		Type type, uint pointer_type, coord x, coord y, uint modifiers, uint count, bool drag)
-	:	type(type), pointer_type(pointer_type),
-		size(1), modifiers(modifiers), count(count), drag(drag), capture(false),
-		x(x), y(y), z(0)
-	{
-	}
+		std::vector<Pointer> pointers;
 
-	PointerEvent::PointerEvent (
-		Type type, uint pointer_type, const Point* positions_, size_t size,
-		uint modifiers, uint count, bool drag)
-	:	type(type), pointer_type(pointer_type),
-		size(size), modifiers(modifiers), count(count), drag(drag), capture(false)
-	{
-		if (!positions_ && size > 0)
-			argument_error(__FILE__, __LINE__);
+		bool capture;
 
-		if (size > MAX) size = MAX;
-
-		if (positions_)
+		Data ()
+		:	capture(false)
 		{
-			for (size_t i = 0; i < size; ++i)
-				positions[i] = *(Coord3*) &positions_[i];
+		}
+
+	};// PointerEvent::Data
+
+
+	void
+	PointerEvent_add_pointer (PointerEvent* pthis, const Pointer& pointer)
+	{
+		pthis->self->pointers.emplace_back(pointer);
+	}
+
+	Pointer&
+	PointerEvent_pointer_at (PointerEvent* pthis, size_t index)
+	{
+		auto& pointers = pthis->self->pointers;
+		if (index >= pointers.size())
+			index_error(__FILE__, __LINE__);
+
+		return pointers[index];
+	}
+
+	void
+	PointerEvent_update_positions_for_capturing_views (
+		PointerEvent* pthis, const View* view)
+	{
+		pthis->self->capture = true;
+
+		for (auto& pointer : pthis->self->pointers)
+		{
+			Pointer_update_positions(&pointer, [=](const Point& p) {
+				return view->from_window(p);
+			});
 		}
 	}
 
-	Point&
-	PointerEvent::position (size_t i)
+	void
+	PointerEvent_filter_and_update_positions (PointerEvent* pthis, const Bounds& frame)
 	{
-		if (i >= size)
+		assert(pthis);
+
+		const Point& offset = frame.position();
+
+		std::vector<Pointer> pointers;
+		for (const auto& pointer : pthis->self->pointers) {
+			if (!frame.is_include(pointer.position()))
+				continue;
+
+			pointers.emplace_back(pointer);
+			Pointer_update_positions(&pointers.back(), [&](const Point& p) {
+				return p - offset;
+			});
+		}
+
+		pthis->self->pointers = pointers;
+	}
+
+	void
+	PointerEvent_scroll_and_zoom_positions (PointerEvent* pthis, const Point* scroll, float zoom)
+	{
+		static const Point ZERO = 0;
+
+		assert(zoom != 0);
+
+		if (!scroll) scroll = &ZERO;
+		if (*scroll == 0 && zoom == 1)
+			return;
+
+		for (auto& pointer : pthis->self->pointers)
+		{
+			Pointer_update_positions(&pointer, [=](const Point& p) {
+				return (p - *scroll) / zoom;
+			});
+		}
+	}
+
+
+	PointerEvent::PointerEvent ()
+	{
+	}
+
+	PointerEvent::PointerEvent (const Pointer& pointer)
+	{
+		self->pointers.emplace_back(pointer);
+	}
+
+	PointerEvent::PointerEvent (const Pointer* pointers, size_t size)
+	{
+		for (size_t i = 0; i < size; ++i)
+			self->pointers.emplace_back(pointers[i]);
+	}
+
+	PointerEvent::PointerEvent (const This& obj)
+	:	self(new Data(*obj.self))
+	{
+	}
+
+	PointerEvent&
+	PointerEvent::operator = (const This& obj)
+	{
+		if (&obj == this) return *this;
+
+		Event::operator=(obj);
+		*self = *obj.self;
+		return *this;
+	}
+
+	PointerEvent::~PointerEvent ()
+	{
+	}
+
+	size_t
+	PointerEvent::size () const
+	{
+		return self->pointers.size();
+	}
+
+	bool
+	PointerEvent::empty () const
+	{
+		return size() == 0;
+	}
+
+	bool
+	PointerEvent::is_capture () const
+	{
+		return self->capture;
+	}
+
+	const Pointer&
+	PointerEvent::operator [] (size_t index) const
+	{
+		if (index >= self->pointers.size())
 			index_error(__FILE__, __LINE__);
 
-		return *(Point*) &positions[i];
-	}
-
-	const Point&
-	PointerEvent::position (size_t i) const
-	{
-		return const_cast<PointerEvent*>(this)->position(i);
-	}
-
-	Point&
-	PointerEvent::operator [] (size_t i)
-	{
-		return position(i);
-	}
-
-	const Point&
-	PointerEvent::operator [] (size_t i) const
-	{
-		return position(i);
+		return self->pointers[index];
 	}
 
 

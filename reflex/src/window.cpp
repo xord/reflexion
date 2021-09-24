@@ -3,6 +3,7 @@
 
 #include "reflex/exception.h"
 #include "view.h"
+#include "event.h"
 
 
 namespace Reflex
@@ -367,22 +368,21 @@ namespace Reflex
 		if (!e)
 			argument_error(__FILE__, __LINE__);
 
-		switch (e->type)
+		switch ((*e)[0].action())
 		{
-			case PointerEvent::DOWN: on_pointer_down(e); break;
-			case PointerEvent::UP:   on_pointer_up(e);   break;
-			case PointerEvent::MOVE: on_pointer_move(e); break;
-			case PointerEvent::NONE:                     break;
+			case Pointer::DOWN:   on_pointer_down(e);   break;
+			case Pointer::UP:     on_pointer_up(e);     break;
+			case Pointer::MOVE:   on_pointer_move(e);   break;
+			case Pointer::CANCEL: on_pointer_cancel(e); break;
+			default: break;
 		}
 
-		auto end = self->capturing_views.end();
-		for (auto it = self->capturing_views.begin(); it != end; ++it)
+		for (auto it : self->capturing_views)
 		{
+			const View* view = it.first.get();
 			PointerEvent event = *e;
-			event.capture = true;
-			for (size_t i = 0; i < event.size; ++i)
-				event[i] = it->first.get()->from_window(event[i]);
-			View_call_pointer_event(const_cast<View*>(it->first.get()), event);
+			PointerEvent_update_positions_for_capturing_views(&event, view);
+			View_call_pointer_event(const_cast<View*>(view), event);
 		}
 
 		View_call_pointer_event(root(), *e);
@@ -402,6 +402,11 @@ namespace Reflex
 
 	void
 	Window::on_pointer_move (PointerEvent* e)
+	{
+	}
+
+	void
+	Window::on_pointer_cancel (PointerEvent* e)
 	{
 	}
 

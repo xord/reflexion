@@ -252,24 +252,6 @@ namespace Reflex
 	};// KeyCode
 
 
-	enum PointerType
-	{
-
-		POINTER_NONE         = 0,
-
-		POINTER_MOUSE_LEFT   = 0x1 << 0,
-
-		POINTER_MOUSE_RIGHT  = 0x1 << 1,
-
-		POINTER_MOUSE_MIDDLE = 0x1 << 2,
-
-		POINTER_TOUCH        = 0x1 << 3,
-
-		POINTER_PEN          = 0x1 << 4,
-
-	};// PointType
-
-
 	enum Modifier
 	{
 
