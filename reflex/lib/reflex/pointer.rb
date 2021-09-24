@@ -98,7 +98,7 @@ module Reflex
     end
 
     def inspect()
-      "#<Reflex::Pointer #{type} #{action} time:#{time.round 2} (#{x.round 2}, #{y.round 2}) mod:#{modifiers} click:#{click_count} drag:#{drag?}>"
+      "#<Reflex::Pointer id:#{id} #{type} #{action} (#{x.round 2}, #{y.round 2}) mod:#{modifiers} click:#{click_count} drag:#{drag?} time:#{time.round 2}>"
     end
 
   end# Pointer

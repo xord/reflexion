@@ -3,9 +3,9 @@
 
 
 #include <rays/opengl.h>
-#include <rays/exception.h>
 #include "reflex/exception.h"
 #include "../view.h"
+#include "../pointer.h"
 #include "event.h"
 #include "window.h"
 
@@ -133,6 +133,7 @@ ReflexViewController_get_show_fun ()
 		Reflex::Window *pwindow, *ptr_for_rebind;
 		int update_count;
 		int touching_count;
+		uint pointer_id;
 		Reflex::PrevPointerList prev_pointers;
 	}
 
@@ -143,8 +144,9 @@ ReflexViewController_get_show_fun ()
 
 		pwindow        =
 		ptr_for_rebind = NULL;
-		update_count   =
-		tuching_count  = 0;
+		update_count   = 0;
+		touching_count = 0;
+		pointer_id     = 1;
 
 		return self;
 	}
@@ -397,7 +399,7 @@ ReflexViewController_get_show_fun ()
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(touches, event, self.reflexView);
+		Reflex::NativePointerEvent e(touches, event, self.reflexView, &pointer_id);
 		[self addToPrevPointers: e];
 
 		touching_count += e.size();
@@ -410,11 +412,13 @@ ReflexViewController_get_show_fun ()
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(
-			touches, event, self.reflexView, &prev_pointers);
+		Reflex::NativePointerEvent e(touches, event, self.reflexView, &prev_pointers);
 
 		touching_count -= e.size();
-		if (touching_count <= 0) prev_pointers.clear();
+		if (touching_count == 0)
+			prev_pointers.clear();
+		else if (touching_count < 0)
+			Reflex::invalid_state_error(__FILE__, __LINE__);
 
 		win->on_pointer(&e);
 	}
@@ -429,11 +433,8 @@ ReflexViewController_get_show_fun ()
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(
-			touches, event, self.reflexView, &prev_pointers);
-		Reflex::NativePointerEvent e_without_prev_pointer(
-			touches, event, self.reflexView);
-		[self addToPrevPointers: e_without_prev_pointer];
+		Reflex::NativePointerEvent e(touches, event, self.reflexView, &prev_pointers);
+		[self addToPrevPointers: e];
 
 		win->on_pointer(&e);
 	}
@@ -442,7 +443,10 @@ ReflexViewController_get_show_fun ()
 	{
 		size_t size = event.size();
 		for (size_t i = 0; i < size; ++i)
+		{
 			prev_pointers.emplace_back(event[i]);
+			Reflex::Pointer_set_prev(&prev_pointers.back(), NULL);
+		}
 	}
 
 @end// ReflexViewController

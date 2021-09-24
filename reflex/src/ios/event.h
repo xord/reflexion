@@ -23,7 +23,11 @@ namespace Reflex
 
 			NativePointerEvent (
 				NSSet* touches, UIEvent* event, UIView* view,
-				PrevPointerList* prev_pointers = NULL);
+				uint* pointer_id);
+
+			NativePointerEvent (
+				NSSet* touches, UIEvent* event, UIView* view,
+				PrevPointerList* prev_pointers);
 
 	};// NativePointerEvent
 

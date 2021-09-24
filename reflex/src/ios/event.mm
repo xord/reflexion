@@ -71,33 +71,46 @@ namespace Reflex
 
 	static void
 	attach_prev_pointer (
-		Pointer* pointer, PrevPointerList* prev_pointers, const Point& position)
+		Pointer* pointer, PrevPointerList* prev_pointers, const Point& prev_position)
 	{
 		assert(pointer && prev_pointers);
 
 		auto it = std::find_if(
 			prev_pointers->begin(), prev_pointers->end(),
-			[&](const Reflex::Pointer& p) {return p.position() == position;});
-		if (it == prev_pointers->end()) return;
+			[&](const Reflex::Pointer& p) {return p.position() == prev_position;});
 
-		Reflex::Pointer_set_prev(pointer, *it);
-		prev_pointers->erase(it);
+		if (it != prev_pointers->end())
+		{
+			Reflex::Pointer_set_prev(pointer, &*it);
+			prev_pointers->erase(it);
+		}
+		else if (prev_pointers->size() == 1)
+		{
+			Reflex::Pointer_set_prev(pointer, &prev_pointers->front());
+			prev_pointers->clear();
+		}
+		else
+			Reflex::Pointer_set_prev(pointer, NULL);
+
+		if (pointer->prev())
+			Reflex::Pointer_set_id(pointer, pointer->prev()->id());
 	}
 
 	static Pointer
 	create_pointer (
 		UITouch* touch, UIEvent* event, UIView* view, double time,
-		PrevPointerList* prev_pointers)
+		uint pointer_id, PrevPointerList* prev_pointers)
 	{
 		Reflex::Pointer::Action action = get_action(touch);
 		Reflex::Pointer pointer(
+			pointer_id,
 			get_type(touch),
 			action,
-			time,
 			to_point([touch locationInView: view]),
 			get_modifiers(event),
 			(uint) touch.tapCount,
-			action == Pointer::MOVE);
+			action == Pointer::MOVE,
+			time);
 
 		if (prev_pointers)
 		{
@@ -111,11 +124,21 @@ namespace Reflex
 
 	NativePointerEvent::NativePointerEvent (
 		NSSet* touches, UIEvent* event, UIView* view,
+		uint* pointer_id)
+	{
+		for (UITouch* touch in touches) {
+			PointerEvent_add_pointer(
+				this, create_pointer(touch, event, view, time(), ++*pointer_id, NULL));
+		}
+	}
+
+	NativePointerEvent::NativePointerEvent (
+		NSSet* touches, UIEvent* event, UIView* view,
 		PrevPointerList* prev_pointers)
 	{
 		for (UITouch* touch in touches) {
 			PointerEvent_add_pointer(
-				this, create_pointer(touch, event, view, time(), prev_pointers));
+				this, create_pointer(touch, event, view, time(), 0, prev_pointers));
 		}
 	}
 

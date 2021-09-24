@@ -35,25 +35,27 @@ namespace Reflex
 
 		};// Flag
 
-		uint type;
+		uint id, type;
 
 		Action action;
-
-		double time;
 
 		Point position;
 
 		uint modifiers, click_count, flags;
 
+		double time;
+
 		PrevPointerPtr prev;
 
 		Data (
-			uint type = TYPE_NONE, Action action = ACTION_NONE, double time = 0,
+			uint id = 0, uint type = TYPE_NONE, Action action = ACTION_NONE,
 			const Point& position = 0, uint modifiers = 0, uint click_count = 0,
-			bool drag = false)
-		:	type(type), action(action), time(time),
+			bool drag = false, bool enter = false, bool exit = false,
+			double time = 0)
+		:	id(id), type(type), action(action),
 			position(position), modifiers(modifiers), click_count(click_count),
-			flags(make_flags(drag, false, false))
+			flags(make_flags(drag, enter, exit)),
+			time(time)
 		{
 		}
 
@@ -78,9 +80,18 @@ namespace Reflex
 	}
 
 	void
-	Pointer_set_prev (Pointer* pthis, const Pointer& prev)
+	Pointer_set_id (Pointer* pthis, uint id)
 	{
-		pthis->self->prev.reset(new Pointer(prev));
+		pthis->self->id = id;
+	}
+
+	void
+	Pointer_set_prev (Pointer* pthis, const Pointer* prev)
+	{
+		if (prev)
+			pthis->self->prev.reset(new Pointer(*prev));
+		else
+			pthis->self->prev.reset();
 	}
 
 
@@ -89,10 +100,13 @@ namespace Reflex
 	}
 
 	Pointer::Pointer (
-		uint type, Action action, double time,
-		const Point& position, uint modifiers, uint click_count,
-		bool drag)
-	:	self(new Data(type, action, time, position, modifiers, click_count, drag))
+		uint id, uint type, Action action,
+		const Point& position, uint modifiers, uint click_count, bool drag,
+		double time)
+	:	self(new Data(
+			id, type, action,
+			position, modifiers, click_count, drag, false, false,
+			time))
 	{
 	}
 
@@ -115,6 +129,12 @@ namespace Reflex
 	}
 
 	uint
+	Pointer::id () const
+	{
+		return self->id;
+	}
+
+	uint
 	Pointer::type () const
 	{
 		return self->type;
@@ -124,12 +144,6 @@ namespace Reflex
 	Pointer::action () const
 	{
 		return self->action;
-	}
-
-	double
-	Pointer::time () const
-	{
-		return self->time;
 	}
 
 	const Point&
@@ -154,6 +168,12 @@ namespace Reflex
 	Pointer::is_drag () const
 	{
 		return self->flags & Data::DRAG;
+	}
+
+	double
+	Pointer::time () const
+	{
+		return self->time;
 	}
 
 	const Pointer*

@@ -4,7 +4,6 @@
 
 #include <assert.h>
 #import <Cocoa/Cocoa.h>
-#include "rays/bounds.h"
 #include "reflex/exception.h"
 #include "../view.h"
 #include "../pointer.h"
@@ -21,6 +20,22 @@ static const NSUInteger WINDOW_STYLE_MASK =
 	0;//NSTexturedBackgroundWindowMask
 
 
+static int
+count_mouse_buttons (const Reflex::PointerEvent& e)
+{
+	uint nbuttons = 0;
+	size_t size = e.size();
+	for (size_t i = 0; i < size; ++i)
+	{
+		uint t = e[i].type();
+		nbuttons +=
+			(t & Reflex::Pointer::MOUSE_LEFT   ? 1 : 0) +
+			(t & Reflex::Pointer::MOUSE_RIGHT  ? 1 : 0) +
+			(t & Reflex::Pointer::MOUSE_MIDDLE ? 1 : 0);
+	}
+	return nbuttons;
+}
+
 @implementation NativeWindow
 
 	{
@@ -28,6 +43,8 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		OpenGLView* view;
 		NSTimer* timer;
 		int update_count;
+		int clicking_count;
+		uint pointer_id;
 		Reflex::Pointer prevPointer;
 	}
 
@@ -40,11 +57,13 @@ static const NSUInteger WINDOW_STYLE_MASK =
 			defer: NO];
 		if (!self) return nil;
 
-		pwindow        =
-		ptr_for_rebind = NULL;
-		view           = nil;
-		timer          = nil;
-		update_count   = 0;
+		pwindow         =
+		ptr_for_rebind  = NULL;
+		view            = nil;
+		timer           = nil;
+		update_count    = 0;
+		clicking_count  = 0;
+		pointer_id      = 1;
 
 		[self setDelegate: self];
 		[self setupContentView];
@@ -302,8 +321,12 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::Pointer::DOWN);
+		if (clicking_count == 0) ++pointer_id;
+
+		Reflex::NativePointerEvent e(event, view, pointer_id, Reflex::Pointer::DOWN);
 		[self attachAndUpdatePrevPointer: &e];
+
+		clicking_count += count_mouse_buttons(e);
 
 		win->on_pointer(&e);
 	}
@@ -313,8 +336,14 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::Pointer::UP);
+		Reflex::NativePointerEvent e(event, view, pointer_id, Reflex::Pointer::UP);
 		[self attachAndUpdatePrevPointer: &e];
+
+		clicking_count -= count_mouse_buttons(e);
+		if (clicking_count == 0)
+			++pointer_id;
+		else if (clicking_count < 0)
+			Reflex::invalid_state_error(__FILE__, __LINE__);
 
 		win->on_pointer(&e);
 	}
@@ -324,7 +353,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::Pointer::MOVE);
+		Reflex::NativePointerEvent e(event, view, pointer_id, Reflex::Pointer::MOVE);
 		[self attachAndUpdatePrevPointer: &e];
 
 		win->on_pointer(&e);
@@ -335,7 +364,7 @@ static const NSUInteger WINDOW_STYLE_MASK =
 		Reflex::Window* win = self.window;
 		if (!win) return;
 
-		Reflex::NativePointerEvent e(event, view, Reflex::Pointer::MOVE);
+		Reflex::NativePointerEvent e(event, view, pointer_id, Reflex::Pointer::MOVE);
 		[self attachAndUpdatePrevPointer: &e];
 
 		win->on_pointer(&e);
@@ -343,9 +372,11 @@ static const NSUInteger WINDOW_STYLE_MASK =
 
 	- (void) attachAndUpdatePrevPointer: (Reflex::PointerEvent*) e
 	{
-		Reflex::Pointer pointer = PointerEvent_pointer_at(e, 0);
+		assert(e->size() == 1);
+
+		Reflex::Pointer& pointer = Reflex::PointerEvent_pointer_at(e, 0);
 		if (prevPointer)
-			Pointer_set_prev(&PointerEvent_pointer_at(e, 0), prevPointer);
+			Reflex::Pointer_set_prev(&pointer, &prevPointer);
 		prevPointer = pointer;
 	}
 

@@ -20,18 +20,20 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEF7(initialize, type, action, time, position, modifiers, click_count, drag)
+RUCY_DEF8(initialize,
+	id, type, action, position, modifiers, click_count, drag, time)
 {
 	CHECK;
 
 	*THIS = Reflex::Pointer(
+		to<uint>(id),
 		to<uint>(type),
 		(Reflex::Pointer::Action) to<int>(action),
-		to<double>(time),
 		to<Rays::Point>(position),
 		to<uint>(modifiers),
 		to<uint>(click_count),
-		to<bool>(drag));
+		to<bool>(drag),
+		to<double>(time));
 	return self;
 }
 RUCY_END
@@ -42,6 +44,14 @@ RUCY_DEF1(initialize_copy, obj)
 	CHECK;
 	*THIS = to<Reflex::Pointer&>(obj);
 	return self;
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_id)
+{
+	CHECK;
+	return value(THIS->id());
 }
 RUCY_END
 
@@ -58,14 +68,6 @@ RUCY_DEF0(get_action)
 {
 	CHECK;
 	return value(THIS->action());
-}
-RUCY_END
-
-static
-RUCY_DEF0(get_time)
-{
-	CHECK;
-	return value(THIS->time());
 }
 RUCY_END
 
@@ -102,6 +104,14 @@ RUCY_DEF0(is_drag)
 RUCY_END
 
 static
+RUCY_DEF0(get_time)
+{
+	CHECK;
+	return value(THIS->time());
+}
+RUCY_END
+
+static
 RUCY_DEF0(get_prev)
 {
 	CHECK;
@@ -121,14 +131,15 @@ Init_pointer ()
 	cPointer.define_alloc_func(alloc);
 	cPointer.define_private_method("initialize",      initialize);
 	cPointer.define_private_method("initialize_copy", initialize_copy);
+	cPointer.define_method("id",                 get_id);
 	cPointer.define_private_method("get_type",   get_type);
 	cPointer.define_private_method("get_action", get_action);
-	cPointer.define_method("time",        get_time);
-	cPointer.define_method("position",    get_position);
-	cPointer.define_method("modifiers",   get_modifiers);
-	cPointer.define_method("click_count", get_click_count);
-	cPointer.define_method("drag?",       is_drag);
-	cPointer.define_method("prev",        get_prev);
+	cPointer.define_method("position",           get_position);
+	cPointer.define_method("modifiers",          get_modifiers);
+	cPointer.define_method("click_count",        get_click_count);
+	cPointer.define_method("drag?",              is_drag);
+	cPointer.define_method("time",               get_time);
+	cPointer.define_method("prev",               get_prev);
 	cPointer.define_const("TYPE_NONE",    Reflex::Pointer::TYPE_NONE);
 	cPointer.define_const("MOUSE",        Reflex::Pointer::MOUSE);
 	cPointer.define_const("MOUSE_LEFT",   Reflex::Pointer::MOUSE_LEFT);

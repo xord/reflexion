@@ -60,8 +60,9 @@ namespace Reflex
 			Pointer ();
 
 			Pointer (
-				uint type, Action action, double time,
-				const Point& position, uint modifiers, uint click_count, bool drag);
+				uint id, uint type, Action action,
+				const Point& position, uint modifiers, uint click_count, bool drag,
+				double time);
 
 			Pointer (const This& obj);
 
@@ -69,11 +70,11 @@ namespace Reflex
 
 			~Pointer ();
 
+			uint id () const;
+
 			uint type () const;
 
 			Action action () const;
-
-			double time () const;
 
 			const Point& position () const;
 
@@ -82,6 +83,8 @@ namespace Reflex
 			uint click_count () const;
 
 			bool is_drag () const;
+
+			double time () const;
 
 			const Pointer* prev () const;
 
