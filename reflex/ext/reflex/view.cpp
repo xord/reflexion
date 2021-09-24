@@ -131,6 +131,54 @@ RUCY_DEF0(update_layout)
 RUCY_END
 
 static
+RUCY_DEF1(from_parent, point)
+{
+	CHECK;
+	return value(THIS->from_parent(to<Rays::Point>(point)));
+}
+RUCY_END
+
+static
+RUCY_DEF1(to_parent, point)
+{
+	CHECK;
+	return value(THIS->to_parent(to<Rays::Point>(point)));
+}
+RUCY_END
+
+static
+RUCY_DEF1(from_window, point)
+{
+	CHECK;
+	return value(THIS->from_window(to<Rays::Point>(point)));
+}
+RUCY_END
+
+static
+RUCY_DEF1(to_window, point)
+{
+	CHECK;
+	return value(THIS->to_window(to<Rays::Point>(point)));
+}
+RUCY_END
+
+static
+RUCY_DEF1(from_screen, point)
+{
+	CHECK;
+	return value(THIS->from_screen(to<Rays::Point>(point)));
+}
+RUCY_END
+
+static
+RUCY_DEF1(to_screen, point)
+{
+	CHECK;
+	return value(THIS->to_screen(to<Rays::Point>(point)));
+}
+RUCY_END
+
+static
 RUCY_DEF1(add_child, child)
 {
 	CHECK;
@@ -1101,6 +1149,13 @@ Init_view ()
 	cView.define_method("focus?", has_focus);
 	cView.define_private_method("start_timer", start_timer);
 	cView.define_method("update_layout", update_layout);
+
+	cView.define_method("from_parent", from_parent);
+	cView.define_method(  "to_parent",   to_parent);
+	cView.define_method("from_window", from_window);
+	cView.define_method(  "to_window",   to_window);
+	cView.define_method("from_screen", from_screen);
+	cView.define_method(  "to_screen",   to_screen);
 
 	cView.define_method("add_child",      add_child);
 	cView.define_method("remove_child",   remove_child);

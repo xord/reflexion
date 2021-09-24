@@ -1480,22 +1480,29 @@ namespace Reflex
 	Point
 	View::from_parent (const Point& point) const
 	{
-		not_implemented_error(__FILE__, __LINE__);
-		return 0;
+		if (!parent())
+			invalid_state_error(__FILE__, __LINE__);
+
+		return point - frame().position();
 	}
 
 	Point
 	View::to_parent (const Point& point) const
 	{
-		not_implemented_error(__FILE__, __LINE__);
-		return 0;
+		if (!parent())
+			invalid_state_error(__FILE__, __LINE__);
+
+		return point + frame().position();
 	}
 
 	Point
 	View::from_window (const Point& point) const
 	{
+		if (!window())
+			invalid_state_error(__FILE__, __LINE__);
+
 		Point p = point;
-		for (const View* v = parent(); v; v = v->parent())
+		for (const View* v = this; v; v = v->parent())
 			p -= v->frame().position();
 		return p;
 	}
@@ -1503,22 +1510,25 @@ namespace Reflex
 	Point
 	View::to_window (const Point& point) const
 	{
-		not_implemented_error(__FILE__, __LINE__);
-		return 0;
+		if (!window())
+			invalid_state_error(__FILE__, __LINE__);
+
+		Point p = point;
+		for (const View* v = this; v; v = v->parent())
+			p += v->frame().position();
+		return p;
 	}
 
 	Point
 	View::from_screen (const Point& point) const
 	{
-		not_implemented_error(__FILE__, __LINE__);
-		return 0;
+		return from_window(point) - window()->frame().position();
 	}
 
 	Point
 	View::to_screen (const Point& point) const
 	{
-		not_implemented_error(__FILE__, __LINE__);
-		return 0;
+		return to_window(point) + window()->frame().position();
 	}
 
 	static void

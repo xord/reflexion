@@ -6,24 +6,28 @@ require_relative 'helper'
 
 class TestView < Test::Unit::TestCase
 
-  def view(*args, &block)
-    Reflex::View.new(*args, &block)
+  def view(*a, **k, &b)
+    Reflex::View.new(*a, **k, &b)
   end
 
-  def style(*args, &block)
-    Reflex::Style.new(*args, &block)
+  def window(*a, **k, &b)
+    Reflex::Window.new(*a, **k, &b)
   end
 
-  def shape(*args, &block)
-    Reflex::RectShape.new(*args, &block)
+  def style(*a, **k, &b)
+    Reflex::Style.new(*a, **k, &b)
   end
 
-  def selector(*args, &block)
-    Reflex::Selector.new(*args, &block)
+  def shape(*a, **k, &b)
+    Reflex::RectShape.new(*a, **k, &b)
   end
 
-  def point(*args)  Rays::Point.new(*args) end
-  def bounds(*args) Rays::Bounds.new(*args) end
+  def selector(*a, **k, &b)
+    Reflex::Selector.new(*a, **k, &b)
+  end
+
+  def point(*a)  Rays::Point.new(*a) end
+  def bounds(*a) Rays::Bounds.new(*a) end
 
   def test_hidden()
     v = view
@@ -42,6 +46,29 @@ class TestView < Test::Unit::TestCase
     assert_equal false, v.hidden?
     v.hide
     assert_equal true, v.hidden?
+  end
+
+  def test_coord_conversion()
+    w  = window x: 100, y: 200
+    v1 = view   x: 10,  y: 20
+    v2 = view   x: 1,   y: 2
+
+    assert_raise(Rucy::NativeError) {v2.from_parent 0}
+    assert_raise(Rucy::NativeError) {v2.  to_parent 0}
+    assert_raise(Rucy::NativeError) {v2.from_window 0}
+    assert_raise(Rucy::NativeError) {v2.  to_window 0}
+    assert_raise(Rucy::NativeError) {v2.from_screen 0}
+    assert_raise(Rucy::NativeError) {v2.  to_screen 0}
+
+    w .add v1
+    v1.add v2
+
+    assert_equal [4,   3],   v2.from_parent(5)  .to_a
+    assert_equal [6,   7],   v2.  to_parent(5)  .to_a
+    assert_equal [39,  28],  v2.from_window(50) .to_a
+    assert_equal [61,  72],  v2.  to_window(50) .to_a
+    assert_equal [389, 278], v2.from_screen(500).to_a
+    assert_equal [611, 722], v2.  to_screen(500).to_a
   end
 
   def test_add_child()
