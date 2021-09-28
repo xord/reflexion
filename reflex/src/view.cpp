@@ -2045,7 +2045,8 @@ namespace Reflex
 	void
 	View::set_capture (uint types)
 	{
-		if (types == self->capture) return;
+		Window* w = window();
+		if (!w || types == self->capture) return;
 
 		uint old      = self->capture;
 		self->capture = types;
@@ -2054,9 +2055,9 @@ namespace Reflex
 		bool capture    = types != CAPTURE_NONE;
 
 		if (capture && !registered)
-			View_register_capture(this);
+			Window_register_capture(w, this);
 		else if (!capture && registered)
-			View_unregister_capture(this);
+			Window_unregister_capture(w, this);
 
 		CaptureEvent e(~old & types, old & ~types);
 		on_capture(&e);

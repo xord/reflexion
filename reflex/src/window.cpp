@@ -86,26 +86,26 @@ namespace Reflex
 	}
 
 	void
-	View_register_capture (View* view)
+	Window_register_capture (Window* window, View* view)
 	{
+		assert(window);
+
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		const Window* window = view->window();
-		if (!window)
-			invalid_state_error(__FILE__, __LINE__, "this view does not belong to any Window.");
+		if (view->window() != window)
+			invalid_state_error(__FILE__, __LINE__);
 
 		window->self->capturing_views[view] = true;
 	}
 
 	void
-	View_unregister_capture (View* view)
+	Window_unregister_capture (Window* window, View* view)
 	{
+		assert(window);
+
 		if (!view)
 			argument_error(__FILE__, __LINE__);
-
-		const Window* window = view->window();
-		if (!window) return;
 
 		auto it = window->self->capturing_views.find(view);
 		if (it == window->self->capturing_views.end()) return;
