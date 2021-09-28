@@ -63,7 +63,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		timer           = nil;
 		update_count    = 0;
 		clicking_count  = 0;
-		pointer_id      = 1;
+		pointer_id      = Reflex::POINTER_ID_FIRST;
 
 		[self setDelegate: self];
 		[self setupContentView];

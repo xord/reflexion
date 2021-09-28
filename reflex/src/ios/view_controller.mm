@@ -146,7 +146,7 @@ ReflexViewController_get_show_fun ()
 		ptr_for_rebind = NULL;
 		update_count   = 0;
 		touching_count = 0;
-		pointer_id     = 1;
+		pointer_id     = Reflex::POINTER_ID_FIRST;
 
 		return self;
 	}

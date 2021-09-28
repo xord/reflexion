@@ -12,6 +12,13 @@ namespace Reflex
 {
 
 
+	enum
+	{
+		POINTER_ID_INVALID = 0,
+		POINTER_ID_FIRST
+	};
+
+
 	void Pointer_update_positions (
 		Pointer* pthis, std::function<Point(const Point&)> fun);
 
