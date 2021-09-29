@@ -328,7 +328,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 
 		clicking_count += count_mouse_buttons(e);
 
-		win->on_pointer(&e);
+		Window_call_pointer_event(win, &e);
 	}
 
 	- (void) mouseUp: (NSEvent*) event
@@ -345,7 +345,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		else if (clicking_count < 0)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		win->on_pointer(&e);
+		Window_call_pointer_event(win, &e);
 	}
 
 	- (void) mouseDragged: (NSEvent*) event
@@ -356,7 +356,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		Reflex::NativePointerEvent e(event, view, pointer_id, Reflex::Pointer::MOVE);
 		[self attachAndUpdatePrevPointer: &e];
 
-		win->on_pointer(&e);
+		Window_call_pointer_event(win, &e);
 	}
 
 	- (void) mouseMoved: (NSEvent*) event
@@ -367,7 +367,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		Reflex::NativePointerEvent e(event, view, pointer_id, Reflex::Pointer::MOVE);
 		[self attachAndUpdatePrevPointer: &e];
 
-		win->on_pointer(&e);
+		Window_call_pointer_event(win, &e);
 	}
 
 	- (void) attachAndUpdatePrevPointer: (Reflex::PointerEvent*) e

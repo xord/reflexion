@@ -124,6 +124,36 @@ namespace Reflex
 		}
 	}
 
+	void
+	Window_call_pointer_event (Window* window, PointerEvent* event)
+	{
+		if (!event)
+			argument_error(__FILE__, __LINE__);
+
+		window->on_pointer(event);
+
+		switch ((*event)[0].action())
+		{
+			case Pointer::DOWN:   on_pointer_down(event);   break;
+			case Pointer::UP:     on_pointer_up(event);     break;
+			case Pointer::MOVE:   on_pointer_move(event);   break;
+			case Pointer::CANCEL: on_pointer_cancel(event); break;
+			default: break;
+		}
+
+		for (auto it : self->capturing_views)
+		{
+			const View* view = it.first.get();
+			PointerEvent e = *event;
+			PointerEvent_update_positions_for_capturing_views(&e, view);
+			View_call_pointer_event(const_cast<View*>(view), e);
+		}
+
+		View_call_pointer_event(window->root(), *event);
+
+		cleanup_capturing_views(window);
+	}
+
 
 	Window::Window ()
 	:	self(Window_create_data())
@@ -365,29 +395,6 @@ namespace Reflex
 	void
 	Window::on_pointer (PointerEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
-
-		switch ((*e)[0].action())
-		{
-			case Pointer::DOWN:   on_pointer_down(e);   break;
-			case Pointer::UP:     on_pointer_up(e);     break;
-			case Pointer::MOVE:   on_pointer_move(e);   break;
-			case Pointer::CANCEL: on_pointer_cancel(e); break;
-			default: break;
-		}
-
-		for (auto it : self->capturing_views)
-		{
-			const View* view = it.first.get();
-			PointerEvent event = *e;
-			PointerEvent_update_positions_for_capturing_views(&event, view);
-			View_call_pointer_event(const_cast<View*>(view), event);
-		}
-
-		View_call_pointer_event(root(), *e);
-
-		cleanup_capturing_views(this);
 	}
 
 	void

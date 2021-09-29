@@ -404,7 +404,7 @@ ReflexViewController_get_show_fun ()
 
 		touching_count += e.size();
 
-		win->on_pointer(&e);
+		Window_call_pointer_event(win, &e);
 	}
 
 	- (void) touchesEnded: (NSSet*) touches withEvent: (UIEvent*) event
@@ -420,7 +420,7 @@ ReflexViewController_get_show_fun ()
 		else if (touching_count < 0)
 			Reflex::invalid_state_error(__FILE__, __LINE__);
 
-		win->on_pointer(&e);
+		Window_call_pointer_event(win, &e);
 	}
 
 	- (void) touchesCancelled: (NSSet*) touches withEvent: (UIEvent*) event
@@ -436,7 +436,7 @@ ReflexViewController_get_show_fun ()
 		Reflex::NativePointerEvent e(touches, event, self.reflexView, &prev_pointers);
 		[self addToPrevPointers: e];
 
-		win->on_pointer(&e);
+		Window_call_pointer_event(win, &e);
 	}
 
 	- (void) addToPrevPointers: (const Reflex::PointerEvent&) event
