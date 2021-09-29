@@ -386,7 +386,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		if (!win) return;
 
 		Reflex::NativeWheelEvent e(event, view);
-		win->on_wheel(&e);
+		Window_call_wheel_event(win, &e);
 	}
 
 	+ (NSRect) frameRectForContentRect: (NSRect) contentRect

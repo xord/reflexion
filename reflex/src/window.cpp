@@ -186,6 +186,19 @@ namespace Reflex
 		cleanup_capturing_views(window);
 	}
 
+	void
+	Window_call_wheel_event (Window* window, WheelEvent* event)
+	{
+		assert(window);
+
+		if (!event)
+			argument_error(__FILE__, __LINE__);
+
+		window->on_wheel(event);
+
+		View_call_wheel_event(window->root(), *event);
+	}
+
 
 	Window::Window ()
 	:	self(Window_create_data())
@@ -430,10 +443,6 @@ namespace Reflex
 	void
 	Window::on_wheel (WheelEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
-
-		View_call_wheel_event(root(), *e);
 	}
 
 	Window::operator bool () const
