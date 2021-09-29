@@ -13,31 +13,26 @@ class TestWindow < Test::Unit::TestCase
   def point(*args)  Reflex::Point.new(*args) end
   def bounds(*args) Reflex::Bounds.new(*args) end
 
-  def test_root()
+  def test_show_hide_hidden()
     w = win
-    assert_not_nil w.root
-    assert_nil     w.root.parent
-    assert_equal 'ROOT', w.root.name
-  end
-
-  def test_window()
-    w = win
-    assert_equal w, w.root.window
-  end
-
-  def test_hidden()
-    w = win
-    assert_equal true, w.hidden
+    assert_equal true,  w.hidden
     w.show
     assert_equal false, w.hidden
     w.hide
-    assert_equal true, w.hidden
+    assert_equal true,  w.hidden
     w.hide
-    assert_equal true, w.hidden
+    assert_equal true,  w.hidden
     w.show
-    assert_equal true, w.hidden
+    assert_equal true,  w.hidden
     w.show
     assert_equal false, w.hidden
+  end
+
+  def test_title()
+    w = win
+    assert_equal '',  w.title
+    w.title = 'A'
+    assert_equal 'A', w.title
   end
 
   def test_frame()
@@ -85,11 +80,12 @@ class TestWindow < Test::Unit::TestCase
     assert_true  w.resizable?
   end
 
-  def test_title()
+  def test_root()
     w = win
-    assert_equal '', w.title
-    w.title = 'A'
-    assert_equal 'A', w.title
+    assert_not_nil       w.root
+    assert_nil           w.root.parent
+    assert_equal 'ROOT', w.root.name
+    assert_equal w,      w.root.window
   end
 
 end# TestWindow
