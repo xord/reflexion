@@ -267,6 +267,18 @@ namespace Reflex
 		self->redraw = true;
 	}
 
+	Point
+	Window::from_screen (const Point& point) const
+	{
+		return point - frame().position();
+	}
+
+	Point
+	Window::to_screen (const Point& point) const
+	{
+		return point + frame().position();
+	}
+
 	void
 	Window::set_title (const char* title)
 	{
@@ -349,20 +361,6 @@ namespace Reflex
 	Window::painter () const
 	{
 		return const_cast<Window*>(this)->painter();
-	}
-
-	Point
-	Window::from_screen (const Point& point) const
-	{
-		not_implemented_error(__FILE__, __LINE__);
-		return 0;
-	}
-
-	Point
-	Window::to_screen (const Point& point) const
-	{
-		not_implemented_error(__FILE__, __LINE__);
-		return 0;
 	}
 
 	void

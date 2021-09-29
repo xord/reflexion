@@ -29,7 +29,7 @@ class TestView < Test::Unit::TestCase
   def point(*a)  Rays::Point.new(*a) end
   def bounds(*a) Rays::Bounds.new(*a) end
 
-  def test_hidden()
+  def test_show_hide_hidden()
     v = view
     assert_equal false, v.hidden?
     v.hide

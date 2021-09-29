@@ -1488,13 +1488,21 @@ namespace Reflex
 	Point
 	View::from_screen (const Point& point) const
 	{
-		return from_window(point) - window()->frame().position();
+		const Window* w = window();
+		if (!w)
+			invalid_state_error(__FILE__, __LINE__);
+
+		return w->from_screen(from_window(point));
 	}
 
 	Point
 	View::to_screen (const Point& point) const
 	{
-		return to_window(point) + window()->frame().position();
+		const Window* w = window();
+		if (!w)
+			invalid_state_error(__FILE__, __LINE__);
+
+		return w->to_screen(to_window(point));
 	}
 
 	static void

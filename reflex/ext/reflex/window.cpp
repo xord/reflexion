@@ -60,6 +60,22 @@ RUCY_DEF0(redraw)
 RUCY_END
 
 static
+RUCY_DEF1(from_screen, point)
+{
+	CHECK;
+	return value(THIS->from_screen(to<Rays::Point>(point)));
+}
+RUCY_END
+
+static
+RUCY_DEF1(to_screen, point)
+{
+	CHECK;
+	return value(THIS->to_screen(to<Rays::Point>(point)));
+}
+RUCY_END
+
+static
 RUCY_DEF1(set_title, title)
 {
 	CHECK;
@@ -288,6 +304,8 @@ Init_window ()
 	cWindow.define_method("hide", hide);
 	cWindow.define_method("close", close);
 	cWindow.define_method("redraw", redraw);
+	cWindow.define_method("from_screen", from_screen);
+	cWindow.define_method(  "to_screen",   to_screen);
 	cWindow.define_method("title=", set_title);
 	cWindow.define_method("title", get_title);
 	cWindow.define_method("frame=", set_frame);

@@ -39,6 +39,10 @@ namespace Reflex
 
 			virtual void redraw ();
 
+			virtual Point from_screen (const Point& point) const;
+
+			virtual Point   to_screen (const Point& point) const;
+
 			virtual void    set_title (const char* title);
 
 			virtual const char* title () const;
@@ -66,10 +70,6 @@ namespace Reflex
 			virtual       Painter* painter ();
 
 			virtual const Painter* painter () const;
-
-			virtual Point from_screen (const Point& point) const;
-
-			virtual Point   to_screen (const Point& point) const;
 
 			virtual void on_show (Event* e);
 

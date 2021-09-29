@@ -6,12 +6,12 @@ require_relative 'helper'
 
 class TestWindow < Test::Unit::TestCase
 
-  def win(*args, &block)
-    Reflex::Window.new(*args, &block)
+  def win(*a, **k, &b)
+    Reflex::Window.new(*a, **k, &b)
   end
 
-  def point(*args)  Reflex::Point.new(*args) end
-  def bounds(*args) Reflex::Bounds.new(*args) end
+  def point(*a)  Reflex::Point.new(*a) end
+  def bounds(*a) Reflex::Bounds.new(*a) end
 
   def test_show_hide_hidden()
     w = win
@@ -26,6 +26,12 @@ class TestWindow < Test::Unit::TestCase
     assert_equal true,  w.hidden
     w.show
     assert_equal false, w.hidden
+  end
+
+  def test_coord_conversion()
+    w = win x: 100, y: 200
+    assert_equal [400, 300], w.from_screen(500).to_a
+    assert_equal [600, 700], w.  to_screen(500).to_a
   end
 
   def test_title()
