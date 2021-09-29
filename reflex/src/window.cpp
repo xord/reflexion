@@ -125,8 +125,40 @@ namespace Reflex
 	}
 
 	void
+	Window_call_key_event (Window* window, KeyEvent* event)
+	{
+		assert(window);
+
+		if (!event)
+			argument_error(__FILE__, __LINE__);
+
+		window->on_key(event);
+
+		switch (event->type)
+		{
+			case KeyEvent::DOWN: window->on_key_down(event); break;
+			case KeyEvent::UP:   window->on_key_up(event);   break;
+			default: break;
+		}
+
+		for (auto pair : window->self->capturing_views)
+		{
+			KeyEvent e = *event;
+			e.capture = true;
+			View_call_key_event(const_cast<View*>(pair.first.get()), e);
+		}
+
+		if (window->self->focus)
+			View_call_key_event(window->self->focus.get(), *event);
+
+		cleanup_capturing_views(window);
+	}
+
+	void
 	Window_call_pointer_event (Window* window, PointerEvent* event)
 	{
+		assert(window);
+
 		if (!event)
 			argument_error(__FILE__, __LINE__);
 
@@ -134,16 +166,16 @@ namespace Reflex
 
 		switch ((*event)[0].action())
 		{
-			case Pointer::DOWN:   on_pointer_down(event);   break;
-			case Pointer::UP:     on_pointer_up(event);     break;
-			case Pointer::MOVE:   on_pointer_move(event);   break;
-			case Pointer::CANCEL: on_pointer_cancel(event); break;
+			case Pointer::DOWN:   window->on_pointer_down(event);   break;
+			case Pointer::UP:     window->on_pointer_up(event);     break;
+			case Pointer::MOVE:   window->on_pointer_move(event);   break;
+			case Pointer::CANCEL: window->on_pointer_cancel(event); break;
 			default: break;
 		}
 
-		for (auto it : self->capturing_views)
+		for (auto pair : window->self->capturing_views)
 		{
-			const View* view = it.first.get();
+			const View* view = pair.first.get();
 			PointerEvent e = *event;
 			PointerEvent_update_positions_for_capturing_views(&e, view);
 			View_call_pointer_event(const_cast<View*>(view), e);
@@ -358,28 +390,6 @@ namespace Reflex
 	void
 	Window::on_key (KeyEvent* e)
 	{
-		if (!e)
-			argument_error(__FILE__, __LINE__);
-
-		switch (e->type)
-		{
-			case KeyEvent::DOWN: on_key_down(e); break;
-			case KeyEvent::UP:   on_key_up(e);   break;
-			case KeyEvent::NONE:                 break;
-		}
-
-		auto end = self->capturing_views.end();
-		for (auto it = self->capturing_views.begin(); it != end; ++it)
-		{
-			KeyEvent event = *e;
-			event.capture = true;
-			View_call_key_event(const_cast<View*>(it->first.get()), event);
-		}
-
-		if (self->focus)
-			View_call_key_event(self->focus.get(), *e);
-
-		cleanup_capturing_views(this);
 	}
 
 	void

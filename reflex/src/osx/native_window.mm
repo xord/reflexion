@@ -295,7 +295,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		if (!win) return;
 
 		Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::DOWN);
-		win->on_key(&e);
+		Window_call_key_event(win, &e);
 	}
 
 	- (void) keyUp: (NSEvent*) event
@@ -304,7 +304,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		if (!win) return;
 
 		Reflex::NativeKeyEvent e(event, Reflex::KeyEvent::UP);
-		win->on_key(&e);
+		Window_call_key_event(win, &e);
 	}
 
 	- (void) flagsChanged: (NSEvent*) event
@@ -313,7 +313,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		if (!win) return;
 
 		Reflex::NativeFlagKeyEvent e(event);
-		win->on_key(&e);
+		Window_call_key_event(win, &e);
 	}
 
 	- (void) mouseDown: (NSEvent*) event
