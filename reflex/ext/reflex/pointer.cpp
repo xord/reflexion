@@ -26,7 +26,7 @@ RUCY_DEF8(initialize,
 	CHECK;
 
 	*THIS = Reflex::Pointer(
-		to<uint>(id),
+		to<Reflex::Pointer::ID>(id),
 		to<uint>(type),
 		(Reflex::Pointer::Action) to<int>(action),
 		to<Rays::Point>(position),

@@ -99,7 +99,7 @@ namespace Reflex
 	static Pointer
 	create_pointer (
 		UITouch* touch, UIEvent* event, UIView* view, double time,
-		uint pointer_id, PrevPointerList* prev_pointers)
+		Pointer::ID pointer_id, PrevPointerList* prev_pointers)
 	{
 		Reflex::Pointer::Action action = get_action(touch);
 		Reflex::Pointer pointer(
@@ -124,9 +124,10 @@ namespace Reflex
 
 	NativePointerEvent::NativePointerEvent (
 		NSSet* touches, UIEvent* event, UIView* view,
-		uint* pointer_id)
+		Pointer::ID* pointer_id)
 	{
-		for (UITouch* touch in touches) {
+		for (UITouch* touch in touches)
+		{
 			PointerEvent_add_pointer(
 				this, create_pointer(touch, event, view, time(), ++*pointer_id, NULL));
 		}
@@ -136,7 +137,8 @@ namespace Reflex
 		NSSet* touches, UIEvent* event, UIView* view,
 		PrevPointerList* prev_pointers)
 	{
-		for (UITouch* touch in touches) {
+		for (UITouch* touch in touches)
+		{
 			PointerEvent_add_pointer(
 				this, create_pointer(touch, event, view, time(), 0, prev_pointers));
 		}

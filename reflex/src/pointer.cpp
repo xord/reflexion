@@ -35,7 +35,9 @@ namespace Reflex
 
 		};// Flag
 
-		uint id, type;
+		ID id;
+
+		uint type;
 
 		Action action;
 
@@ -48,8 +50,7 @@ namespace Reflex
 		PrevPointerPtr prev;
 
 		Data (
-			uint id = POINTER_ID_INVALID,
-			uint type = TYPE_NONE, Action action = ACTION_NONE,
+			ID id = -1, uint type = TYPE_NONE, Action action = ACTION_NONE,
 			const Point& position = 0, uint modifiers = 0, uint click_count = 0,
 			bool drag = false, bool enter = false, bool exit = false,
 			double time = 0)
@@ -81,7 +82,7 @@ namespace Reflex
 	}
 
 	void
-	Pointer_set_id (Pointer* pthis, uint id)
+	Pointer_set_id (Pointer* pthis, Pointer::ID id)
 	{
 		pthis->self->id = id;
 	}
@@ -101,7 +102,7 @@ namespace Reflex
 	}
 
 	Pointer::Pointer (
-		uint id, uint type, Action action,
+		ID id, uint type, Action action,
 		const Point& position, uint modifiers, uint click_count, bool drag,
 		double time)
 	:	self(new Data(
@@ -129,7 +130,7 @@ namespace Reflex
 	{
 	}
 
-	uint
+	Pointer::ID
 	Pointer::id () const
 	{
 		return self->id;

@@ -44,7 +44,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		NSTimer* timer;
 		int update_count;
 		int clicking_count;
-		uint pointer_id;
+		Reflex::Pointer::ID pointer_id;
 		Reflex::Pointer prevPointer;
 	}
 
@@ -63,7 +63,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		timer           = nil;
 		update_count    = 0;
 		clicking_count  = 0;
-		pointer_id      = Reflex::POINTER_ID_FIRST;
+		pointer_id      = 0;
 
 		[self setDelegate: self];
 		[self setupContentView];

@@ -133,7 +133,7 @@ ReflexViewController_get_show_fun ()
 		Reflex::Window *pwindow, *ptr_for_rebind;
 		int update_count;
 		int touching_count;
-		uint pointer_id;
+		Reflex::Pointer::ID pointer_id;
 		Reflex::PrevPointerList prev_pointers;
 	}
 
@@ -146,7 +146,7 @@ ReflexViewController_get_show_fun ()
 		ptr_for_rebind = NULL;
 		update_count   = 0;
 		touching_count = 0;
-		pointer_id     = Reflex::POINTER_ID_FIRST;
+		pointer_id     = 0;
 
 		return self;
 	}

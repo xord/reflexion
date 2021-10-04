@@ -21,6 +21,8 @@ namespace Reflex
 
 		public:
 
+			typedef int ID;
+
 			enum Type
 			{
 
@@ -60,7 +62,7 @@ namespace Reflex
 			Pointer ();
 
 			Pointer (
-				uint id, uint type, Action action,
+				ID id, uint type, Action action,
 				const Point& position, uint modifiers, uint click_count, bool drag,
 				double time);
 
@@ -70,7 +72,7 @@ namespace Reflex
 
 			~Pointer ();
 
-			uint id () const;
+			ID id () const;
 
 			uint type () const;
 

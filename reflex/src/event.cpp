@@ -182,7 +182,8 @@ namespace Reflex
 
 		for (auto& pointer : pthis->self->pointers)
 		{
-			Pointer_update_positions(&pointer, [=](const Point& p) {
+			Pointer_update_positions(&pointer, [=](const Point& p)
+			{
 				return view->from_window(p);
 			});
 		}
@@ -196,12 +197,14 @@ namespace Reflex
 		const Point& offset = frame.position();
 
 		std::vector<Pointer> pointers;
-		for (const auto& pointer : pthis->self->pointers) {
+		for (const auto& pointer : pthis->self->pointers)
+		{
 			if (!frame.is_include(pointer.position()))
 				continue;
 
 			pointers.emplace_back(pointer);
-			Pointer_update_positions(&pointers.back(), [&](const Point& p) {
+			Pointer_update_positions(&pointers.back(), [&](const Point& p)
+			{
 				return p - offset;
 			});
 		}
@@ -222,7 +225,8 @@ namespace Reflex
 
 		for (auto& pointer : pthis->self->pointers)
 		{
-			Pointer_update_positions(&pointer, [=](const Point& p) {
+			Pointer_update_positions(&pointer, [=](const Point& p)
+			{
 				return (p - *scroll) / zoom;
 			});
 		}

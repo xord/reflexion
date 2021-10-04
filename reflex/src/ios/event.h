@@ -23,7 +23,7 @@ namespace Reflex
 
 			NativePointerEvent (
 				NSSet* touches, UIEvent* event, UIView* view,
-				uint* pointer_id);
+				Pointer::ID* pointer_id);
 
 			NativePointerEvent (
 				NSSet* touches, UIEvent* event, UIView* view,
