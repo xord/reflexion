@@ -161,17 +161,55 @@ namespace Reflex
 	void
 	PointerEvent_add_pointer (PointerEvent* pthis, const Pointer& pointer)
 	{
+		assert(pthis);
+
 		pthis->self->pointers.emplace_back(pointer);
+	}
+
+	void
+	PointerEvent_erase_pointer (PointerEvent* pthis, Pointer::ID id)
+	{
+		assert(pthis);
+
+		auto& pointers = pthis->self->pointers;
+		auto it = std::find_if(
+			pointers.begin(), pointers.end(),
+			[=](const auto& pointer)
+			{
+				return pointer.id() == id;
+			});
+
+		if (it == pointers.end()) return;
+
+		pointers.erase(it);
 	}
 
 	Pointer&
 	PointerEvent_pointer_at (PointerEvent* pthis, size_t index)
 	{
+		assert(pthis);
+
 		auto& pointers = pthis->self->pointers;
 		if (index >= pointers.size())
 			index_error(__FILE__, __LINE__);
 
 		return pointers[index];
+	}
+
+	const Pointer&
+	PointerEvent_pointer_at (const PointerEvent* pthis, size_t index)
+	{
+		return PointerEvent_pointer_at(const_cast<PointerEvent*>(pthis), index);
+	}
+
+	void
+	PointerEvent_each_pointer (
+		const PointerEvent* pthis, std::function<void(const Pointer&)> fun)
+	{
+		assert(pthis);
+
+		for (const auto& pointer : pthis->self->pointers)
+			fun(pointer);
 	}
 
 	void

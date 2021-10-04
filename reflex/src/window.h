@@ -4,22 +4,29 @@
 #define __REFLEX_SRC_WINDOW_H__
 
 
+#include <vector>
 #include <map>
 #include <xot/time.h>
 #include <rays/point.h>
 #include <rays/painter.h>
 #include <reflex/window.h>
 #include <reflex/view.h>
+#include "pointer.h"
 
 
 namespace Reflex
 {
 
 
+	enum {CAPTURE_ALL = -9};
+
+
 	struct Window::Data
 	{
 
-		typedef std::map<View::Ref, bool> CapturingViews;
+		typedef std::vector<Pointer::ID>                 CaptureTargetIDList;
+
+		typedef std::map<View::Ref, CaptureTargetIDList> CaptureMap;
 
 		int hide_count = 1;
 
@@ -33,7 +40,7 @@ namespace Reflex
 
 		double prev_time_update, prev_time_draw, prev_fps = 0;
 
-		CapturingViews capturing_views;
+		CaptureMap captures;
 
 		Data ()
 		{
@@ -84,9 +91,11 @@ namespace Reflex
 
 	void Window_set_focus (Window* window, View* view);
 
-	void Window_register_capture   (Window* window, View* view);
+	void Window_register_capture (
+		Window* window, View* view, Pointer::ID target = CAPTURE_ALL);
 
-	void Window_unregister_capture (Window* window, View* view);
+	void Window_unregister_capture (
+		Window* window, View* view, Pointer::ID target = CAPTURE_ALL);
 
 	void Window_call_draw_event    (Window* window, DrawEvent*    event);
 
