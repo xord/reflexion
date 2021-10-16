@@ -11,6 +11,15 @@ namespace Reflex
 {
 
 
+	using ViewList              = std::vector<View::Ref>;
+
+	using PointerMap            = std::map<Pointer::ID, Pointer>;
+
+	using ExtractedPointerIDSet = std::set<Pointer::ID>;
+
+	using CaptureTargetIDList   = Window::Data::CaptureTargetIDList;
+
+
 	void
 	Window_set_focus (Window* window, View* view)
 	{
@@ -182,14 +191,6 @@ namespace Reflex
 		cleanup_captures(window);
 	}
 
-	using ViewList              = std::vector<View::Ref>;
-
-	using PointerMap            = std::map<Pointer::ID, Pointer>;
-
-	using ExtractedPointerIDSet = std::set<Pointer::ID>;
-
-	using CaptureTargetIDList   = Window::Data::CaptureTargetIDList;
-
 	static void
 	get_views_capturing_all_pointers (Window* window, ViewList* result)
 	{
@@ -222,7 +223,7 @@ namespace Reflex
 	}
 
 	static void
-	add_extracted_pointer (
+	extract_pointer (
 		PointerEvent* event, ExtractedPointerIDSet* extracteds,
 		const Pointer& pointer)
 	{
@@ -233,7 +234,7 @@ namespace Reflex
 	}
 
 	static void
-	extract_targeted_pointer_event (
+	extract_targeted_pointers (
 		PointerEvent* event, ExtractedPointerIDSet* extracteds,
 		const CaptureTargetIDList& targets, const PointerMap& pointers)
 	{
@@ -243,32 +244,32 @@ namespace Reflex
 		{
 			auto it = pointers.find(pointer_id);
 			if (it != pointers.end())
-				add_extracted_pointer(event, extracteds, it->second);
+				extract_pointer(event, extracteds, it->second);
 		}
 	}
 
 	static void
-	call_targeted_pointer_events (
-		Window* window,
-		ExtractedPointerIDSet* extracteds, const PointerMap& pointers)
+	capture_targeted_pointers_and_call_events (
+		ExtractedPointerIDSet* extracteds,
+		Window* window, const PointerMap& pointers)
 	{
-		assert(window && extracteds);
+		assert(extracteds && window);
 
 		for (auto& [view, targets] : window->self->captures)
 		{
 			if (targets.empty()) continue;
 
-			PointerEvent e;
-			extract_targeted_pointer_event(&e, extracteds, targets, pointers);
+			PointerEvent e(true);
+			extract_targeted_pointers(&e, extracteds, targets, pointers);
 			if (e.empty()) continue;
 
-			PointerEvent_update_positions_for_capturing_views(&e, view);
+			PointerEvent_update_for_capturing_view(&e, view);
 			View_call_pointer_event(const_cast<View*>(view.get()), e);
 		}
 	}
 
 	static void
-	extract_uncaptured_pointer_event (
+	extract_hovering_pointers (
 		PointerEvent* event, ExtractedPointerIDSet* extracteds,
 		const PointerMap& pointers)
 	{
@@ -279,23 +280,27 @@ namespace Reflex
 			// dragging pointers is captured as a targeted
 			if (pointer.is_drag()) continue;
 
-			add_extracted_pointer(event, extracteds, pointer);
+			extract_pointer(event, extracteds, pointer);
 		}
 	}
 
 	static void
-	call_uncaptured_pointer_events (
+	capture_hovering_pointers_and_call_events (
 		ExtractedPointerIDSet* extracteds,
 		const ViewList& views_capturing_all, const PointerMap& pointers)
 	{
-		PointerEvent event;
-		extract_uncaptured_pointer_event(&event, extracteds, pointers);
+		assert(extracteds);
+
+		if (views_capturing_all.empty()) return;
+
+		PointerEvent event(true);
+		extract_hovering_pointers(&event, extracteds, pointers);
 		if (event.empty()) return;
 
 		for (auto& view : views_capturing_all)
 		{
 			PointerEvent e = event;
-			PointerEvent_update_positions_for_capturing_views(&e, view);
+			PointerEvent_update_for_capturing_view(&e, view);
 			View_call_pointer_event(const_cast<View*>(view.get()), e);
 		}
 	}
@@ -339,10 +344,10 @@ namespace Reflex
 		});
 
 		ExtractedPointerIDSet extracteds;
-		call_targeted_pointer_events(window, &extracteds, pointers);
+		capture_targeted_pointers_and_call_events(&extracteds, window, pointers);
 		erase_extracted_pointers(&pointers, extracteds);
 
-		call_uncaptured_pointer_events(&extracteds, views_capturing_all, pointers);
+		capture_hovering_pointers_and_call_events(&extracteds, views_capturing_all, pointers);
 		erase_extracted_pointers(event, extracteds);
 	}
 
@@ -368,7 +373,10 @@ namespace Reflex
 		call_captured_pointer_events(window, event);
 
 		if (!event->empty())
+		{
+			PointerEvent_update_for_child_view(event, window->root());
 			View_call_pointer_event(window->root(), *event);
+		}
 
 		cleanup_captures(window);
 	}

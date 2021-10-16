@@ -1229,16 +1229,15 @@ namespace Reflex
 
 	template <typename FUN, typename EVENT>
 	static void
-	call_children (View* parent, FUN fun, const EVENT& e)
+	call_children (View* parent, const EVENT& event, FUN fun)
 	{
 		assert(parent);
 
-		View::ChildList* pchildren = parent->self->pchildren.get();
-		if (pchildren)
-		{
-			for (auto& pchild : *pchildren)
-				fun(pchild.get(), e);
-		}
+		auto* pchildren = parent->self->pchildren.get();
+		if (!pchildren) return;
+
+		for (auto& pchild : *pchildren)
+			fun(pchild.get(), event);
 	}
 
 	void
@@ -1246,9 +1245,6 @@ namespace Reflex
 	{
 		if (!view)
 			argument_error(__FILE__, __LINE__);
-
-		bool capturing = view->capture() & View::CAPTURE_KEY;
-		if (capturing != event.capture) return;
 
 		KeyEvent e = event;
 		view->on_key(&e);
@@ -1261,24 +1257,47 @@ namespace Reflex
 		}
 	}
 
+	static void
+	update_captures (View* view, PointerEvent* event)
+	{
+		Window* win = view->window();
+		if (!win)
+			invalid_state_error(__FILE__, __LINE__);
+
+		PointerEvent_each_pointer(event, [&](const auto& pointer)
+		{
+			auto action = pointer.action();
+			if (action == Pointer::DOWN)
+			{
+				Window_register_capture(win, view, pointer.id());
+			}
+			else if (action == Pointer::UP || action == Pointer::CANCEL)
+			{
+				Window_unregister_capture(win, view, pointer.id());
+			}
+		});
+	}
+
+	static void
+	call_pointer_event_for_each_child (View* parent, const PointerEvent& event)
+	{
+		call_children(parent, event, [](View* child, const PointerEvent& e) {
+			PointerEvent e2 = e;
+			PointerEvent_update_for_child_view(&e2, child);
+			View_call_pointer_event(child, e2);
+		});
+	}
+
 	void
 	View_call_pointer_event (View* view, const PointerEvent& event)
 	{
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		bool capturing = view->capture() & View::CAPTURE_POINTER;
-		if (capturing != event.is_capture()) return;
-
-		PointerEvent e = event;
-		PointerEvent_filter_and_update_positions(&e, view->frame());
-
-		if (!capturing && e.empty())
+		if (event.empty())
 			return;
 
-		PointerEvent_scroll_and_zoom_positions(
-			&e, view->self->pscroll.get(), view->zoom());
-
+		PointerEvent e = event;
 		view->on_pointer(&e);
 
 		switch (e[0].action())
@@ -1290,8 +1309,10 @@ namespace Reflex
 			default: break;
 		}
 
-		if (!event.is_capture())
-			call_children(view, View_call_pointer_event, e);
+		update_captures(view, &e);
+
+		if (!e.is_captured())
+			call_pointer_event_for_each_child(view, e);
 	}
 
 	void
@@ -1310,7 +1331,7 @@ namespace Reflex
 
 		view->on_wheel(&e);
 
-		call_children(view, View_call_wheel_event, e);
+		call_children(view, e, View_call_wheel_event);
 	}
 
 	void

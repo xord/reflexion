@@ -21,14 +21,9 @@ namespace Reflex
 	void PointerEvent_each_pointer (
 		const PointerEvent* pthis, std::function<void(const Pointer&)> fun);
 
-	void PointerEvent_update_positions_for_capturing_views (
-		PointerEvent* pthis, const View* view);
+	void PointerEvent_update_for_child_view (PointerEvent* pthis, const View* view);
 
-	void PointerEvent_filter_and_update_positions (
-		PointerEvent* pthis, const Bounds& frame);
-
-	void PointerEvent_scroll_and_zoom_positions (
-		PointerEvent* pthis, const Point* scroll, float zoom);
+	void PointerEvent_update_for_capturing_view (PointerEvent* pthis, const View* view);
 
 
 }// Reflex

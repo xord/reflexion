@@ -210,62 +210,76 @@ namespace Reflex
 			fun(pointer);
 	}
 
-	void
-	PointerEvent_update_positions_for_capturing_views (
-		PointerEvent* pthis, const View* view)
+	static void
+	filter_and_offset_pointer_positions (PointerEvent* event, const Bounds& frame)
 	{
-		pthis->self->capture = true;
-
-		for (auto& pointer : pthis->self->pointers)
-		{
-			Pointer_update_positions(&pointer, [=](const Point& p)
-			{
-				return view->from_window(p);
-			});
-		}
-	}
-
-	void
-	PointerEvent_filter_and_update_positions (PointerEvent* pthis, const Bounds& frame)
-	{
-		assert(pthis);
+		assert(event);
 
 		const Point& offset = frame.position();
 
 		std::vector<Pointer> pointers;
-		for (const auto& pointer : pthis->self->pointers)
+		for (const auto& pointer : event->self->pointers)
 		{
 			if (!frame.is_include(pointer.position()))
 				continue;
 
 			pointers.emplace_back(pointer);
-			Pointer_update_positions(&pointers.back(), [&](const Point& p)
+			Pointer_update_positions(&pointers.back(), [&](Point* pos)
 			{
-				return p - offset;
+				*pos -= offset;
 			});
 		}
 
-		pthis->self->pointers = pointers;
+		event->self->pointers = pointers;
+	}
+
+	static void
+	scroll_and_zoom_pointer_positions (
+		PointerEvent* event, const Point& scroll, float zoom)
+	{
+		assert(event);
+
+		if (zoom == 0)
+			argument_error(__FILE__, __LINE__);
+
+		if (scroll == 0 && zoom == 1)
+			return;
+
+		for (auto& pointer : event->self->pointers)
+		{
+			Pointer_update_positions(&pointer, [=](Point* pos)
+			{
+				*pos -= scroll;
+				*pos /= zoom;
+			});
+		}
 	}
 
 	void
-	PointerEvent_scroll_and_zoom_positions (PointerEvent* pthis, const Point* scroll, float zoom)
+	PointerEvent_update_for_child_view (PointerEvent* pthis, const View* view)
 	{
-		static const Point ZERO = 0;
+		if (!pthis || !view)
+			argument_error(__FILE__, __LINE__);
 
-		assert(zoom != 0);
+		filter_and_offset_pointer_positions(pthis, view->frame());
+		scroll_and_zoom_pointer_positions(pthis, view->scroll(), view->zoom());
+	}
 
-		if (!scroll) scroll = &ZERO;
-		if (*scroll == 0 && zoom == 1)
-			return;
+	void
+	PointerEvent_update_for_capturing_view (PointerEvent* pthis, const View* view)
+	{
+		if (!pthis || !view)
+			argument_error(__FILE__, __LINE__);
 
 		for (auto& pointer : pthis->self->pointers)
 		{
-			Pointer_update_positions(&pointer, [=](const Point& p)
+			Pointer_update_positions(&pointer, [=](Point* pos)
 			{
-				return (p - *scroll) / zoom;
+				*pos = view->from_window(*pos);
 			});
 		}
+
+		scroll_and_zoom_pointer_positions(pthis, view->scroll(), view->zoom());
 	}
 
 

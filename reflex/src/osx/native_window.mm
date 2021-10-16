@@ -322,6 +322,14 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		if (clicking_count == 0) ++pointer_id;
 
 		Reflex::NativePointerEvent e(event, view, pointer_id, Reflex::Pointer::DOWN);
+
+		if (e[0].position().y < 0)
+		{
+			// ignore mouseDown event since the mouseUp event to the window title bar
+			// will not come and will break clicking_count.
+			return;
+		}
+
 		[self attachAndUpdatePrevPointer: &e];
 
 		clicking_count += count_mouse_buttons(e);
