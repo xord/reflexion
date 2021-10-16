@@ -13,7 +13,7 @@ namespace Reflex
 
 
 	void Pointer_update_positions (
-		Pointer* pthis, std::function<Point(const Point&)> fun);
+		Pointer* pthis, std::function<void(Point*)> fun);
 
 	void Pointer_set_id   (Pointer* pthis, Pointer::ID id);
 

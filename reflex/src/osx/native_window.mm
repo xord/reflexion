@@ -24,15 +24,13 @@ static int
 count_mouse_buttons (const Reflex::PointerEvent& e)
 {
 	uint nbuttons = 0;
-	size_t size = e.size();
-	for (size_t i = 0; i < size; ++i)
-	{
-		uint t = e[i].type();
+	PointerEvent_each_pointer(&e, [&](const auto& pointer) {
+		uint t = pointer.type();
 		nbuttons +=
 			(t & Reflex::Pointer::MOUSE_LEFT   ? 1 : 0) +
 			(t & Reflex::Pointer::MOUSE_RIGHT  ? 1 : 0) +
 			(t & Reflex::Pointer::MOUSE_MIDDLE ? 1 : 0);
-	}
+	});
 	return nbuttons;
 }
 

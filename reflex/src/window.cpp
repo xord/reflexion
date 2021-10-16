@@ -139,6 +139,16 @@ namespace Reflex
 		painter->end();
 	}
 
+	static bool
+	is_capturing (
+		const View* view, const CaptureTargetIDList& targets, View::Capture type)
+	{
+		return
+			!targets.empty() &&
+			targets[0] == CAPTURE_ALL &&
+			(view->capture() & type) == type;
+	}
+
 	void
 	Window_call_key_event (Window* window, KeyEvent* event)
 	{
@@ -156,14 +166,14 @@ namespace Reflex
 			default: break;
 		}
 
-		for (auto& pair : window->self->captures)
+		for (auto& [view, targets] : window->self->captures)
 		{
-			auto& targets = pair.second;
-			if (targets.empty() || targets[0] != CAPTURE_ALL) continue;
+			if (!is_capturing(view.get(), targets, View::CAPTURE_KEY))
+				continue;
 
 			KeyEvent e = *event;
-			e.capture = true;
-			View_call_key_event(const_cast<View*>(pair.first.get()), e);
+			e.captured = true;
+			View_call_key_event(const_cast<View*>(view.get()), e);
 		}
 
 		if (window->self->focus)
@@ -188,7 +198,7 @@ namespace Reflex
 		result->clear();
 		for (const auto& [view, targets] : window->self->captures)
 		{
-			if (!targets.empty() && targets[0] == CAPTURE_ALL)
+			if (is_capturing(view.get(), targets, View::CAPTURE_POINTER))
 				result->emplace_back(view);
 		}
 	}

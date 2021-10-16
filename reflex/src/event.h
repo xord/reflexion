@@ -12,13 +12,11 @@ namespace Reflex
 {
 
 
-	void PointerEvent_add_pointer (PointerEvent* pthis, const Pointer& pointer);
+	void PointerEvent_add_pointer    (PointerEvent* pthis, const Pointer& pointer);
 
-	void PointerEvent_erase_pointer (PointerEvent* pthis, Pointer::ID id);
+	void PointerEvent_erase_pointer  (PointerEvent* pthis, Pointer::ID id);
 
-	      Pointer& PointerEvent_pointer_at (      PointerEvent* pthis, size_t index);
-
-	const Pointer& PointerEvent_pointer_at (const PointerEvent* pthis, size_t index);
+	Pointer& PointerEvent_pointer_at (PointerEvent* pthis, size_t index);
 
 	void PointerEvent_each_pointer (
 		const PointerEvent* pthis, std::function<void(const Pointer&)> fun);

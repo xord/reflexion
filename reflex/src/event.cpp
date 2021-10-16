@@ -161,7 +161,8 @@ namespace Reflex
 	void
 	PointerEvent_add_pointer (PointerEvent* pthis, const Pointer& pointer)
 	{
-		assert(pthis);
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
 
 		pthis->self->pointers.emplace_back(pointer);
 	}
@@ -169,7 +170,8 @@ namespace Reflex
 	void
 	PointerEvent_erase_pointer (PointerEvent* pthis, Pointer::ID id)
 	{
-		assert(pthis);
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
 
 		auto& pointers = pthis->self->pointers;
 		auto it = std::find_if(
@@ -187,7 +189,8 @@ namespace Reflex
 	Pointer&
 	PointerEvent_pointer_at (PointerEvent* pthis, size_t index)
 	{
-		assert(pthis);
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
 
 		auto& pointers = pthis->self->pointers;
 		if (index >= pointers.size())
@@ -196,17 +199,12 @@ namespace Reflex
 		return pointers[index];
 	}
 
-	const Pointer&
-	PointerEvent_pointer_at (const PointerEvent* pthis, size_t index)
-	{
-		return PointerEvent_pointer_at(const_cast<PointerEvent*>(pthis), index);
-	}
-
 	void
 	PointerEvent_each_pointer (
 		const PointerEvent* pthis, std::function<void(const Pointer&)> fun)
 	{
-		assert(pthis);
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
 
 		for (const auto& pointer : pthis->self->pointers)
 			fun(pointer);
