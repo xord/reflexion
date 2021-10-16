@@ -131,14 +131,14 @@ namespace Reflex
 
 
 	KeyEvent::KeyEvent ()
-	:	type(NONE), code(KEY_NONE), modifiers(MOD_NONE), repeat(0), capture(false)
+	:	type(NONE), code(KEY_NONE), modifiers(MOD_NONE), repeat(0), captured(false)
 	{
 	}
 
 	KeyEvent::KeyEvent (
 		Type type, const char* chars, int code, uint modifiers, int repeat)
 	:	type(type), chars(chars ? chars : ""), code(code), modifiers(modifiers),
-		repeat(repeat), capture(false)
+		repeat(repeat), captured(false)
 	{
 	}
 
@@ -148,10 +148,10 @@ namespace Reflex
 
 		std::vector<Pointer> pointers;
 
-		bool capture;
+		bool captured;
 
-		Data ()
-		:	capture(false)
+		Data (bool captured = false)
+		:	captured(captured)
 		{
 		}
 
@@ -271,16 +271,19 @@ namespace Reflex
 	}
 
 
-	PointerEvent::PointerEvent ()
+	PointerEvent::PointerEvent (bool captured)
+	:	self(new Data(captured))
 	{
 	}
 
-	PointerEvent::PointerEvent (const Pointer& pointer)
+	PointerEvent::PointerEvent (const Pointer& pointer, bool captured)
+	:	self(new Data(captured))
 	{
 		self->pointers.emplace_back(pointer);
 	}
 
-	PointerEvent::PointerEvent (const Pointer* pointers, size_t size)
+	PointerEvent::PointerEvent (const Pointer* pointers, size_t size, bool captured)
+	:	self(new Data(captured))
 	{
 		for (size_t i = 0; i < size; ++i)
 			self->pointers.emplace_back(pointers[i]);
@@ -318,9 +321,9 @@ namespace Reflex
 	}
 
 	bool
-	PointerEvent::is_capture () const
+	PointerEvent::is_captured () const
 	{
-		return self->capture;
+		return self->captured;
 	}
 
 	const Pointer&

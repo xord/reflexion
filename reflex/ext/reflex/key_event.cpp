@@ -281,10 +281,10 @@ RUCY_DEF0(get_repeat)
 RUCY_END
 
 static
-RUCY_DEF0(is_capture)
+RUCY_DEF0(is_captured)
 {
 	CHECK;
-	return value(THIS->capture);
+	return value(THIS->captured);
 }
 RUCY_END
 
@@ -306,7 +306,7 @@ Init_key_event ()
 	cKeyEvent.define_method("code",      get_code);
 	cKeyEvent.define_method("modifiers", get_modifiers);
 	cKeyEvent.define_method("repeat",    get_repeat);
-	cKeyEvent.define_method("capture?",  is_capture);
+	cKeyEvent.define_method("captured?", is_captured);
 	cKeyEvent.define_const("TYPE_NONE", Reflex::KeyEvent::NONE);
 	cKeyEvent.define_const("TYPE_DOWN", Reflex::KeyEvent::DOWN);
 	cKeyEvent.define_const("TYPE_UP",   Reflex::KeyEvent::UP);
