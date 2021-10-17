@@ -131,14 +131,14 @@ namespace Reflex
 
 
 	KeyEvent::KeyEvent ()
-	:	type(NONE), code(KEY_NONE), modifiers(MOD_NONE), repeat(0), capture(false)
+	:	type(NONE), code(KEY_NONE), modifiers(MOD_NONE), repeat(0), captured(false)
 	{
 	}
 
 	KeyEvent::KeyEvent (
 		Type type, const char* chars, int code, uint modifiers, int repeat)
 	:	type(type), chars(chars ? chars : ""), code(code), modifiers(modifiers),
-		repeat(repeat), capture(false)
+		repeat(repeat), captured(false)
 	{
 	}
 
@@ -148,10 +148,10 @@ namespace Reflex
 
 		std::vector<Pointer> pointers;
 
-		bool capture;
+		bool captured;
 
-		Data ()
-		:	capture(false)
+		Data (bool captured = false)
+		:	captured(captured)
 		{
 		}
 
@@ -161,12 +161,37 @@ namespace Reflex
 	void
 	PointerEvent_add_pointer (PointerEvent* pthis, const Pointer& pointer)
 	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
 		pthis->self->pointers.emplace_back(pointer);
+	}
+
+	void
+	PointerEvent_erase_pointer (PointerEvent* pthis, Pointer::ID id)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		auto& pointers = pthis->self->pointers;
+		auto it = std::find_if(
+			pointers.begin(), pointers.end(),
+			[=](const auto& pointer)
+			{
+				return pointer.id() == id;
+			});
+
+		if (it == pointers.end()) return;
+
+		pointers.erase(it);
 	}
 
 	Pointer&
 	PointerEvent_pointer_at (PointerEvent* pthis, size_t index)
 	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
 		auto& pointers = pthis->self->pointers;
 		if (index >= pointers.size())
 			index_error(__FILE__, __LINE__);
@@ -175,74 +200,102 @@ namespace Reflex
 	}
 
 	void
-	PointerEvent_update_positions_for_capturing_views (
-		PointerEvent* pthis, const View* view)
+	PointerEvent_each_pointer (
+		const PointerEvent* pthis, std::function<void(const Pointer&)> fun)
 	{
-		pthis->self->capture = true;
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
 
-		for (auto& pointer : pthis->self->pointers)
-		{
-			Pointer_update_positions(&pointer, [=](const Point& p)
-			{
-				return view->from_window(p);
-			});
-		}
+		for (const auto& pointer : pthis->self->pointers)
+			fun(pointer);
 	}
 
-	void
-	PointerEvent_filter_and_update_positions (PointerEvent* pthis, const Bounds& frame)
+	static void
+	filter_and_offset_pointer_positions (PointerEvent* event, const Bounds& frame)
 	{
-		assert(pthis);
+		assert(event);
 
 		const Point& offset = frame.position();
 
 		std::vector<Pointer> pointers;
-		for (const auto& pointer : pthis->self->pointers)
+		for (const auto& pointer : event->self->pointers)
 		{
 			if (!frame.is_include(pointer.position()))
 				continue;
 
 			pointers.emplace_back(pointer);
-			Pointer_update_positions(&pointers.back(), [&](const Point& p)
+			Pointer_update_positions(&pointers.back(), [&](Point* pos)
 			{
-				return p - offset;
+				*pos -= offset;
 			});
 		}
 
-		pthis->self->pointers = pointers;
+		event->self->pointers = pointers;
+	}
+
+	static void
+	scroll_and_zoom_pointer_positions (
+		PointerEvent* event, const Point& scroll, float zoom)
+	{
+		assert(event);
+
+		if (zoom == 0)
+			argument_error(__FILE__, __LINE__);
+
+		if (scroll == 0 && zoom == 1)
+			return;
+
+		for (auto& pointer : event->self->pointers)
+		{
+			Pointer_update_positions(&pointer, [=](Point* pos)
+			{
+				*pos -= scroll;
+				*pos /= zoom;
+			});
+		}
 	}
 
 	void
-	PointerEvent_scroll_and_zoom_positions (PointerEvent* pthis, const Point* scroll, float zoom)
+	PointerEvent_update_for_child_view (PointerEvent* pthis, const View* view)
 	{
-		static const Point ZERO = 0;
+		if (!pthis || !view)
+			argument_error(__FILE__, __LINE__);
 
-		assert(zoom != 0);
+		filter_and_offset_pointer_positions(pthis, view->frame());
+		scroll_and_zoom_pointer_positions(pthis, view->scroll(), view->zoom());
+	}
 
-		if (!scroll) scroll = &ZERO;
-		if (*scroll == 0 && zoom == 1)
-			return;
+	void
+	PointerEvent_update_for_capturing_view (PointerEvent* pthis, const View* view)
+	{
+		if (!pthis || !view)
+			argument_error(__FILE__, __LINE__);
 
 		for (auto& pointer : pthis->self->pointers)
 		{
-			Pointer_update_positions(&pointer, [=](const Point& p)
+			Pointer_update_positions(&pointer, [=](Point* pos)
 			{
-				return (p - *scroll) / zoom;
+				*pos = view->from_window(*pos);
 			});
 		}
+
+		scroll_and_zoom_pointer_positions(pthis, view->scroll(), view->zoom());
 	}
 
 
-	PointerEvent::PointerEvent ()
+	PointerEvent::PointerEvent (bool captured)
+	:	self(new Data(captured))
 	{
 	}
 
-	PointerEvent::PointerEvent (const Pointer& pointer)
+	PointerEvent::PointerEvent (const Pointer& pointer, bool captured)
+	:	self(new Data(captured))
 	{
 		self->pointers.emplace_back(pointer);
 	}
 
-	PointerEvent::PointerEvent (const Pointer* pointers, size_t size)
+	PointerEvent::PointerEvent (const Pointer* pointers, size_t size, bool captured)
+	:	self(new Data(captured))
 	{
 		for (size_t i = 0; i < size; ++i)
 			self->pointers.emplace_back(pointers[i]);
@@ -280,9 +333,9 @@ namespace Reflex
 	}
 
 	bool
-	PointerEvent::is_capture () const
+	PointerEvent::is_captured () const
 	{
-		return self->capture;
+		return self->captured;
 	}
 
 	const Pointer&

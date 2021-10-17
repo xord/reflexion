@@ -65,10 +65,10 @@ RUCY_DEF0(is_empty)
 RUCY_END
 
 static
-RUCY_DEF0(is_capture)
+RUCY_DEF0(is_captured)
 {
 	CHECK;
-	return value(THIS->is_capture());
+	return value(THIS->is_captured());
 }
 RUCY_END
 
@@ -110,11 +110,11 @@ Init_pointer_event ()
 	cPointerEvent.define_alloc_func(alloc);
 	cPointerEvent.define_private_method("initialize",      initialize);
 	cPointerEvent.define_private_method("initialize_copy", initialize_copy);
-	cPointerEvent.define_method("size",     get_size);
-	cPointerEvent.define_method("empty?",   is_empty);
-	cPointerEvent.define_method("capture?", is_capture);
-	cPointerEvent.define_method("[]",       get_at);
-	cPointerEvent.define_method("each",     each);
+	cPointerEvent.define_method("size",      get_size);
+	cPointerEvent.define_method("empty?",    is_empty);
+	cPointerEvent.define_method("captured?", is_captured);
+	cPointerEvent.define_method("[]",        get_at);
+	cPointerEvent.define_method("each",      each);
 }
 
 

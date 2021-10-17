@@ -1,6 +1,7 @@
 #include "window.h"
 
 
+#include <set>
 #include "reflex/exception.h"
 #include "view.h"
 #include "event.h"
@@ -8,6 +9,15 @@
 
 namespace Reflex
 {
+
+
+	using ViewList              = std::vector<View::Ref>;
+
+	using PointerMap            = std::map<Pointer::ID, Pointer>;
+
+	using ExtractedPointerIDSet = std::set<Pointer::ID>;
+
+	using CaptureTargetIDList   = Window::Data::CaptureTargetIDList;
 
 
 	void
@@ -59,7 +69,7 @@ namespace Reflex
 	}
 
 	void
-	Window_register_capture (Window* window, View* view)
+	Window_register_capture (Window* window, View* view, Pointer::ID target)
 	{
 		assert(window);
 
@@ -69,31 +79,45 @@ namespace Reflex
 		if (view->window() != window)
 			invalid_state_error(__FILE__, __LINE__);
 
-		window->self->capturing_views[view] = true;
+		if (target < 0) return;
+
+		auto& targets = window->self->captures[view];
+		if (std::find(targets.begin(), targets.end(), target) != targets.end())
+			return;
+
+		targets.insert(
+			target == CAPTURE_ALL ? targets.begin() : targets.end(),
+			target);
 	}
 
 	void
-	Window_unregister_capture (Window* window, View* view)
+	Window_unregister_capture (Window* window, View* view, Pointer::ID target)
 	{
 		assert(window);
 
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		auto it = window->self->capturing_views.find(view);
-		if (it == window->self->capturing_views.end()) return;
+		auto captures_it = window->self->captures.find(view);
+		if (captures_it == window->self->captures.end()) return;
 
-		it->second = false;
+		auto& targets   = captures_it->second;
+		auto targets_it = std::find(targets.begin(), targets.end(), target);
+		if (targets_it == targets.end()) return;
+
+		targets.erase(targets_it);
 	}
 
 	static void
-	cleanup_capturing_views (Window* window)
+	cleanup_captures (Window* window)
 	{
-		auto end = window->self->capturing_views.end();
-		for (auto it = window->self->capturing_views.begin(); it != end;)
+		assert(window);
+
+		auto& caps = window->self->captures;
+		for (auto it = caps.begin(), end = caps.end(); it != end;)
 		{
 			auto t = it++;
-			if (!t->second) window->self->capturing_views.erase(t);
+			if (t->second.empty()) caps.erase(t);
 		}
 	}
 
@@ -124,6 +148,16 @@ namespace Reflex
 		painter->end();
 	}
 
+	static bool
+	is_capturing (
+		const View* view, const CaptureTargetIDList& targets, View::Capture type)
+	{
+		return
+			!targets.empty() &&
+			targets[0] == CAPTURE_ALL &&
+			(view->capture() & type) == type;
+	}
+
 	void
 	Window_call_key_event (Window* window, KeyEvent* event)
 	{
@@ -141,17 +175,180 @@ namespace Reflex
 			default: break;
 		}
 
-		for (auto pair : window->self->capturing_views)
+		for (auto& [view, targets] : window->self->captures)
 		{
+			if (!is_capturing(view.get(), targets, View::CAPTURE_KEY))
+				continue;
+
 			KeyEvent e = *event;
-			e.capture = true;
-			View_call_key_event(const_cast<View*>(pair.first.get()), e);
+			e.captured = true;
+			View_call_key_event(const_cast<View*>(view.get()), e);
 		}
 
 		if (window->self->focus)
 			View_call_key_event(window->self->focus.get(), *event);
 
-		cleanup_capturing_views(window);
+		cleanup_captures(window);
+	}
+
+	static void
+	get_views_capturing_all_pointers (Window* window, ViewList* result)
+	{
+		assert(window && result);
+
+		result->clear();
+		for (const auto& [view, targets] : window->self->captures)
+		{
+			if (is_capturing(view.get(), targets, View::CAPTURE_POINTER))
+				result->emplace_back(view);
+		}
+	}
+
+	static void
+	capture_all_pointers (
+		Window* window, const PointerEvent& event, ViewList& views_capturing_all)
+	{
+		assert(window);
+
+		if (views_capturing_all.empty()) return;
+
+		PointerEvent_each_pointer(&event, [&](const auto& pointer)
+		{
+			if (pointer.action() == Pointer::DOWN)
+			{
+				for (auto& view : views_capturing_all)
+					Window_register_capture(window, view, pointer.id());
+			}
+		});
+	}
+
+	static void
+	extract_pointer (
+		PointerEvent* event, ExtractedPointerIDSet* extracteds,
+		const Pointer& pointer)
+	{
+		assert(event && extracteds);
+
+		PointerEvent_add_pointer(event, pointer);
+		extracteds->insert(pointer.id());
+	}
+
+	static void
+	extract_targeted_pointers (
+		PointerEvent* event, ExtractedPointerIDSet* extracteds,
+		const CaptureTargetIDList& targets, const PointerMap& pointers)
+	{
+		assert(event && event->empty() && extracteds);
+
+		for (auto pointer_id : targets)
+		{
+			auto it = pointers.find(pointer_id);
+			if (it != pointers.end())
+				extract_pointer(event, extracteds, it->second);
+		}
+	}
+
+	static void
+	capture_targeted_pointers_and_call_events (
+		ExtractedPointerIDSet* extracteds,
+		Window* window, const PointerMap& pointers)
+	{
+		assert(extracteds && window);
+
+		for (auto& [view, targets] : window->self->captures)
+		{
+			if (targets.empty()) continue;
+
+			PointerEvent e(true);
+			extract_targeted_pointers(&e, extracteds, targets, pointers);
+			if (e.empty()) continue;
+
+			PointerEvent_update_for_capturing_view(&e, view);
+			View_call_pointer_event(const_cast<View*>(view.get()), e);
+		}
+	}
+
+	static void
+	extract_hovering_pointers (
+		PointerEvent* event, ExtractedPointerIDSet* extracteds,
+		const PointerMap& pointers)
+	{
+		assert(event && event->empty() && extracteds);
+
+		for (const auto& [_, pointer] : pointers)
+		{
+			// dragging pointers is captured as a targeted
+			if (pointer.is_drag()) continue;
+
+			extract_pointer(event, extracteds, pointer);
+		}
+	}
+
+	static void
+	capture_hovering_pointers_and_call_events (
+		ExtractedPointerIDSet* extracteds,
+		const ViewList& views_capturing_all, const PointerMap& pointers)
+	{
+		assert(extracteds);
+
+		if (views_capturing_all.empty()) return;
+
+		PointerEvent event(true);
+		extract_hovering_pointers(&event, extracteds, pointers);
+		if (event.empty()) return;
+
+		for (auto& view : views_capturing_all)
+		{
+			PointerEvent e = event;
+			PointerEvent_update_for_capturing_view(&e, view);
+			View_call_pointer_event(const_cast<View*>(view.get()), e);
+		}
+	}
+
+	static void
+	erase_extracted_pointers (
+		PointerMap* pointers, const ExtractedPointerIDSet& extracteds)
+	{
+		assert(pointers);
+
+		for (auto id : extracteds)
+		{
+			auto it = pointers->find(id);
+			if (it != pointers->end()) pointers->erase(it);
+		}
+	}
+
+	static void
+	erase_extracted_pointers (
+		PointerEvent* event, const ExtractedPointerIDSet& extracteds)
+	{
+		assert(event);
+
+		for (auto id : extracteds)
+			PointerEvent_erase_pointer(event, id);
+	}
+
+	static void
+	call_captured_pointer_events (Window* window, PointerEvent* event)
+	{
+		assert(window && event);
+
+		ViewList views_capturing_all;
+		get_views_capturing_all_pointers(window, &views_capturing_all);
+		capture_all_pointers(window, *event, views_capturing_all);
+
+		PointerMap pointers;
+		PointerEvent_each_pointer(event, [&](const auto& pointer)
+		{
+			if (pointer.id() >= 0) pointers[pointer.id()] = pointer;
+		});
+
+		ExtractedPointerIDSet extracteds;
+		capture_targeted_pointers_and_call_events(&extracteds, window, pointers);
+		erase_extracted_pointers(&pointers, extracteds);
+
+		capture_hovering_pointers_and_call_events(&extracteds, views_capturing_all, pointers);
+		erase_extracted_pointers(event, extracteds);
 	}
 
 	void
@@ -173,17 +370,15 @@ namespace Reflex
 			default: break;
 		}
 
-		for (auto pair : window->self->capturing_views)
+		call_captured_pointer_events(window, event);
+
+		if (!event->empty())
 		{
-			const View* view = pair.first.get();
-			PointerEvent e = *event;
-			PointerEvent_update_positions_for_capturing_views(&e, view);
-			View_call_pointer_event(const_cast<View*>(view), e);
+			PointerEvent_update_for_child_view(event, window->root());
+			View_call_pointer_event(window->root(), *event);
 		}
 
-		View_call_pointer_event(window->root(), *event);
-
-		cleanup_capturing_views(window);
+		cleanup_captures(window);
 	}
 
 	void

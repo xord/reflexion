@@ -24,15 +24,13 @@ static int
 count_mouse_buttons (const Reflex::PointerEvent& e)
 {
 	uint nbuttons = 0;
-	size_t size = e.size();
-	for (size_t i = 0; i < size; ++i)
-	{
-		uint t = e[i].type();
+	PointerEvent_each_pointer(&e, [&](const auto& pointer) {
+		uint t = pointer.type();
 		nbuttons +=
 			(t & Reflex::Pointer::MOUSE_LEFT   ? 1 : 0) +
 			(t & Reflex::Pointer::MOUSE_RIGHT  ? 1 : 0) +
 			(t & Reflex::Pointer::MOUSE_MIDDLE ? 1 : 0);
-	}
+	});
 	return nbuttons;
 }
 
@@ -324,6 +322,14 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		if (clicking_count == 0) ++pointer_id;
 
 		Reflex::NativePointerEvent e(event, view, pointer_id, Reflex::Pointer::DOWN);
+
+		if (e[0].position().y < 0)
+		{
+			// ignore mouseDown event since the mouseUp event to the window title bar
+			// will not come and will break clicking_count.
+			return;
+		}
+
 		[self attachAndUpdatePrevPointer: &e];
 
 		clicking_count += count_mouse_buttons(e);

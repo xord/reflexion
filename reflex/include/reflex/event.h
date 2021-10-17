@@ -167,7 +167,7 @@ namespace Reflex
 
 		int repeat;
 
-		bool capture;
+		bool captured;
 
 		KeyEvent ();
 
@@ -185,11 +185,15 @@ namespace Reflex
 
 		public:
 
-			PointerEvent ();
+			PointerEvent (bool captured = false);
 
-			PointerEvent (const Pointer& pointers);
+			PointerEvent (
+				const Pointer& pointer,
+				bool captured = false);
 
-			PointerEvent (const Pointer* pointers, size_t size);
+			PointerEvent (
+				const Pointer* pointers, size_t size,
+				bool captured = false);
 
 			PointerEvent (const This& obj);
 
@@ -201,7 +205,7 @@ namespace Reflex
 
 			bool empty () const;
 
-			bool is_capture () const;
+			bool is_captured () const;
 
 			const Pointer& operator [] (size_t index) const;
 
