@@ -18,7 +18,7 @@ namespace Reflex
 {
 
 
-	enum {CAPTURE_ALL = -9};
+	enum {CAPTURE_ALL = INT_MAX};
 
 
 	struct Window::Data
