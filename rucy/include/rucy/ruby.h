@@ -7,6 +7,11 @@
 #include <ruby.h>
 
 
+#ifdef memcpy
+#undef memcpy // avoid defining ruby_nonempty_memcpy
+#endif
+
+
 namespace Rucy
 {
 
