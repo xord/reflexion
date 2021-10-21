@@ -180,7 +180,7 @@ namespace Reflex
 			if (!is_capturing(view.get(), targets, View::CAPTURE_KEY))
 				continue;
 
-			KeyEvent e = *event;
+			KeyEvent e = event->dup();
 			e.captured = true;
 			View_call_key_event(const_cast<View*>(view.get()), e);
 		}
@@ -299,7 +299,7 @@ namespace Reflex
 
 		for (auto& view : views_capturing_all)
 		{
-			PointerEvent e = event;
+			PointerEvent e = event.dup();
 			PointerEvent_update_for_capturing_view(&e, view);
 			View_call_pointer_event(const_cast<View*>(view.get()), e);
 		}

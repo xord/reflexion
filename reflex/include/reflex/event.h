@@ -28,18 +28,22 @@ namespace Reflex
 
 			Event ();
 
+			~Event ();
+
 			void block ();
 
 			bool is_blocked () const;
 
 			double time () const;
 
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
 		private:
 
-			bool blocked;
-
-			double time_;
-
+		Event(Event&);
+		void operator=(Event&);
 	};// Event
 
 
@@ -51,6 +55,8 @@ namespace Reflex
 		float dt;
 
 		UpdateEvent (double now = 0, float dt = 0);
+
+		UpdateEvent dup () const;
 
 	};// UpdateEvent
 
@@ -67,6 +73,8 @@ namespace Reflex
 		float dt, fps;
 
 		DrawEvent (float dt = 0, float fps = 0);
+
+		DrawEvent dup () const;
 
 	};// DrawEvent
 
@@ -175,6 +183,8 @@ namespace Reflex
 			Type type, const char* chars, int code,
 			uint modifiers = 0, int repeat = 0);
 
+		KeyEvent dup () const;
+
 	};// KeyEvent
 
 
@@ -194,12 +204,14 @@ namespace Reflex
 			PointerEvent (
 				const Pointer* pointers, size_t size,
 				bool captured = false);
-
+#if 0
 			PointerEvent (const This& obj);
 
 			PointerEvent& operator = (const This& obj);
-
+#endif
 			~PointerEvent ();
+
+			PointerEvent dup () const;
 
 			size_t size () const;
 
@@ -211,7 +223,7 @@ namespace Reflex
 
 			struct Data;
 
-			Xot::PImpl<Data> self;
+			Xot::PSharedImpl<Data> self;
 
 	};// PointerEvent
 
@@ -240,6 +252,8 @@ namespace Reflex
 		WheelEvent (
 			coord dx, coord dy, coord dz, coord x = 0, coord y = 0, coord z = 0,
 			uint modifiers = 0);
+
+		WheelEvent dup () const;
 
 		      Point& position ();
 
@@ -300,6 +314,8 @@ namespace Reflex
 		ContactEvent ();
 
 		ContactEvent (Type type, Shape* shape);
+
+		ContactEvent dup () const;
 
 	};// ContactEvent
 

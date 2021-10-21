@@ -437,7 +437,7 @@ namespace Reflex
 		if (!shape)
 			argument_error(__FILE__, __LINE__);
 
-		ContactEvent e = event;
+		ContactEvent e = event.dup();
 		shape->on_contact(&e);
 
 		switch (e.type)

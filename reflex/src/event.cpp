@@ -12,27 +12,45 @@ namespace Reflex
 {
 
 
+	struct Event::Data
+	{
+
+		bool blocked;
+
+		double time;
+
+		Data (bool blocked = false, double time = Xot::time())
+		:	blocked(blocked), time(time)
+		{
+		}
+
+	};// Event::Data
+
+
 	Event::Event ()
-	:	blocked(false), time_(Xot::time())
+	{
+	}
+
+	Event::~Event ()
 	{
 	}
 
 	void
 	Event::block ()
 	{
-		blocked = true;
+		self->blocked = true;
 	}
 
 	bool
 	Event::is_blocked () const
 	{
-		return blocked;
+		return self->blocked;
 	}
 
 	double
 	Event::time () const
 	{
-		return time_;
+		return self->time;
 	}
 
 
@@ -300,7 +318,7 @@ namespace Reflex
 		for (size_t i = 0; i < size; ++i)
 			self->pointers.emplace_back(pointers[i]);
 	}
-
+#if 0
 	PointerEvent::PointerEvent (const This& obj)
 	:	self(new Data(*obj.self))
 	{
@@ -315,7 +333,7 @@ namespace Reflex
 		*self = *obj.self;
 		return *this;
 	}
-
+#endif
 	PointerEvent::~PointerEvent ()
 	{
 	}

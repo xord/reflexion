@@ -960,7 +960,7 @@ namespace Reflex
 		update_view_shapes(view);
 		update_child_world(view, event.dt);
 
-		UpdateEvent e = event;
+		UpdateEvent e = event.dup();
 		view->on_update(&e);
 
 		update_views_for_selectors(view);
@@ -1174,7 +1174,7 @@ namespace Reflex
 
 		Point pos    = self->frame.position();
 		Bounds clip2 = self->frame.dup().move_by(offset) & clip;
-		DrawEvent e  = event;
+		DrawEvent e  = event.dup();
 		e.view       = view;
 		e.bounds     = self->frame;
 		e.bounds.move_to(0, 0, e.bounds.z);
@@ -1246,7 +1246,7 @@ namespace Reflex
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		KeyEvent e = event;
+		KeyEvent e = event.dup();
 		view->on_key(&e);
 
 		switch (e.type)
@@ -1282,7 +1282,7 @@ namespace Reflex
 	call_pointer_event_for_each_child (View* parent, const PointerEvent& event)
 	{
 		call_children(parent, event, [](View* child, const PointerEvent& e) {
-			PointerEvent e2 = e;
+			PointerEvent e2 = e.dup();
 			PointerEvent_update_for_child_view(&e2, child);
 			View_call_pointer_event(child, e2);
 		});
@@ -1297,7 +1297,7 @@ namespace Reflex
 		if (event.empty())
 			return;
 
-		PointerEvent e = event;
+		PointerEvent e = event.dup();
 		view->on_pointer(&e);
 
 		switch (e[0].action())
@@ -1326,7 +1326,7 @@ namespace Reflex
 		if (!frame.is_include(event.x, event.y, event.z))
 			return;
 
-		WheelEvent e = event;
+		WheelEvent e = event.dup();
 		e.position() -= frame.position();
 
 		view->on_wheel(&e);
@@ -1340,7 +1340,7 @@ namespace Reflex
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		ContactEvent e = event;
+		ContactEvent e = event.dup();
 		view->on_contact(&e);
 
 		switch (e.type)
