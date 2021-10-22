@@ -12,22 +12,6 @@ RUCY_DEFINE_VALUE_FROM_TO(Reflex::Event)
 
 
 static
-RUCY_DEF_ALLOC(alloc, klass)
-{
-	return new_type<Reflex::Event>(klass);
-}
-RUCY_END
-
-static
-RUCY_DEF1(initialize_copy, obj)
-{
-	CHECK;
-	*THIS = to<Reflex::Event&>(obj);
-	return self;
-}
-RUCY_END
-
-static
 RUCY_DEF0(block)
 {
 	CHECK;
@@ -60,8 +44,6 @@ Init_event ()
 	Module mReflex = define_module("Reflex");
 
 	cEvent = mReflex.define_class("Event");
-	cEvent.define_alloc_func(alloc);
-	cEvent.define_private_method("initialize_copy", initialize_copy);
 	cEvent.define_method("block",    block);
 	cEvent.define_method("blocked?", is_blocked);
 	cEvent.define_method("time",     get_time);

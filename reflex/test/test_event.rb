@@ -7,7 +7,7 @@ require_relative 'helper'
 class TestEvent < Test::Unit::TestCase
 
   def event()
-    Reflex::Event.new
+    Reflex::UpdateEvent.new 0, 0
   end
 
   def test_dup()

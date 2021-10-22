@@ -40,10 +40,10 @@ namespace Reflex
 
 			Xot::PSharedImpl<Data> self;
 
-		private:
+		protected:
 
-		Event(Event&);
-		void operator=(Event&);
+			Event (const Event* src);
+
 	};// Event
 
 

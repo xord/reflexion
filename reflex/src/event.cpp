@@ -31,6 +31,11 @@ namespace Reflex
 	{
 	}
 
+	Event::Event (const Event* src)
+	:	self(new Data(*src->self))
+	{
+	}
+
 	Event::~Event ()
 	{
 	}
