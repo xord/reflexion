@@ -19,12 +19,13 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEF2(initialize, now, dt)
+RUCY_DEF2(initialize, now, delta_time)
 {
 	CHECK;
 
-	THIS->now = to<double>(now);
-	THIS->dt  = to<float>(dt);
+	*THIS = Reflex::UpdateEvent(
+		to<double>(now),
+		to<float>(delta_time));
 
 	return rb_call_super(0, NULL);
 }
@@ -34,7 +35,7 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::UpdateEvent&>(obj);
+	*THIS = to<Reflex::UpdateEvent&>(obj).dup();
 	return self;
 }
 RUCY_END
@@ -43,15 +44,15 @@ static
 RUCY_DEF0(now)
 {
 	CHECK;
-	return value(THIS->now);
+	return value(THIS->now());
 }
 RUCY_END
 
 static
-RUCY_DEF0(dt)
+RUCY_DEF0(delta_time)
 {
 	CHECK;
-	return value(THIS->dt);
+	return value(THIS->delta_time());
 }
 RUCY_END
 
@@ -67,8 +68,8 @@ Init_update_event ()
 	cUpdateEvent.define_alloc_func(alloc);
 	cUpdateEvent.define_private_method("initialize",      initialize);
 	cUpdateEvent.define_private_method("initialize_copy", initialize_copy);
-	cUpdateEvent.define_method("now", now);
-	cUpdateEvent.define_method("dt", dt);
+	cUpdateEvent.define_method("now",        now);
+	cUpdateEvent.define_method("delta_time", delta_time);
 }
 
 

@@ -47,16 +47,28 @@ namespace Reflex
 	};// Event
 
 
-	struct UpdateEvent : public Event
+	class UpdateEvent : public Event
 	{
 
-		double now;
+		public:
 
-		float dt;
+			UpdateEvent (double now = 0, float delta_time = 0);
 
-		UpdateEvent (double now = 0, float dt = 0);
+			~UpdateEvent ();
 
-		UpdateEvent dup () const;
+			UpdateEvent dup () const;
+
+			double now () const;
+
+			float delta_time () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			UpdateEvent (const UpdateEvent* src);
 
 	};// UpdateEvent
 

@@ -59,9 +59,51 @@ namespace Reflex
 	}
 
 
-	UpdateEvent::UpdateEvent (double now, float dt)
-	:	now(now), dt(dt)
+	struct UpdateEvent::Data
 	{
+
+		double now;
+
+		float dt;
+
+		Data (double now, float dt)
+		:	now(now), dt(dt)
+		{
+		}
+
+	};// UpdateEvent::Data
+
+
+	UpdateEvent::UpdateEvent (double now, float delta_time)
+	:	self(new Data(now, delta_time))
+	{
+	}
+
+	UpdateEvent::UpdateEvent (const UpdateEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	UpdateEvent::~UpdateEvent ()
+	{
+	}
+
+	UpdateEvent
+	UpdateEvent::dup () const
+	{
+		return UpdateEvent(this);
+	}
+
+	double
+	UpdateEvent::now () const
+	{
+		return self->now;
+	}
+
+	float
+	UpdateEvent::delta_time () const
+	{
+		return self->dt;
 	}
 
 
