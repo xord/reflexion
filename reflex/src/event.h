@@ -12,6 +12,13 @@ namespace Reflex
 {
 
 
+	void DrawEvent_set_view    (DrawEvent* pthis, View* view);
+
+	void DrawEvent_set_painter (DrawEvent* pthis, Painter* painter);
+
+	void DrawEvent_set_bounds  (DrawEvent* pthis, const Bounds& bounds);
+
+
 	void PointerEvent_add_pointer    (PointerEvent* pthis, const Pointer& pointer);
 
 	void PointerEvent_erase_pointer  (PointerEvent* pthis, Pointer::ID id);

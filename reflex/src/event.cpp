@@ -107,9 +107,88 @@ namespace Reflex
 	}
 
 
-	DrawEvent::DrawEvent (float dt, float fps)
-	:	view(NULL), painter(NULL), dt(dt), fps(fps)
+	struct DrawEvent::Data
 	{
+
+		View* view;
+
+		Painter* painter;
+
+		Bounds bounds;
+
+		float dt, fps;
+
+		Data (float dt, float fps)
+		:	view(NULL), painter(NULL), dt(dt), fps(fps)
+		{
+		}
+
+	};// DrawEvent::Data
+
+
+	void
+	DrawEvent_set_view (DrawEvent* pthis, View* view)
+	{
+		pthis->self->view = view;
+	}
+
+	void
+	DrawEvent_set_painter (DrawEvent* pthis, Painter* painter)
+	{
+		pthis->self->painter = painter;
+	}
+
+	void
+	DrawEvent_set_bounds (DrawEvent* pthis, const Bounds& bounds)
+	{
+		pthis->self->bounds = bounds;
+	}
+
+
+	DrawEvent::DrawEvent (float dt, float fps)
+	:	self(new Data(dt, fps))
+	{
+	}
+
+	DrawEvent::DrawEvent (const DrawEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	DrawEvent
+	DrawEvent::dup () const
+	{
+		return DrawEvent(this);
+	}
+
+	Painter*
+	DrawEvent::painter ()
+	{
+		return self->painter;
+	}
+
+	const Painter*
+	DrawEvent::painter () const
+	{
+		return const_cast<DrawEvent*>(this)->painter();
+	}
+
+	const Bounds&
+	DrawEvent::bounds () const
+	{
+		return self->bounds;
+	}
+
+	float
+	DrawEvent::dt () const
+	{
+		return self->dt;
+	}
+
+	float
+	DrawEvent::fps () const
+	{
+		return self->fps;
 	}
 
 

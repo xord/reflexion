@@ -16,7 +16,7 @@ namespace Reflex
 
 
 	class Event;
-	struct DrawEvent;
+	class DrawEvent;
 	struct FrameEvent;
 	struct ContactEvent;
 

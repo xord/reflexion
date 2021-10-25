@@ -73,20 +73,32 @@ namespace Reflex
 	};// UpdateEvent
 
 
-	struct DrawEvent : public Event
+	class DrawEvent : public Event
 	{
 
-		View* view;
+		public:
 
-		Painter* painter;
+			DrawEvent (float dt = 0, float fps = 0);
 
-		Bounds bounds;
+			DrawEvent dup () const;
 
-		float dt, fps;
+			      Painter* painter ();
 
-		DrawEvent (float dt = 0, float fps = 0);
+			const Painter* painter () const;
 
-		DrawEvent dup () const;
+			const Bounds& bounds () const;
+
+			float dt () const;
+
+			float fps () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			DrawEvent (const DrawEvent* src);
 
 	};// DrawEvent
 

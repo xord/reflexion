@@ -30,8 +30,7 @@ namespace Reflex
 	void View_update_tree (View* view, const UpdateEvent& event);
 
 	void View_draw_tree (
-		View* view, const DrawEvent& event,
-		const Point& offset, const Bounds& clip);
+		View* view, DrawEvent* event, const Point& offset, const Bounds& clip);
 
 	void View_update_styles (View* view, const Selector& selector);
 

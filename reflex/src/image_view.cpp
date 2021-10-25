@@ -53,8 +53,8 @@ namespace Reflex
 	{
 		if (!self->image) return;
 
-		assert(e && e->painter);
-		Painter* p = e->painter;
+		assert(e && e->painter());
+		Painter* p = e->painter();
 
 		Color f = p->fill(), s = p->stroke();
 		p->set_fill(1);

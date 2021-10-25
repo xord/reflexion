@@ -587,9 +587,9 @@ namespace Reflex
 	void
 	Shape::on_draw (DrawEvent* e)
 	{
-		assert(e && e->painter);
+		assert(e && e->painter());
 
-		e->painter->polygon(self->polygon);
+		e->painter()->polygon(self->polygon);
 	}
 
 	void
