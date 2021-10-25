@@ -103,35 +103,50 @@ namespace Reflex
 	};// DrawEvent
 
 
-	struct FrameEvent : public Event
+	class FrameEvent : public Event
 	{
 
-		Bounds frame;
+		public:
 
-		coord dx, dy;
+			FrameEvent (
+				const Bounds& frame = 0,
+				coord dx     = 0, coord dy      = 0,
+				coord dwidth = 0, coord dheight = 0,
+				float angle  = 0, float dangle  = 0);
 
-		union
-		{
-			struct {coord dwidth, dheight;};
+			FrameEvent (
+				const Bounds& frame, const Bounds& prev_frame,
+				float angle = 0, float prev_angle = 0);
 
-			struct {coord dw,     dh;};
-		};
+			FrameEvent dup () const;
 
-		float angle, dangle;
+			const Bounds& frame () const;
 
-		FrameEvent (
-			const Bounds& frame = 0, coord dx = 0, coord dy = 0, coord dwidth = 0, coord dheight = 0,
-			float angle = 0, float dangle = 0);
+			coord dx () const;
 
-		FrameEvent (
-			const Bounds& frame, const Bounds& prev_frame,
-			float angle = 0, float prev_angle = 0);
+			coord dy () const;
 
-		bool is_move () const;
+			coord dwidth () const;
 
-		bool is_resize () const;
+			coord dheight () const;
 
-		bool is_rotate () const;
+			float angle () const;
+
+			float dangle () const;
+
+			bool is_move () const;
+
+			bool is_resize () const;
+
+			bool is_rotate () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			FrameEvent (const FrameEvent* src);
 
 	};// FrameEvent
 

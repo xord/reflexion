@@ -21,15 +21,18 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEF5(initialize, frame, dx, dy, dwidth, dheight)
+RUCY_DEF7(initialize, frame, dx, dy, dwidth, dheight, angle, dangle)
 {
 	CHECK;
 
-	THIS->frame   = to<Rays::Bounds>(frame);
-	THIS->dx      = to<coord>(dx);
-	THIS->dy      = to<coord>(dy);
-	THIS->dwidth  = to<coord>(dwidth);
-	THIS->dheight = to<coord>(dheight);
+	*THIS = Reflex::FrameEvent(
+		to<Rays::Bounds>(frame),
+		to<coord>(dx),
+		to<coord>(dy),
+		to<coord>(dwidth),
+		to<coord>(dheight),
+		to<float>(angle),
+		to<float>(dangle));
 
 	return rb_call_super(0, NULL);
 }
@@ -39,7 +42,7 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::FrameEvent&>(obj);
+	*THIS = to<Reflex::FrameEvent&>(obj).dup();
 	return self;
 }
 RUCY_END
@@ -48,7 +51,7 @@ static
 RUCY_DEF0(frame)
 {
 	CHECK;
-	return value(THIS->frame);
+	return value(THIS->frame());
 }
 RUCY_END
 
@@ -56,7 +59,7 @@ static
 RUCY_DEF0(dx)
 {
 	CHECK;
-	return value(THIS->dx);
+	return value(THIS->dx());
 }
 RUCY_END
 
@@ -64,7 +67,7 @@ static
 RUCY_DEF0(dy)
 {
 	CHECK;
-	return value(THIS->dy);
+	return value(THIS->dy());
 }
 RUCY_END
 
@@ -72,7 +75,7 @@ static
 RUCY_DEF0(dwidth)
 {
 	CHECK;
-	return value(THIS->dwidth);
+	return value(THIS->dwidth());
 }
 RUCY_END
 
@@ -80,7 +83,7 @@ static
 RUCY_DEF0(dheight)
 {
 	CHECK;
-	return value(THIS->dheight);
+	return value(THIS->dheight());
 }
 RUCY_END
 
@@ -88,7 +91,7 @@ static
 RUCY_DEF0(dposition)
 {
 	CHECK;
-	return value(Rays::Point(THIS->dx, THIS->dy));
+	return value(Rays::Point(THIS->dx(), THIS->dy()));
 }
 RUCY_END
 
@@ -96,7 +99,7 @@ static
 RUCY_DEF0(dsize)
 {
 	CHECK;
-	return value(Rays::Point(THIS->dw, THIS->dh));
+	return value(Rays::Point(THIS->dwidth(), THIS->dheight()));
 }
 RUCY_END
 
@@ -104,7 +107,7 @@ static
 RUCY_DEF0(angle)
 {
 	CHECK;
-	return value(THIS->angle);
+	return value(THIS->angle());
 }
 RUCY_END
 
@@ -112,7 +115,7 @@ static
 RUCY_DEF0(dangle)
 {
 	CHECK;
-	return value(THIS->dangle);
+	return value(THIS->dangle());
 }
 RUCY_END
 

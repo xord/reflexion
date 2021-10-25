@@ -192,40 +192,112 @@ namespace Reflex
 	}
 
 
+	struct FrameEvent::Data
+	{
+
+		Bounds frame;
+
+		coord dx, dy, dw, dh;
+
+		float angle, dangle;
+
+		Data (
+			const Bounds& frame, coord dx, coord dy, coord dw, coord dh,
+			float angle, float dangle)
+		:	frame(frame), dx(dx), dy(dy), dw(dw), dh(dh), angle(angle), dangle(dangle)
+		{
+		}
+
+	};// FrameEvent::Data
+
+
 	FrameEvent::FrameEvent (
 		const Bounds& frame, coord dx, coord dy, coord dwidth, coord dheight,
 		float angle, float dangle)
-	:	frame(frame), dx(dx), dy(dy), dwidth(dwidth), dheight(dheight),
-		angle(angle), dangle(dangle)
+	:	self(new Data(frame, dx, dy, dwidth, dheight, angle, dangle))
 	{
 	}
 
 	FrameEvent::FrameEvent (
 		const Bounds& frame, const Bounds& prev_frame,
 		float angle, float prev_angle)
-	:	frame(frame),
-		dx(    frame.x - prev_frame.x), dy(     frame.y - prev_frame.y),
-		dwidth(frame.w - prev_frame.w), dheight(frame.h - prev_frame.h),
-		angle(angle), dangle(angle - prev_angle)
+	:	self(new Data(
+			frame,
+			frame.x - prev_frame.x, frame.y - prev_frame.y,
+			frame.w - prev_frame.w, frame.h - prev_frame.h,
+			angle, angle - prev_angle))
 	{
+	}
+
+	FrameEvent::FrameEvent (const FrameEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	FrameEvent
+	FrameEvent::dup () const
+	{
+		return FrameEvent(this);
+	}
+
+	const Bounds&
+	FrameEvent::frame () const
+	{
+		return self->frame;
+	}
+
+	coord
+	FrameEvent::dx () const
+	{
+		return self->dx;
+	}
+
+	coord
+	FrameEvent::dy () const
+	{
+		return self->dy;
+	}
+
+	coord
+	FrameEvent::dwidth () const
+	{
+		return self->dw;
+	}
+
+	coord
+	FrameEvent::dheight () const
+	{
+		return self->dh;
+	}
+
+	float
+	FrameEvent::angle () const
+	{
+		return self->angle;
+	}
+
+	float
+	FrameEvent::dangle () const
+	{
+		return self->dangle;
 	}
 
 	bool
 	FrameEvent::is_move () const
 	{
-		return dx != 0 || dy != 0;
+		return self->dx != 0 || self->dy != 0;
 	}
 
 	bool
 	FrameEvent::is_resize () const
 	{
-		return dwidth != 0 || dheight != 0;
+		return self->dw != 0 || self->dh != 0;
 	}
 
 	bool
 	FrameEvent::is_rotate () const
 	{
-		return dangle != 0;
+		return self->dangle != 0;
 	}
 
 
