@@ -74,8 +74,8 @@ namespace Reflex
 	};// UpdateEvent::Data
 
 
-	UpdateEvent::UpdateEvent (double now, float delta_time)
-	:	self(new Data(now, delta_time))
+	UpdateEvent::UpdateEvent (double now, float dt)
+	:	self(new Data(now, dt))
 	{
 	}
 
@@ -101,7 +101,7 @@ namespace Reflex
 	}
 
 	float
-	UpdateEvent::delta_time () const
+	UpdateEvent::dt () const
 	{
 		return self->dt;
 	}

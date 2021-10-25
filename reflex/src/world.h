@@ -54,7 +54,7 @@ namespace Reflex
 
 			bool     debug () const;
 
-			virtual void on_update (float delta_time);
+			virtual void on_update (float dt);
 
 			virtual void on_draw (Painter* painter);
 

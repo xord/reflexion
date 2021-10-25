@@ -52,7 +52,7 @@ namespace Reflex
 
 		public:
 
-			UpdateEvent (double now = 0, float delta_time = 0);
+			UpdateEvent (double now = 0, float dt = 0);
 
 			~UpdateEvent ();
 
@@ -60,7 +60,7 @@ namespace Reflex
 
 			double now () const;
 
-			float delta_time () const;
+			float dt () const;
 
 			struct Data;
 

@@ -812,7 +812,7 @@ namespace Reflex
 	}
 
 	static void
-	update_child_world (View* view, float delta_time)
+	update_child_world (View* view, float dt)
 	{
 		assert(view);
 		View::Data* self = view->self.get();
@@ -820,7 +820,7 @@ namespace Reflex
 		World* child_world = self->pchild_world.get();
 		if (!child_world) return;
 
-		child_world->on_update(delta_time);
+		child_world->on_update(dt);
 
 		View::ChildList* pchildren = self->pchildren.get();
 		if (pchildren)
@@ -958,7 +958,7 @@ namespace Reflex
 		}
 
 		update_view_shapes(view);
-		update_child_world(view, event.delta_time());
+		update_child_world(view, event.dt());
 
 		UpdateEvent e = event.dup();
 		view->on_update(&e);
