@@ -186,7 +186,7 @@ namespace Reflex
 
 		public:
 
-			enum Action {NONE = 0, FOCUS, BLUR};
+			enum Action {ACTION_NONE = 0, FOCUS, BLUR};
 
 			FocusEvent ();
 

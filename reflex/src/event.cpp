@@ -367,7 +367,7 @@ namespace Reflex
 
 		View *current, *last;
 
-		Data (Action action = NONE, View* current = NULL, View* last = NULL)
+		Data (Action action = ACTION_NONE, View* current = NULL, View* last = NULL)
 		:	action(action), current(current), last(last)
 		{
 		}
