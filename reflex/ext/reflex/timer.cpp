@@ -1,6 +1,7 @@
 #include "reflex/ruby/timer.h"
 
 
+#include "reflex/exception.h"
 #include "reflex/ruby/view.h"
 #include "reflex/ruby/selector.h"
 #include "defs.h"
@@ -15,6 +16,13 @@ RUCY_DEFINE_WRAPPER_VALUE_FROM_TO(Reflex::Timer)
 
 #define CALL(fun) RUCY_CALL_SUPER(THIS, fun)
 
+
+static
+RUCY_DEF_ALLOC(alloc, klass)
+{
+	Reflex::reflex_error(__FILE__, __LINE__, "can not instantiate Timer class.");
+}
+RUCY_END
 
 static
 RUCY_DEF0(stop)
@@ -82,13 +90,14 @@ Init_timer ()
 	Module mReflex = define_module("Reflex");
 
 	cTimer = mReflex.define_class("Timer");
+	cTimer.define_alloc_func(alloc);
 	cTimer.define_method("stop", stop);
-	cTimer.define_method("owner", get_owner);
-	cTimer.define_method("id", get_id);
-	cTimer.define_method("interval", get_interval);
-	cTimer.define_method("count=", set_count);
-	cTimer.define_method("count",  get_count);
-	cTimer.define_method("finish?", is_finished);
+	cTimer.define_method("owner",     get_owner);
+	cTimer.define_method("id",        get_id);
+	cTimer.define_method("interval",  get_interval);
+	cTimer.define_method("count=",    set_count);
+	cTimer.define_method("count",     get_count);
+	cTimer.define_method("finished?", is_finished);
 
 	define_selector_methods<Reflex::Timer>(cTimer);
 }
