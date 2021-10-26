@@ -301,20 +301,44 @@ namespace Reflex
 	}
 
 
+	struct ScrollEvent::Data
+	{
+
+		Point scroll, dscroll;
+
+		Data (const Point& scroll, const Point& dscroll)
+		:	scroll(scroll), dscroll(dscroll)
+		{
+		}
+
+	};// ScrollEvent::Data
+
+
 	ScrollEvent::ScrollEvent ()
-	:	x(0), y(0), z(0), dx(0), dy(0), dz(0)
+	:	self(new Data(0, 0))
 	{
 	}
 
 	ScrollEvent::ScrollEvent (coord x, coord y, coord z, coord dx, coord dy, coord dz)
-	:	x(x), y(y), z(z), dx(dx), dy(dy), dz(dz)
+	:	self(new Data(Point(x, y, z), Point(dx, dy, dz)))
 	{
+	}
+
+	ScrollEvent::ScrollEvent (const ScrollEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	ScrollEvent
+	ScrollEvent::dup () const
+	{
+		return ScrollEvent(this);
 	}
 
 	Point&
 	ScrollEvent::scroll ()
 	{
-		return *(Point*) &scroll_;
+		return self->scroll;
 	}
 
 	const Point&
@@ -324,15 +348,15 @@ namespace Reflex
 	}
 
 	Point&
-	ScrollEvent::delta ()
+	ScrollEvent::dscroll ()
 	{
-		return *(Point*) &delta_;
+		return self->dscroll;
 	}
 
 	const Point&
-	ScrollEvent::delta () const
+	ScrollEvent::dscroll () const
 	{
-		return const_cast<ScrollEvent*>(this)->delta();
+		return const_cast<ScrollEvent*>(this)->dscroll();
 	}
 
 

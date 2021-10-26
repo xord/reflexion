@@ -24,12 +24,13 @@ RUCY_DEF6(initialize, x, y, z, dx, dy, dz)
 {
 	CHECK;
 
-	THIS->x  = to<coord>(x);
-	THIS->y  = to<coord>(y);
-	THIS->z  = to<coord>(z);
-	THIS->dx = to<coord>(dx);
-	THIS->dy = to<coord>(dy);
-	THIS->dz = to<coord>(dz);
+	*THIS = Reflex::ScrollEvent(
+		to<coord>(x),
+		to<coord>(y),
+		to<coord>(z),
+		to<coord>(dx),
+		to<coord>(dy),
+		to<coord>(dz));
 
 	return rb_call_super(0, NULL);
 }
@@ -39,7 +40,7 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::ScrollEvent&>(obj);
+	*THIS = to<Reflex::ScrollEvent&>(obj).dup();
 	return self;
 }
 RUCY_END
@@ -48,7 +49,7 @@ static
 RUCY_DEF0(x)
 {
 	CHECK;
-	return value(THIS->x);
+	return value(THIS->scroll().x);
 }
 RUCY_END
 
@@ -56,7 +57,7 @@ static
 RUCY_DEF0(y)
 {
 	CHECK;
-	return value(THIS->y);
+	return value(THIS->scroll().y);
 }
 RUCY_END
 
@@ -64,7 +65,7 @@ static
 RUCY_DEF0(z)
 {
 	CHECK;
-	return value(THIS->z);
+	return value(THIS->scroll().z);
 }
 RUCY_END
 
@@ -72,7 +73,7 @@ static
 RUCY_DEF0(dx)
 {
 	CHECK;
-	return value(THIS->dx);
+	return value(THIS->dscroll().x);
 }
 RUCY_END
 
@@ -80,7 +81,7 @@ static
 RUCY_DEF0(dy)
 {
 	CHECK;
-	return value(THIS->dy);
+	return value(THIS->dscroll().y);
 }
 RUCY_END
 
@@ -88,7 +89,7 @@ static
 RUCY_DEF0(dz)
 {
 	CHECK;
-	return value(THIS->dz);
+	return value(THIS->dscroll().z);
 }
 RUCY_END
 
@@ -96,15 +97,15 @@ static
 RUCY_DEF0(scroll)
 {
 	CHECK;
-	return value(Rays::Point(THIS->x, THIS->y, THIS->z));
+	return value(THIS->scroll());
 }
 RUCY_END
 
 static
-RUCY_DEF0(delta)
+RUCY_DEF0(dscroll)
 {
 	CHECK;
-	return value(Rays::Point(THIS->dx, THIS->dy, THIS->dz));
+	return value(THIS->dscroll());
 }
 RUCY_END
 
@@ -126,8 +127,8 @@ Init_scroll_event ()
 	cScrollEvent.define_method("dx", dx);
 	cScrollEvent.define_method("dy", dy);
 	cScrollEvent.define_method("dz", dz);
-	cScrollEvent.define_method("scroll", scroll);
-	cScrollEvent.define_method("delta", delta);
+	cScrollEvent.define_method( "scroll",  scroll);
+	cScrollEvent.define_method("dscroll", dscroll);
 }
 
 

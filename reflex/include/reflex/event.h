@@ -154,31 +154,29 @@ namespace Reflex
 	struct ScrollEvent : public Event
 	{
 
-		union
-		{
-			struct {coord x, y, z;};
+		public:
 
-			Coord3 scroll_;
-		};
+			ScrollEvent ();
 
-		union
-		{
-			struct {coord dx, dy, dz;};
+			ScrollEvent (coord x, coord y, coord z, coord dx, coord dy, coord dz);
 
-			Coord3 delta_;
-		};
+			ScrollEvent dup () const;
 
-		ScrollEvent ();
+			      Point& scroll ();
 
-		ScrollEvent (coord x, coord y, coord z, coord dx, coord dy, coord dz);
+			const Point& scroll () const;
 
-		      Point& scroll ();
+			      Point& dscroll ();
 
-		const Point& scroll () const;
+			const Point& dscroll () const;
 
-		      Point& delta ();
+			struct Data;
 
-		const Point& delta () const;
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			ScrollEvent (const ScrollEvent* src);
 
 	};// ScrollEvent
 
