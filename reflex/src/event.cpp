@@ -575,6 +575,15 @@ namespace Reflex
 			fun(pointer);
 	}
 
+	void
+	PointerEvent_set_captured (PointerEvent* pthis, bool captured)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		pthis->self->captured = captured;
+	}
+
 	static void
 	filter_and_offset_pointer_positions (PointerEvent* event, const Bounds& frame)
 	{
@@ -648,41 +657,25 @@ namespace Reflex
 	}
 
 
-	PointerEvent::PointerEvent (bool captured)
-	:	self(new Data(captured))
+	PointerEvent::PointerEvent ()
 	{
 	}
 
-	PointerEvent::PointerEvent (const Pointer& pointer, bool captured)
-	:	self(new Data(captured))
-	{
-		self->pointers.emplace_back(pointer);
-	}
-
-	PointerEvent::PointerEvent (const Pointer* pointers, size_t size, bool captured)
-	:	self(new Data(captured))
+	PointerEvent::PointerEvent (const Pointer* pointers, size_t size)
 	{
 		for (size_t i = 0; i < size; ++i)
 			self->pointers.emplace_back(pointers[i]);
 	}
-#if 0
-	PointerEvent::PointerEvent (const This& obj)
-	:	self(new Data(*obj.self))
+
+	PointerEvent::PointerEvent (const PointerEvent* src)
+	:	Event(src), self(new Data(*src->self))
 	{
 	}
 
-	PointerEvent&
-	PointerEvent::operator = (const This& obj)
+	PointerEvent
+	PointerEvent::dup () const
 	{
-		if (&obj == this) return *this;
-
-		Event::operator=(obj);
-		*self = *obj.self;
-		return *this;
-	}
-#endif
-	PointerEvent::~PointerEvent ()
-	{
+		return PointerEvent(this);
 	}
 
 	size_t

@@ -252,25 +252,11 @@ namespace Reflex
 	class PointerEvent : public Event
 	{
 
-		typedef PointerEvent This;
-
 		public:
 
-			PointerEvent (bool captured = false);
+			PointerEvent ();
 
-			PointerEvent (
-				const Pointer& pointer,
-				bool captured = false);
-
-			PointerEvent (
-				const Pointer* pointers, size_t size,
-				bool captured = false);
-#if 0
-			PointerEvent (const This& obj);
-
-			PointerEvent& operator = (const This& obj);
-#endif
-			~PointerEvent ();
+			PointerEvent (const Pointer* pointers, size_t size);
 
 			PointerEvent dup () const;
 
@@ -285,6 +271,10 @@ namespace Reflex
 			struct Data;
 
 			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			PointerEvent (const PointerEvent* src);
 
 	};// PointerEvent
 

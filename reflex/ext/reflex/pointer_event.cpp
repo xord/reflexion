@@ -43,7 +43,7 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::PointerEvent&>(obj);
+	*THIS = to<Reflex::PointerEvent&>(obj).dup();
 	return self;
 }
 RUCY_END

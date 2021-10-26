@@ -258,12 +258,13 @@ namespace Reflex
 		{
 			if (targets.empty()) continue;
 
-			PointerEvent e(true);
-			extract_targeted_pointers(&e, extracteds, targets, pointers);
-			if (e.empty()) continue;
+			PointerEvent event;
+			PointerEvent_set_captured(&event, true);
+			extract_targeted_pointers(&event, extracteds, targets, pointers);
+			if (event.empty()) continue;
 
-			PointerEvent_update_for_capturing_view(&e, view);
-			View_call_pointer_event(const_cast<View*>(view.get()), e);
+			PointerEvent_update_for_capturing_view(&event, view);
+			View_call_pointer_event(const_cast<View*>(view.get()), event);
 		}
 	}
 
@@ -292,7 +293,8 @@ namespace Reflex
 
 		if (views_capturing_all.empty()) return;
 
-		PointerEvent event(true);
+		PointerEvent event;
+		PointerEvent_set_captured(&event, true);
 		extract_hovering_pointers(&event, extracteds, pointers);
 		if (event.empty()) return;
 
