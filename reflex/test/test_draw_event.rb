@@ -22,4 +22,14 @@ class TestDrawEvent < Test::Unit::TestCase
     assert_equal 0,         e.fps
   end
 
+  def test_dup()
+    e1 = event 1
+    e2 = e1.dup
+    e1.block
+    e3 = e1.dup
+    assert_true  e1.blocked?
+    assert_false e2.blocked?
+    assert_true  e3.blocked?
+  end
+
 end# TestDrawEvent
