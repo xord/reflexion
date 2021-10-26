@@ -3,6 +3,7 @@
 
 #include "reflex/ruby/shape.h"
 #include "reflex/ruby/view.h"
+#include "reflex/ruby/shape.h"
 #include "defs.h"
 
 
@@ -21,12 +22,13 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEF2(initialize, type, shape)
+RUCY_DEF2(initialize, action, shape)
 {
 	CHECK;
 
-	THIS->type  = (Reflex::ContactEvent::Type) to<int>(type);
-	THIS->shape = to<Reflex::Shape*>(shape);
+	*THIS = Reflex::ContactEvent(
+		(Reflex::ContactEvent::Action) to<uint>(action),
+		to<Reflex::Shape*>(shape));
 
 	return rb_call_super(0, NULL);
 }
@@ -36,16 +38,16 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::ContactEvent&>(obj);
+	*THIS = to<Reflex::ContactEvent&>(obj).dup();
 	return self;
 }
 RUCY_END
 
 static
-RUCY_DEF0(get_type)
+RUCY_DEF0(get_action)
 {
 	CHECK;
-	return value(THIS->type);
+	return value(THIS->action());
 }
 RUCY_END
 
@@ -53,7 +55,7 @@ static
 RUCY_DEF0(get_shape)
 {
 	CHECK;
-	return value(THIS->shape);
+	return value(THIS->shape());
 }
 RUCY_END
 
@@ -61,7 +63,7 @@ static
 RUCY_DEF0(get_view)
 {
 	CHECK;
-	return value(THIS->view);
+	return value(THIS->view());
 }
 RUCY_END
 
@@ -77,12 +79,12 @@ Init_contact_event ()
 	cContactEvent.define_alloc_func(alloc);
 	cContactEvent.define_private_method("initialize",      initialize);
 	cContactEvent.define_private_method("initialize_copy", initialize_copy);
-	cContactEvent.define_method("type",  get_type);
-	cContactEvent.define_method("shape", get_shape);
-	cContactEvent.define_method("view",  get_view);
-	cContactEvent.define_const("TYPE_NONE",  Reflex::ContactEvent::NONE);
-	cContactEvent.define_const("TYPE_BEGIN", Reflex::ContactEvent::BEGIN);
-	cContactEvent.define_const("TYPE_END",   Reflex::ContactEvent::END);
+	cContactEvent.define_method("action", get_action);
+	cContactEvent.define_method("shape",  get_shape);
+	cContactEvent.define_method("view",   get_view);
+	cContactEvent.define_const("ACTION_NONE", Reflex::ContactEvent::ACTION_NONE);
+	cContactEvent.define_const("BEGIN",       Reflex::ContactEvent::BEGIN);
+	cContactEvent.define_const("END",         Reflex::ContactEvent::END);
 }
 
 

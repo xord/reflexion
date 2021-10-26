@@ -1351,11 +1351,11 @@ namespace Reflex
 		ContactEvent e = event.dup();
 		view->on_contact(&e);
 
-		switch (e.type)
+		switch (e.action())
 		{
 			case ContactEvent::BEGIN: view->on_contact_begin(&e); break;
 			case ContactEvent::END:   view->on_contact_end(&e);   break;
-			case ContactEvent::NONE: break;
+			default: break;
 		}
 	}
 

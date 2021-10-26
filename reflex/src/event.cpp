@@ -903,14 +903,71 @@ namespace Reflex
 	}
 
 
+	struct ContactEvent::Data
+	{
+
+		Action action;
+
+		Shape* shape;
+
+		View* view;
+
+		Data (Action action = ACTION_NONE, Shape* shape = NULL, View* view = NULL)
+		:	action(action), shape(shape), view(view)
+		{
+		}
+
+	};// ContactEvent::Data
+
+
 	ContactEvent::ContactEvent ()
-	:	type(NONE), shape(NULL), view(NULL)
 	{
 	}
 
-	ContactEvent::ContactEvent (Type type, Shape* shape)
-	:	type(type), shape(shape), view(shape ? shape->owner() : NULL)
+	ContactEvent::ContactEvent (Action action, Shape* shape)
+	:	self(new Data(action, shape, shape ? shape->owner() : NULL))
 	{
+	}
+
+	ContactEvent::ContactEvent (const ContactEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	ContactEvent
+	ContactEvent::dup () const
+	{
+		return ContactEvent(this);
+	}
+
+	ContactEvent::Action
+	ContactEvent::action () const
+	{
+		return self->action;
+	}
+
+	Shape*
+	ContactEvent::shape ()
+	{
+		return self->shape;
+	}
+
+	const Shape*
+	ContactEvent::shape () const
+	{
+		return const_cast<ContactEvent*>(this)->shape();
+	}
+
+	View*
+	ContactEvent::view ()
+	{
+		return self->view;
+	}
+
+	const View*
+	ContactEvent::view () const
+	{
+		return const_cast<ContactEvent*>(this)->view();
 	}
 
 

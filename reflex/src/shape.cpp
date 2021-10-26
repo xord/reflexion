@@ -440,11 +440,11 @@ namespace Reflex
 		ContactEvent e = event.dup();
 		shape->on_contact(&e);
 
-		switch (e.type)
+		switch (e.action())
 		{
 			case ContactEvent::BEGIN: shape->on_contact_begin(&e); break;
 			case ContactEvent::END:   shape->on_contact_end(&e);   break;
-			case ContactEvent::NONE: break;
+			default: break;
 		}
 
 		if (e.is_blocked())

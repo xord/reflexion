@@ -376,19 +376,33 @@ namespace Reflex
 	struct ContactEvent : public Event
 	{
 
-		enum Type {NONE = 0, BEGIN, END};
+		public:
 
-		Type type;
+			enum Action {ACTION_NONE = 0, BEGIN, END};
 
-		Shape* shape;
+			ContactEvent ();
 
-		View* view;
+			ContactEvent (Action action, Shape* shape);
 
-		ContactEvent ();
+			ContactEvent dup () const;
 
-		ContactEvent (Type type, Shape* shape);
+			Action action () const;
 
-		ContactEvent dup () const;
+			      Shape* shape ();
+
+			const Shape* shape () const;
+
+			      View* view ();
+
+			const View* view () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			ContactEvent (const ContactEvent* src);
 
 	};// ContactEvent
 
