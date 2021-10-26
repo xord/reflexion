@@ -360,13 +360,57 @@ namespace Reflex
 	}
 
 
+	struct FocusEvent::Data
+	{
+
+		Action action;
+
+		View *current, *last;
+
+		Data (Action action = NONE, View* current = NULL, View* last = NULL)
+		:	action(action), current(current), last(last)
+		{
+		}
+
+	};// FocusEvent::Data
+
+
 	FocusEvent::FocusEvent ()
 	{
 	}
 
-	FocusEvent::FocusEvent (Type type, View* current, View* last)
-	:	type(type), current(current), last(last)
+	FocusEvent::FocusEvent (Action action, View* current, View* last)
+	:	self(new Data(action, current, last))
 	{
+	}
+
+	FocusEvent::FocusEvent (const FocusEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	FocusEvent
+	FocusEvent::dup () const
+	{
+		return FocusEvent(this);
+	}
+
+	FocusEvent::Action
+	FocusEvent::action () const
+	{
+		return self->action;
+	}
+
+	View*
+	FocusEvent::current () const
+	{
+		return self->current;
+	}
+
+	View*
+	FocusEvent::last () const
+	{
+		return self->last;
 	}
 
 

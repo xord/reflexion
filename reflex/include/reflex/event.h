@@ -184,15 +184,29 @@ namespace Reflex
 	struct FocusEvent : public Event
 	{
 
-		enum Type {NONE = 0, FOCUS, BLUR};
+		public:
 
-		Type type;
+			enum Action {NONE = 0, FOCUS, BLUR};
 
-		View *current, *last;
+			FocusEvent ();
 
-		FocusEvent ();
+			FocusEvent (Action action, View* current, View* last);
 
-		FocusEvent (Type type, View* current, View* last);
+			FocusEvent dup () const;
+
+			Action action () const;
+
+			View* current () const;
+
+			View* last () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			FocusEvent (const FocusEvent* src);
 
 	};// FocusEvent
 

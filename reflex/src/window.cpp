@@ -31,17 +31,16 @@ namespace Reflex
 
 		window->self->focus.reset(view);
 
-		FocusEvent e(FocusEvent::BLUR, view, current);
-
 		if (current)
 		{
+			FocusEvent e(FocusEvent::BLUR, view, current);
 			current->on_focus(&e);
 			current->redraw();
 		}
 
 		if (view)
 		{
-			e.type = FocusEvent::FOCUS;
+			FocusEvent e(FocusEvent::FOCUS, view, current);
 			view->on_focus(&e);
 			view->redraw();
 		}
