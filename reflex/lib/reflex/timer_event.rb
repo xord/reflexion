@@ -15,7 +15,8 @@ module Reflex
     def_delegators :timer,
       :name=, :name,
       :add_tag, :remove_tag, :each_tag,
-      :selector=, :selector
+      :selector=, :selector,
+      :count=
 
     alias view owner
 

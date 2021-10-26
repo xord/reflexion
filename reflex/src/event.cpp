@@ -831,45 +831,75 @@ namespace Reflex
 	}
 
 
-	TimerEvent::TimerEvent (Timer* timer)
-	:	timer(timer)
+	struct TimerEvent::Data
 	{
+
+		Timer::Ref timer;
+
+		Data (Timer* timer)
+		:	timer(timer)
+		{
+		}
+
+	};// TimerEvent::Data
+
+
+	TimerEvent::TimerEvent (Timer* timer)
+	:	self(new Data(timer))
+	{
+	}
+
+	TimerEvent::TimerEvent (const TimerEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	TimerEvent
+	TimerEvent::dup () const
+	{
+		return TimerEvent(this);
+	}
+
+	Timer*
+	TimerEvent::timer ()
+	{
+		return self->timer;
+	}
+
+	const Timer*
+	TimerEvent::timer () const
+	{
+		return const_cast<TimerEvent*>(this)->timer();
 	}
 
 	View*
 	TimerEvent::owner () const
 	{
-		return timer ? timer->owner() : NULL;
+		return self->timer ? self->timer->owner() : NULL;
 	}
 
 	int
 	TimerEvent::id () const
 	{
-		return timer ? timer->id() : Timer::ID_INVALID;
+		return self->timer ? self->timer->id() : Timer::ID_INVALID;
 	}
 
 	float
 	TimerEvent::interval () const
 	{
-		return timer ? timer->interval() : -1;
-	}
-
-	void
-	TimerEvent::set_count (int count)
-	{
-		if (timer) timer->set_count(count);
+		return self->timer ? self->timer->interval() : -1;
 	}
 
 	int
 	TimerEvent::count () const
 	{
-		return timer ? timer->count() : 0;
+		return self->timer ? self->timer->count() : 0;
 	}
 
 	bool
 	TimerEvent::is_finished () const
 	{
-		return timer ? timer->is_finished() : true;
+		return self->timer ? self->timer->is_finished() : true;
 	}
 
 

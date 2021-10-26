@@ -25,7 +25,7 @@ RUCY_DEF1(initialize, timer)
 {
 	CHECK;
 
-	THIS->timer = to<Reflex::Timer*>(timer);
+	*THIS = Reflex::TimerEvent(to<Reflex::Timer*>(timer));
 
 	return rb_call_super(0, NULL);
 }
@@ -35,7 +35,7 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::TimerEvent&>(obj);
+	*THIS = to<Reflex::TimerEvent&>(obj).dup();
 	return self;
 }
 RUCY_END
@@ -44,7 +44,7 @@ static
 RUCY_DEF0(timer)
 {
 	CHECK;
-	return value(THIS->timer);
+	return value(THIS->timer());
 }
 RUCY_END
 
@@ -69,15 +69,6 @@ RUCY_DEF0(interval)
 {
 	CHECK;
 	return value(THIS->interval());
-}
-RUCY_END
-
-static
-RUCY_DEF1(set_count, count)
-{
-	CHECK;
-	THIS->set_count(to<int>(count));
-	return count;
 }
 RUCY_END
 
@@ -109,13 +100,12 @@ Init_timer_event ()
 	cTimerEvent.define_alloc_func(alloc);
 	cTimerEvent.define_private_method("initialize",      initialize);
 	cTimerEvent.define_private_method("initialize_copy", initialize_copy);
-	cTimerEvent.define_method("timer", timer);
-	cTimerEvent.define_method("owner", owner);
-	cTimerEvent.define_method("id", id);
-	cTimerEvent.define_method("interval", interval);
-	cTimerEvent.define_method("count=", set_count);
-	cTimerEvent.define_method("count",      count);
-	cTimerEvent.define_method("finish?", is_finished);
+	cTimerEvent.define_method("timer",     timer);
+	cTimerEvent.define_method("owner",     owner);
+	cTimerEvent.define_method("id",        id);
+	cTimerEvent.define_method("interval",  interval);
+	cTimerEvent.define_method("count",     count);
+	cTimerEvent.define_method("finished?", is_finished);
 }
 
 

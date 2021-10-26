@@ -342,21 +342,33 @@ namespace Reflex
 	struct TimerEvent : public Event
 	{
 
-		Timer::Ref timer;
+		public:
 
-		TimerEvent (Timer* timer = NULL);
+			TimerEvent (Timer* timer = NULL);
 
-		View* owner () const;
+			TimerEvent dup () const;
 
-		int id () const;
+			      Timer* timer ();
 
-		float interval () const;
+			const Timer* timer () const;
 
-		void set_count (int count);
+			View* owner () const;
 
-		int      count () const;
+			int id () const;
 
-		bool is_finished () const;
+			float interval () const;
+
+			int count () const;
+
+			bool is_finished () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			TimerEvent (const TimerEvent* src);
 
 	};// TimerEvent
 
