@@ -214,27 +214,37 @@ namespace Reflex
 	struct KeyEvent : public Event
 	{
 
-		enum Type {NONE = 0, DOWN, UP};
+		public:
 
-		Type type;
+			enum Action {ACTION_NONE = 0, DOWN, UP};
 
-		String chars;
+			KeyEvent ();
 
-		int code;
+			KeyEvent (
+				Action action, const char* chars, int code,
+				uint modifiers = 0, int repeat = 0);
 
-		uint modifiers;
+			KeyEvent dup () const;
 
-		int repeat;
+			Action action () const;
 
-		bool captured;
+			const char* chars () const;
 
-		KeyEvent ();
+			int code () const;
 
-		KeyEvent (
-			Type type, const char* chars, int code,
-			uint modifiers = 0, int repeat = 0);
+			uint modifiers () const;
 
-		KeyEvent dup () const;
+			int repeat () const;
+
+			bool is_captured () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			KeyEvent (const KeyEvent* src);
 
 	};// KeyEvent
 

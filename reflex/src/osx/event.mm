@@ -169,11 +169,11 @@ namespace Reflex
 		return 0;
 	}
 
-	static KeyEvent::Type
-	get_flag_key_event_type(const NSEvent* e)
+	static KeyEvent::Action
+	get_flag_key_event_action (const NSEvent* e)
 	{
 		uint mask = get_modifier_flag_mask(e);
-		if (mask == 0) return Reflex::KeyEvent::NONE;
+		if (mask == 0) return Reflex::KeyEvent::ACTION_NONE;
 
 		return [e modifierFlags] & mask
 			?	Reflex::KeyEvent::DOWN
@@ -251,18 +251,18 @@ namespace Reflex
 	}
 
 
-	NativeKeyEvent::NativeKeyEvent (NSEvent* e, Type type)
+	NativeKeyEvent::NativeKeyEvent (NSEvent* e, Action action)
 	:	KeyEvent(
-			type, get_chars(e), get_code([e keyCode]), get_modifiers(e),
-			[e isARepeat] ? 1 : 0)
+			action, get_chars(e), get_code([e keyCode]),
+			get_modifiers(e), [e isARepeat] ? 1 : 0)
 	{
 	}
 
 
 	NativeFlagKeyEvent::NativeFlagKeyEvent (NSEvent* e)
 	:	KeyEvent(
-			get_flag_key_event_type(e), "", get_code([e keyCode]), get_modifiers(e),
-			0)
+			get_flag_key_event_action(e), "", get_code([e keyCode]),
+			get_modifiers(e), 0)
 	{
 	}
 

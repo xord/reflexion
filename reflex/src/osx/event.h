@@ -15,7 +15,7 @@ namespace Reflex
 	struct NativeKeyEvent : public KeyEvent
 	{
 
-		NativeKeyEvent (NSEvent* event, Type type);
+		NativeKeyEvent (NSEvent* event, Action action);
 
 	};// NativeKeyEvent
 

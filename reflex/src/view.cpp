@@ -1257,11 +1257,11 @@ namespace Reflex
 		KeyEvent e = event.dup();
 		view->on_key(&e);
 
-		switch (e.type)
+		switch (e.action())
 		{
 			case KeyEvent::DOWN: view->on_key_down(&e); break;
 			case KeyEvent::UP:   view->on_key_up(&e);   break;
-			case KeyEvent::NONE: break;
+			default: break;
 		}
 	}
 

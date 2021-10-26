@@ -414,16 +414,97 @@ namespace Reflex
 	}
 
 
+	struct KeyEvent::Data
+	{
+
+		Action action;
+
+		String chars;
+
+		int code;
+
+		uint modifiers;
+
+		int repeat;
+
+		bool captured;
+
+		Data (
+			Action action = ACTION_NONE, const char* chars = NULL, int code = KEY_NONE,
+			uint modifiers = MOD_NONE, int repeat = 0, bool captured = false)
+		:	action(action), chars(chars ? chars : ""), code(code),
+			modifiers(modifiers), repeat(repeat), captured(captured)
+		{
+		}
+
+	};// KeyEvent::Data
+
+
+	void
+	KeyEvent_set_captured (KeyEvent* pthis, bool captured)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		pthis->self->captured = captured;
+	}
+
+
 	KeyEvent::KeyEvent ()
-	:	type(NONE), code(KEY_NONE), modifiers(MOD_NONE), repeat(0), captured(false)
 	{
 	}
 
 	KeyEvent::KeyEvent (
-		Type type, const char* chars, int code, uint modifiers, int repeat)
-	:	type(type), chars(chars ? chars : ""), code(code), modifiers(modifiers),
-		repeat(repeat), captured(false)
+		Action action, const char* chars, int code, uint modifiers, int repeat)
+	:	self(new Data(action, chars, code, modifiers, repeat))
 	{
+	}
+
+	KeyEvent::KeyEvent (const KeyEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	KeyEvent
+	KeyEvent::dup () const
+	{
+		return KeyEvent(this);
+	}
+
+	KeyEvent::Action
+	KeyEvent::action () const
+	{
+		return self->action;
+	}
+
+	const char*
+	KeyEvent::chars () const
+	{
+		return self->chars;
+	}
+
+	int
+	KeyEvent::code () const
+	{
+		return self->code;
+	}
+
+	uint
+	KeyEvent::modifiers () const
+	{
+		return self->modifiers;
+	}
+
+	int
+	KeyEvent::repeat () const
+	{
+		return self->repeat;
+	}
+
+	bool
+	KeyEvent::is_captured () const
+	{
+		return self->captured;
 	}
 
 

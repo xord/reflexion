@@ -167,7 +167,7 @@ namespace Reflex
 
 		window->on_key(event);
 
-		switch (event->type)
+		switch (event->action())
 		{
 			case KeyEvent::DOWN: window->on_key_down(event); break;
 			case KeyEvent::UP:   window->on_key_up(event);   break;
@@ -180,7 +180,7 @@ namespace Reflex
 				continue;
 
 			KeyEvent e = event->dup();
-			e.captured = true;
+			KeyEvent_set_captured(&e, true);
 			View_call_key_event(const_cast<View*>(view.get()), e);
 		}
 
