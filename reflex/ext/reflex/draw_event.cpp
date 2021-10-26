@@ -21,11 +21,13 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEF1(initialize, dt)
+RUCY_DEF2(initialize, dt, fps)
 {
 	CHECK;
 
-	*THIS = Reflex::DrawEvent(to<float>(dt));
+	*THIS = Reflex::DrawEvent(
+		to<float>(dt),
+		to<float>(fps));
 
 	return rb_call_super(0, NULL);
 }

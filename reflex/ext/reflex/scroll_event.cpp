@@ -25,12 +25,8 @@ RUCY_DEF6(initialize, x, y, z, dx, dy, dz)
 	CHECK;
 
 	*THIS = Reflex::ScrollEvent(
-		to<coord>(x),
-		to<coord>(y),
-		to<coord>(z),
-		to<coord>(dx),
-		to<coord>(dy),
-		to<coord>(dz));
+		to<coord>( x), to<coord>( y), to<coord>( z),
+		to<coord>(dx), to<coord>(dy), to<coord>(dz));
 
 	return rb_call_super(0, NULL);
 }

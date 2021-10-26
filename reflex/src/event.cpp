@@ -66,13 +66,17 @@ namespace Reflex
 
 		float dt;
 
-		Data (double now, float dt)
+		Data (double now = 0, float dt = 0)
 		:	now(now), dt(dt)
 		{
 		}
 
 	};// UpdateEvent::Data
 
+
+	UpdateEvent::UpdateEvent ()
+	{
+	}
 
 	UpdateEvent::UpdateEvent (double now, float dt)
 	:	self(new Data(now, dt))
@@ -81,10 +85,6 @@ namespace Reflex
 
 	UpdateEvent::UpdateEvent (const UpdateEvent* src)
 	:	Event(src), self(new Data(*src->self))
-	{
-	}
-
-	UpdateEvent::~UpdateEvent ()
 	{
 	}
 
@@ -118,7 +118,7 @@ namespace Reflex
 
 		float dt, fps;
 
-		Data (float dt, float fps)
+		Data (float dt = 0, float fps = 0)
 		:	view(NULL), painter(NULL), dt(dt), fps(fps)
 		{
 		}
@@ -129,21 +129,34 @@ namespace Reflex
 	void
 	DrawEvent_set_view (DrawEvent* pthis, View* view)
 	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
 		pthis->self->view = view;
 	}
 
 	void
 	DrawEvent_set_painter (DrawEvent* pthis, Painter* painter)
 	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
 		pthis->self->painter = painter;
 	}
 
 	void
 	DrawEvent_set_bounds (DrawEvent* pthis, const Bounds& bounds)
 	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
 		pthis->self->bounds = bounds;
 	}
 
+
+	DrawEvent::DrawEvent ()
+	{
+	}
 
 	DrawEvent::DrawEvent (float dt, float fps)
 	:	self(new Data(dt, fps))
@@ -202,14 +215,19 @@ namespace Reflex
 		float angle, dangle;
 
 		Data (
-			const Bounds& frame, coord dx, coord dy, coord dw, coord dh,
-			float angle, float dangle)
+			const Bounds& frame = 0,
+			coord dx = 0, coord dy = 0, coord dw = 0, coord dh = 0,
+			float angle = 0, float dangle = 0)
 		:	frame(frame), dx(dx), dy(dy), dw(dw), dh(dh), angle(angle), dangle(dangle)
 		{
 		}
 
 	};// FrameEvent::Data
 
+
+	FrameEvent::FrameEvent ()
+	{
+	}
 
 	FrameEvent::FrameEvent (
 		const Bounds& frame, coord dx, coord dy, coord dwidth, coord dheight,
@@ -836,13 +854,17 @@ namespace Reflex
 
 		Timer::Ref timer;
 
-		Data (Timer* timer)
+		Data (Timer* timer = NULL)
 		:	timer(timer)
 		{
 		}
 
 	};// TimerEvent::Data
 
+
+	TimerEvent::TimerEvent ()
+	{
+	}
 
 	TimerEvent::TimerEvent (Timer* timer)
 	:	self(new Data(timer))

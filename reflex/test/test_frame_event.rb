@@ -11,7 +11,7 @@ class TestFrameEvent < Test::Unit::TestCase
   end
 
   def bounds(*args)
-    Rays::Bounds.new *args
+    Rays::Bounds.new(*args)
   end
 
   def test_initialize()

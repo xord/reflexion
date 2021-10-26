@@ -11,7 +11,7 @@ class TestScrollEvent < Test::Unit::TestCase
   end
 
   def point(*args)
-    Rays::Point.new *args
+    Rays::Point.new(*args)
   end
 
   def test_initialize()
@@ -22,7 +22,7 @@ class TestScrollEvent < Test::Unit::TestCase
     assert_equal 4, e.dx
     assert_equal 5, e.dy
     assert_equal 6, e.dz
-    assert_equal point(1, 2, 3), e.scroll
+    assert_equal point(1, 2, 3), e. scroll
     assert_equal point(4, 5, 6), e.dscroll
   end
 

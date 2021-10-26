@@ -11,7 +11,7 @@ class TestFocusEvent < Test::Unit::TestCase
   end
 
   def view(*args)
-    Reflex::View.new *args
+    Reflex::View.new(*args)
   end
 
   def test_initialize()

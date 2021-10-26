@@ -11,19 +11,19 @@ class TestDrawEvent < Test::Unit::TestCase
   end
 
   def bounds(*args)
-    Rays::Bounds.new *args
+    Rays::Bounds.new(*args)
   end
 
   def test_initialize()
-    e = event 1
+    e = event 1, 2
     assert_nil              e.painter
     assert_equal bounds(0), e.bounds
     assert_equal 1,         e.dt
-    assert_equal 0,         e.fps
+    assert_equal 2,         e.fps
   end
 
   def test_dup()
-    e1 = event 1
+    e1 = event 1, 2
     e2 = e1.dup
     e1.block
     e3 = e1.dup

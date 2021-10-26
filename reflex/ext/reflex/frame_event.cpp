@@ -27,12 +27,9 @@ RUCY_DEF7(initialize, frame, dx, dy, dwidth, dheight, angle, dangle)
 
 	*THIS = Reflex::FrameEvent(
 		to<Rays::Bounds>(frame),
-		to<coord>(dx),
-		to<coord>(dy),
-		to<coord>(dwidth),
-		to<coord>(dheight),
-		to<float>(angle),
-		to<float>(dangle));
+		to<coord>(dx),     to<coord>(dy),
+		to<coord>(dwidth), to<coord>(dheight),
+		to<float>(angle),  to<float>(dangle));
 
 	return rb_call_super(0, NULL);
 }

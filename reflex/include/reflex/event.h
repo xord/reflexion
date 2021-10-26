@@ -52,9 +52,9 @@ namespace Reflex
 
 		public:
 
-			UpdateEvent (double now = 0, float dt = 0);
+			UpdateEvent ();
 
-			~UpdateEvent ();
+			UpdateEvent (double now, float dt);
 
 			UpdateEvent dup () const;
 
@@ -78,7 +78,9 @@ namespace Reflex
 
 		public:
 
-			DrawEvent (float dt = 0, float fps = 0);
+			DrawEvent ();
+
+			DrawEvent (float dt, float fps);
 
 			DrawEvent dup () const;
 
@@ -108,15 +110,17 @@ namespace Reflex
 
 		public:
 
+			FrameEvent ();
+
 			FrameEvent (
-				const Bounds& frame = 0,
-				coord dx     = 0, coord dy      = 0,
-				coord dwidth = 0, coord dheight = 0,
-				float angle  = 0, float dangle  = 0);
+				const Bounds& frame,
+				coord dx,     coord dy,
+				coord dwidth, coord dheight,
+				float angle,  float dangle);
 
 			FrameEvent (
 				const Bounds& frame, const Bounds& prev_frame,
-				float angle = 0, float prev_angle = 0);
+				float angle, float prev_angle);
 
 			FrameEvent dup () const;
 
@@ -344,7 +348,9 @@ namespace Reflex
 
 		public:
 
-			TimerEvent (Timer* timer = NULL);
+			TimerEvent ();
+
+			TimerEvent (Timer* timer);
 
 			TimerEvent dup () const;
 
