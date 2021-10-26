@@ -1331,11 +1331,11 @@ namespace Reflex
 
 		const Bounds& frame = view->frame();
 
-		if (!frame.is_include(event.x, event.y, event.z))
+		if (!frame.is_include(event.position()))
 			return;
 
 		WheelEvent e = event.dup();
-		e.position() -= frame.position();
+		WheelEvent_set_position(&e, e.position() - frame.position());
 
 		view->on_wheel(&e);
 

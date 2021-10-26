@@ -282,37 +282,33 @@ namespace Reflex
 	struct WheelEvent : public Event
 	{
 
-		union
-		{
-			struct {coord dx, dy, dz;};
+		public:
 
-			Coord3 delta_;
-		};
+			WheelEvent ();
 
-		union
-		{
-			struct {coord x, y, z;};
+			WheelEvent (
+				coord x, coord y, coord z, coord dx, coord dy, coord dz,
+				uint modifiers = 0);
 
-			Coord3 position_;
-		};
+			WheelEvent dup () const;
 
-		uint modifiers;
+			      Point& position ();
 
-		WheelEvent ();
+			const Point& position () const;
 
-		WheelEvent (
-			coord dx, coord dy, coord dz, coord x = 0, coord y = 0, coord z = 0,
-			uint modifiers = 0);
+			      Point& dposition ();
 
-		WheelEvent dup () const;
+			const Point& dposition () const;
 
-		      Point& position ();
+			uint modifiers () const;
 
-		const Point& position () const;
+			struct Data;
 
-		      Point& delta ();
+			Xot::PSharedImpl<Data> self;
 
-		const Point& delta () const;
+		private:
+
+			WheelEvent (const WheelEvent* src);
 
 	};// WheelEvent
 

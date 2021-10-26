@@ -706,21 +706,58 @@ namespace Reflex
 	}
 
 
+	struct WheelEvent::Data
+	{
+
+		Point position, dposition;
+
+		uint modifiers;
+
+		Data (
+			const Point& position = 0, const Point& dposition = 0,
+			uint modifiers = 0)
+		:	position(position), dposition(dposition), modifiers(modifiers)
+		{
+		}
+
+	};// WheelEvent::Data
+
+
+	void
+	WheelEvent_set_position (WheelEvent* pthis, const Point& position)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		pthis->self->position = position;
+	}
+
+
 	WheelEvent::WheelEvent ()
-	:	dx(0), dy(0), dz(0), x(0), y(0), z(0), modifiers(0)
 	{
 	}
 
 	WheelEvent::WheelEvent (
-		coord dx, coord dy, coord dz, coord x, coord y, coord z, uint modifiers)
-	:	dx(dx), dy(dy), dz(dz), x(x), y(y), z(z), modifiers(modifiers)
+		coord x, coord y, coord z, coord dx, coord dy, coord dz, uint modifiers)
+	:	self(new Data(Point(x, y, z), Point(dx, dy, dz), modifiers))
 	{
+	}
+
+	WheelEvent::WheelEvent (const WheelEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	WheelEvent
+	WheelEvent::dup () const
+	{
+		return WheelEvent(this);
 	}
 
 	Point&
 	WheelEvent::position ()
 	{
-		return *(Point*) &position_;
+		return self->position;
 	}
 
 	const Point&
@@ -730,15 +767,21 @@ namespace Reflex
 	}
 
 	Point&
-	WheelEvent::delta ()
+	WheelEvent::dposition ()
 	{
-		return *(Point*) &delta_;
+		return self->dposition;
 	}
 
 	const Point&
-	WheelEvent::delta () const
+	WheelEvent::dposition () const
 	{
-		return const_cast<WheelEvent*>(this)->delta();
+		return const_cast<WheelEvent*>(this)->dposition();
+	}
+
+	uint
+	WheelEvent::modifiers () const
+	{
+		return self->modifiers;
 	}
 
 
