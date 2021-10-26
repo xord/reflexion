@@ -12,6 +12,22 @@ class TestCaptureEvent < Test::Unit::TestCase
     })
   end
 
+  def test_initialize()
+    e = event :key, :pointer
+    assert_equal [:key],     e.begin
+    assert_equal [:pointer], e.end
+  end
+
+  def test_dup()
+    e1 = event :key, :pointer
+    e2 = e1.dup
+    e1.block
+    e3 = e1.dup
+    assert_true  e1.blocked?
+    assert_false e2.blocked?
+    assert_true  e3.blocked?
+  end
+
   def test_begin()
     c = event [:key, :pointer], []
     assert_equal [:key, :pointer], c.begin

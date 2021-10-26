@@ -316,11 +316,25 @@ namespace Reflex
 	struct CaptureEvent : public Event
 	{
 
-		uint begin, end;
+		public:
 
-		CaptureEvent ();
+			CaptureEvent ();
 
-		CaptureEvent (uint begin, uint end);
+			CaptureEvent (uint begin, uint end);
+
+			CaptureEvent dup () const;
+
+			uint begin () const;
+
+			uint end () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			CaptureEvent (const CaptureEvent* src);
 
 	};// CaptureEvent
 

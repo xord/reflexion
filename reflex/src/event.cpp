@@ -785,14 +785,49 @@ namespace Reflex
 	}
 
 
+	struct CaptureEvent::Data
+	{
+
+		uint begin, end;
+
+		Data (uint begin = 0, uint end = 0)
+		:	begin(begin), end(end)
+		{
+		}
+
+	};// CaptureEvent::Data
+
+
 	CaptureEvent::CaptureEvent ()
-	:	begin(0), end(0)
 	{
 	}
 
 	CaptureEvent::CaptureEvent (uint begin, uint end)
-	:	begin(begin), end(end)
+	:	self(new Data(begin, end))
 	{
+	}
+
+	CaptureEvent::CaptureEvent (const CaptureEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	CaptureEvent
+	CaptureEvent::dup () const
+	{
+		return CaptureEvent(this);
+	}
+
+	uint
+	CaptureEvent::begin () const
+	{
+		return self->begin;
+	}
+
+	uint
+	CaptureEvent::end () const
+	{
+		return self->end;
 	}
 
 
