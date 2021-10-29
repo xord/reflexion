@@ -19,9 +19,17 @@ namespace Reflex
 
 		double time;
 
+		Xot::PSharedImpl<Data> parent;
+
 		Data (bool blocked = false, double time = Xot::time())
-		:	blocked(blocked), time(time)
+		:	blocked(blocked), time(time), parent(NULL)
 		{
+		}
+
+		void block ()
+		{
+			blocked = true;
+			if (parent) parent->block();
 		}
 
 	};// Event::Data
@@ -34,6 +42,7 @@ namespace Reflex
 	Event::Event (const Event* src)
 	:	self(new Data(*src->self))
 	{
+		self->parent = src->self;
 	}
 
 	Event::~Event ()
@@ -43,7 +52,7 @@ namespace Reflex
 	void
 	Event::block ()
 	{
-		self->blocked = true;
+		self->block();
 	}
 
 	bool

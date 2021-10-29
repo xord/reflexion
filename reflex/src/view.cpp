@@ -1235,26 +1235,13 @@ namespace Reflex
 		view->self->add_flag(View::Data::UPDATE_SHAPES);
 	}
 
-	template <typename FUN, typename EVENT>
-	static void
-	call_children (View* parent, const EVENT& event, FUN fun)
-	{
-		assert(parent);
-
-		auto* pchildren = parent->self->pchildren.get();
-		if (!pchildren) return;
-
-		for (auto& pchild : *pchildren)
-			fun(pchild.get(), event);
-	}
-
 	void
-	View_call_key_event (View* view, const KeyEvent& event)
+	View_call_key_event (View* view, KeyEvent* event)
 	{
-		if (!view)
+		if (!view || !event)
 			argument_error(__FILE__, __LINE__);
 
-		KeyEvent e = event.dup();
+		KeyEvent e = event->dup();
 		view->on_key(&e);
 
 		switch (e.action())
@@ -1266,89 +1253,132 @@ namespace Reflex
 	}
 
 	static void
-	update_captures (View* view, PointerEvent* event)
+	call_children (View* parent, std::function<void(View*)> fun)
 	{
-		Window* win = view->window();
-		if (!win)
-			invalid_state_error(__FILE__, __LINE__);
+		assert(parent);
 
-		PointerEvent_each_pointer(event, [&](const auto& pointer)
-		{
-			auto action = pointer.action();
-			if (action == Pointer::DOWN)
-			{
-				Window_register_capture(win, view, pointer.id());
-			}
-			else if (action == Pointer::UP || action == Pointer::CANCEL)
-			{
-				Window_unregister_capture(win, view, pointer.id());
-			}
+		auto* pchildren = parent->self->pchildren.get();
+		if (!pchildren) return;
+
+		for (auto& pchild : *pchildren)
+			fun(pchild.get());
+	}
+
+	static void
+	call_pointer_events_for_each_child (View* parent, PointerEvent* event)
+	{
+		assert(parent && event);
+
+		call_children(parent, [&](View* child) {
+			PointerEvent e = event->dup();
+			PointerEvent_update_for_child_view(&e, child);
+			View_call_pointer_event(child, &e);
 		});
 	}
 
 	static void
-	call_pointer_event_for_each_child (View* parent, const PointerEvent& event)
+	call_pointer_events (View* view, PointerEvent* event)
 	{
-		call_children(parent, event, [](View* child, const PointerEvent& e) {
-			PointerEvent e2 = e.dup();
-			PointerEvent_update_for_child_view(&e2, child);
-			View_call_pointer_event(child, e2);
+		assert(view && event);
+
+		view->on_pointer(event);
+
+		switch ((*event)[0].action())
+		{
+			case Pointer::DOWN:   view->on_pointer_down(event);   break;
+			case Pointer::UP:     view->on_pointer_up(event);     break;
+			case Pointer::MOVE:   view->on_pointer_move(event);   break;
+			case Pointer::CANCEL: view->on_pointer_cancel(event); break;
+			default: break;
+		}
+	}
+
+	static void
+	register_captures (View* view, const PointerEvent& event)
+	{
+		assert(view);
+
+		Window* win = view->window();
+		if (!win)
+			invalid_state_error(__FILE__, __LINE__);
+
+		PointerEvent_each_pointer(&event, [&](const auto& pointer)
+		{
+			if (pointer.action() == Pointer::DOWN)
+				Window_register_capture(win, view, pointer.id());
+		});
+	}
+
+	static void
+	unregister_captures (View* view, const PointerEvent& event)
+	{
+		assert(view);
+
+		Window* win = view->window();
+		if (!win)
+			invalid_state_error(__FILE__, __LINE__);
+
+		PointerEvent_each_pointer(&event, [&](const auto& pointer)
+		{
+			auto action = pointer.action();
+			if (action == Pointer::UP || action == Pointer::CANCEL)
+				Window_unregister_capture(win, view, pointer.id());
 		});
 	}
 
 	void
-	View_call_pointer_event (View* view, const PointerEvent& event)
+	View_call_pointer_event (View* view, PointerEvent* event)
 	{
-		if (!view)
+		if (!view || !event)
 			argument_error(__FILE__, __LINE__);
 
-		if (event.empty())
+		if (event->empty())
 			return;
 
-		PointerEvent e = event.dup();
-		view->on_pointer(&e);
-
-		switch (e[0].action())
-		{
-			case Pointer::DOWN:   view->on_pointer_down(&e);   break;
-			case Pointer::UP:     view->on_pointer_up(&e);     break;
-			case Pointer::MOVE:   view->on_pointer_move(&e);   break;
-			case Pointer::CANCEL: view->on_pointer_cancel(&e); break;
-			default: break;
-		}
-
-		update_captures(view, &e);
+		PointerEvent e = event->dup();
 
 		if (!e.is_captured())
-			call_pointer_event_for_each_child(view, e);
+			call_pointer_events_for_each_child(view, &e);
+
+		if (!e.is_blocked())
+		{
+			register_captures(view, e);
+			call_pointer_events(view, &e);
+		}
+
+		unregister_captures(view, e);
 	}
 
 	void
-	View_call_wheel_event (View* view, const WheelEvent& event)
+	View_call_wheel_event (View* view, WheelEvent* event)
 	{
-		if (!view)
+		if (!view || !event)
 			argument_error(__FILE__, __LINE__);
 
 		const Bounds& frame = view->frame();
 
-		if (!frame.is_include(event.position()))
+		if (!frame.is_include(event->position()))
 			return;
 
-		WheelEvent e = event.dup();
+		WheelEvent e = event->dup();
 		WheelEvent_set_position(&e, e.position() - frame.position());
 
-		view->on_wheel(&e);
+		call_children(view, [&](View* child) {
+			View_call_wheel_event(child, &e);
+		});
 
-		call_children(view, e, View_call_wheel_event);
+		if (e.is_blocked()) return;
+
+		view->on_wheel(&e);
 	}
 
 	void
-	View_call_contact_event (View* view, const ContactEvent& event)
+	View_call_contact_event (View* view, ContactEvent* event)
 	{
-		if (!view)
+		if (!view || !event)
 			argument_error(__FILE__, __LINE__);
 
-		ContactEvent e = event.dup();
+		ContactEvent e = event->dup();
 		view->on_contact(&e);
 
 		switch (e.action())
