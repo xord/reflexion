@@ -21,11 +21,13 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEF1(initialize, dt)
+RUCY_DEF2(initialize, dt, fps)
 {
 	CHECK;
 
-	THIS->dt = to<float>(dt);
+	*THIS = Reflex::DrawEvent(
+		to<float>(dt),
+		to<float>(fps));
 
 	return rb_call_super(0, NULL);
 }
@@ -35,7 +37,7 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::DrawEvent&>(obj);
+	*THIS = to<Reflex::DrawEvent&>(obj).dup();
 	return self;
 }
 RUCY_END
@@ -44,7 +46,7 @@ static
 RUCY_DEF0(painter)
 {
 	CHECK;
-	return value(THIS->painter);
+	return value(THIS->painter());
 }
 RUCY_END
 
@@ -52,7 +54,7 @@ static
 RUCY_DEF0(bounds)
 {
 	CHECK;
-	return value(THIS->bounds);
+	return value(THIS->bounds());
 }
 RUCY_END
 
@@ -60,7 +62,7 @@ static
 RUCY_DEF0(dt)
 {
 	CHECK;
-	return value(THIS->dt);
+	return value(THIS->dt());
 }
 RUCY_END
 
@@ -68,7 +70,7 @@ static
 RUCY_DEF0(fps)
 {
 	CHECK;
-	return value(THIS->fps);
+	return value(THIS->fps());
 }
 RUCY_END
 

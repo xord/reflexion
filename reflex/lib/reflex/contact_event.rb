@@ -10,20 +10,20 @@ module Reflex
 
   class ContactEvent < Event
 
-    alias get_type type
+    alias get_action action
 
-    const_symbol_reader :type, **{
-      none:  TYPE_NONE,
-      begin: TYPE_BEGIN,
-      end:   TYPE_END
+    const_symbol_reader :action, **{
+      none:  ACTION_NONE,
+      begin: ContactEvent::BEGIN,
+      end:   ContactEvent::END
     }
 
     def begin?()
-      get_type == TYPE_BEGIN
+      get_action == ContactEvent::BEGIN
     end
 
     def end?()
-      get_type == TYPE_END
+      get_action == ContactEvent::END
     end
 
     def inspect()

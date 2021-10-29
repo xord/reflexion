@@ -10,24 +10,24 @@ module Reflex
 
   class FocusEvent < Event
 
-    alias get_type type
+    alias get_action action
 
-    const_symbol_reader :type, **{
-      none:  TYPE_NONE,
-      focus: TYPE_FOCUS,
-      blur:  TYPE_BLUR
+    const_symbol_reader :action, **{
+      none:  ACTION_NONE,
+      focus: FOCUS,
+      blur:  BLUR
     }
 
     def focus?()
-      get_type == TYPE_FOCUS
+      get_action == FOCUS
     end
 
     def blur?()
-      get_type == TYPE_BLUR
+      get_action == BLUR
     end
 
     def inspect()
-      "#<Reflex::FocusEvent type:#{type} current:#{current} last:#{last}>"
+      "#<Reflex::FocusEvent action:#{action} current:#{current} last:#{last}>"
     end
 
   end# FocusEvent

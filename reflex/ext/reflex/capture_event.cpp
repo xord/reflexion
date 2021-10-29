@@ -24,8 +24,9 @@ RUCY_DEF2(initialize, begin, end)
 {
 	CHECK;
 
-	THIS->begin = to<uint>(begin);
-	THIS->end   = to<uint>(end);
+	*THIS = Reflex::CaptureEvent(
+		to<uint>(begin),
+		to<uint>(end));
 
 	return rb_call_super(0, NULL);
 }
@@ -35,7 +36,7 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::CaptureEvent&>(obj);
+	*THIS = to<Reflex::CaptureEvent&>(obj).dup();
 	return self;
 }
 RUCY_END
@@ -44,7 +45,7 @@ static
 RUCY_DEF0(begin)
 {
 	CHECK;
-	return value(THIS->begin);
+	return value(THIS->begin());
 }
 RUCY_END
 
@@ -52,7 +53,7 @@ static
 RUCY_DEF0(end)
 {
 	CHECK;
-	return value(THIS->end);
+	return value(THIS->end());
 }
 RUCY_END
 

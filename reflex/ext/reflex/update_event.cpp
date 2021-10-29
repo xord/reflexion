@@ -23,8 +23,9 @@ RUCY_DEF2(initialize, now, dt)
 {
 	CHECK;
 
-	THIS->now = to<double>(now);
-	THIS->dt  = to<float>(dt);
+	*THIS = Reflex::UpdateEvent(
+		to<double>(now),
+		to<float>(dt));
 
 	return rb_call_super(0, NULL);
 }
@@ -34,7 +35,7 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::UpdateEvent&>(obj);
+	*THIS = to<Reflex::UpdateEvent&>(obj).dup();
 	return self;
 }
 RUCY_END
@@ -43,7 +44,7 @@ static
 RUCY_DEF0(now)
 {
 	CHECK;
-	return value(THIS->now);
+	return value(THIS->now());
 }
 RUCY_END
 
@@ -51,7 +52,7 @@ static
 RUCY_DEF0(dt)
 {
 	CHECK;
-	return value(THIS->dt);
+	return value(THIS->dt());
 }
 RUCY_END
 

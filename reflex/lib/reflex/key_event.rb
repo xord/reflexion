@@ -10,20 +10,20 @@ module Reflex
 
   class KeyEvent < Event
 
-    alias get_type type
+    alias get_action action
 
-    const_symbol_reader :type, **{
-      none: TYPE_NONE,
-      down: TYPE_DOWN,
-      up:   TYPE_UP
+    const_symbol_reader :action, **{
+      none: ACTION_NONE,
+      down: DOWN,
+      up:   UP
     }
 
     def down?()
-      get_type == TYPE_DOWN
+      get_action == DOWN
     end
 
     def up?()
-      get_type == TYPE_UP
+      get_action == UP
     end
 
     def repeat?()
@@ -31,7 +31,7 @@ module Reflex
     end
 
     def inspect()
-      "#<Reflex::KeyEvent type:#{type} chars:'#{chars}' code:#{code} mod:#{modifiers} repeat:#{repeat} captured?:#{captured?}>"
+      "#<Reflex::KeyEvent action:#{action} chars:'#{chars}' code:#{code} mod:#{modifiers} repeat:#{repeat} captured?:#{captured?}>"
     end
 
   end# KeyEvent

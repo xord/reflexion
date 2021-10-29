@@ -31,17 +31,16 @@ namespace Reflex
 
 		window->self->focus.reset(view);
 
-		FocusEvent e(FocusEvent::BLUR, view, current);
-
 		if (current)
 		{
+			FocusEvent e(FocusEvent::BLUR, view, current);
 			current->on_focus(&e);
 			current->redraw();
 		}
 
 		if (view)
 		{
-			e.type = FocusEvent::FOCUS;
+			FocusEvent e(FocusEvent::FOCUS, view, current);
 			view->on_focus(&e);
 			view->redraw();
 		}
@@ -133,8 +132,8 @@ namespace Reflex
 
 		Rays::Bounds frame = window->frame();
 
-		event->painter = painter;
-		event->bounds.reset(0, 0, frame.width, frame.height);
+		DrawEvent_set_painter(event, painter);
+		DrawEvent_set_bounds(event, Bounds(0, 0, frame.width, frame.height));
 
 		painter->begin();
 		painter->push_state();
@@ -142,7 +141,7 @@ namespace Reflex
 
 		window->on_draw(event);
 		if (!event->is_blocked())
-			Reflex::View_draw_tree(window->root(), *event, 0, frame.move_to(0));
+			Reflex::View_draw_tree(window->root(), event, 0, frame.move_to(0));
 
 		painter->pop_state();
 		painter->end();
@@ -168,7 +167,7 @@ namespace Reflex
 
 		window->on_key(event);
 
-		switch (event->type)
+		switch (event->action())
 		{
 			case KeyEvent::DOWN: window->on_key_down(event); break;
 			case KeyEvent::UP:   window->on_key_up(event);   break;
@@ -180,8 +179,8 @@ namespace Reflex
 			if (!is_capturing(view.get(), targets, View::CAPTURE_KEY))
 				continue;
 
-			KeyEvent e = *event;
-			e.captured = true;
+			KeyEvent e = event->dup();
+			KeyEvent_set_captured(&e, true);
 			View_call_key_event(const_cast<View*>(view.get()), e);
 		}
 
@@ -259,12 +258,13 @@ namespace Reflex
 		{
 			if (targets.empty()) continue;
 
-			PointerEvent e(true);
-			extract_targeted_pointers(&e, extracteds, targets, pointers);
-			if (e.empty()) continue;
+			PointerEvent event;
+			PointerEvent_set_captured(&event, true);
+			extract_targeted_pointers(&event, extracteds, targets, pointers);
+			if (event.empty()) continue;
 
-			PointerEvent_update_for_capturing_view(&e, view);
-			View_call_pointer_event(const_cast<View*>(view.get()), e);
+			PointerEvent_update_for_capturing_view(&event, view);
+			View_call_pointer_event(const_cast<View*>(view.get()), event);
 		}
 	}
 
@@ -293,13 +293,14 @@ namespace Reflex
 
 		if (views_capturing_all.empty()) return;
 
-		PointerEvent event(true);
+		PointerEvent event;
+		PointerEvent_set_captured(&event, true);
 		extract_hovering_pointers(&event, extracteds, pointers);
 		if (event.empty()) return;
 
 		for (auto& view : views_capturing_all)
 		{
-			PointerEvent e = event;
+			PointerEvent e = event.dup();
 			PointerEvent_update_for_capturing_view(&e, view);
 			View_call_pointer_event(const_cast<View*>(view.get()), e);
 		}

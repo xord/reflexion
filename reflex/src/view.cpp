@@ -948,7 +948,7 @@ namespace Reflex
 
 		View::Data* self = view->self.get();
 
-		fire_timers(view, event.now);
+		fire_timers(view, event.now());
 
 		View::ChildList* pchildren = self->pchildren.get();
 		if (pchildren)
@@ -958,9 +958,9 @@ namespace Reflex
 		}
 
 		update_view_shapes(view);
-		update_child_world(view, event.dt);
+		update_child_world(view, event.dt());
 
-		UpdateEvent e = event;
+		UpdateEvent e = event.dup();
 		view->on_update(&e);
 
 		update_views_for_selectors(view);
@@ -1024,7 +1024,10 @@ namespace Reflex
 	static void
 	draw_default_shape (View* view, DrawEvent* event)
 	{
-		assert(view && event && event->painter);
+		assert(view && event);
+
+		Painter* painter = event->painter();
+		assert(painter);
 
 		const Style& style       = View_get_style(view);
 		const Color& back_fill   = style.background_fill();
@@ -1033,26 +1036,26 @@ namespace Reflex
 		Shape* shape = view->shape(false);
 		if (shape)
 		{
-			setup_painter(event->painter, back_fill, back_stroke);
+			setup_painter(painter, back_fill, back_stroke);
 			shape->on_draw(event);
 		}
 		else if (back_fill || back_stroke)
 		{
-			setup_painter(event->painter, back_fill, back_stroke);
-			event->painter->rect(event->bounds);
+			setup_painter(painter, back_fill, back_stroke);
+			painter->rect(event->bounds());
 		}
 	}
 
 	static void
 	draw_content (View* view, DrawEvent* event)
 	{
-		assert(view && event && event->painter);
+		assert(view && event && event->painter());
 
 		draw_default_shape(view, event);
 
 		const Style& style = View_get_style(view);
 		setup_painter(
-			event->painter, style.foreground_fill(), style.foreground_stroke());
+			event->painter(), style.foreground_fill(), style.foreground_stroke());
 
 		View::ShapeList* pshapes = view->self->pshapes.get();
 		if (pshapes && !pshapes->empty())
@@ -1068,10 +1071,10 @@ namespace Reflex
 	draw_view (
 		View* view, DrawEvent* event, const Point& offset, const Bounds& clip)
 	{
-		assert(view && event && event->painter);
+		assert(view && event && event->painter());
 		View::Data* self = view->self.get();
 
-		Painter* p = event->painter;
+		Painter* p = event->painter();
 		p->push_state();
 
 		if (self->has_flag(View::FLAG_CLIP) && !self->pbody)
@@ -1088,8 +1091,8 @@ namespace Reflex
 		{
 			for (auto& pchild : *pchildren)
 			{
-				if (event->bounds & pchild->self->frame)
-					View_draw_tree(pchild.get(), *event, offset, clip);
+				if (event->bounds() & pchild->self->frame)
+					View_draw_tree(pchild.get(), event, offset, clip);
 			}
 		}
 
@@ -1105,23 +1108,24 @@ namespace Reflex
 	static void
 	draw_view_to_cache (View* view, DrawEvent* event)
 	{
-		assert(view && event && event->painter && view->self->pcache_image);
+		assert(view && event && event->painter() && view->self->pcache_image);
 
-		Painter* view_painter = event->painter;
+		Painter* view_painter = event->painter();
 		Painter cache_painter = view->self->pcache_image->painter();
-		event->painter = &cache_painter;
+
+		DrawEvent_set_painter(event, &cache_painter);
 
 		cache_painter.begin();
-		draw_view(view, event, 0, event->bounds);
+		draw_view(view, event, 0, event->bounds());
 		cache_painter.end();
 
-		event->painter = view_painter;
+		DrawEvent_set_painter(event, view_painter);
 	}
 
 	static bool
 	draw_view_with_cache (View* view, DrawEvent* event, bool redraw)
 	{
-		assert(view && event && event->painter);
+		assert(view && event && event->painter());
 		View::Data* self = view->self.get();
 
 		if (!use_cache(view))
@@ -1130,7 +1134,7 @@ namespace Reflex
 			return false;
 		}
 
-		Painter* painter = event->painter;
+		Painter* painter = event->painter();
 
 		if (reset_cache_image(view, *painter) || redraw)
 		{
@@ -1148,7 +1152,7 @@ namespace Reflex
 		if (self->pfilter && *self->pfilter)
 			self->pfilter->apply(painter, *self->pcache_image);
 		else
-			painter->image(*self->pcache_image, event->bounds);
+			painter->image(*self->pcache_image, event->bounds());
 
 		painter->pop_state();
 
@@ -1157,7 +1161,7 @@ namespace Reflex
 
 	void
 	View_draw_tree (
-		View* view, const DrawEvent& event, const Point& offset, const Bounds& clip)
+		View* view, DrawEvent* event, const Point& offset, const Bounds& clip)
 	{
 		if (!view)
 			argument_error(__FILE__, __LINE__);
@@ -1166,26 +1170,24 @@ namespace Reflex
 
 		bool redraw = self->check_and_remove_flag(View::Data::REDRAW);
 
-		if (event.is_blocked() || view->hidden())
+		if (event->is_blocked() || view->hidden())
 			return;
 
 		if (self->frame.width <= 0 || self->frame.height <= 0)
 			return;
 
-		Point pos    = self->frame.position();
-		Bounds clip2 = self->frame.dup().move_by(offset) & clip;
-		DrawEvent e  = event;
-		e.view       = view;
-		e.bounds     = self->frame;
-		e.bounds.move_to(0, 0, e.bounds.z);
+		Bounds bounds = self->frame;
+		Point pos     = bounds.position();
+		Bounds clip2  = bounds.dup().move_by(offset) & clip;
 
+		bounds.move_to(0, 0, bounds.z);
 		if (self->pscroll)
 		{
-			pos     .move_by( *self->pscroll);
-			e.bounds.move_by(-*self->pscroll);
+			bounds.move_by(-*self->pscroll);
+			pos   .move_by( *self->pscroll);
 		}
 
-		Painter* p = event.painter;
+		Painter* p = event->painter();
 		p->push_matrix();
 		p->translate(pos);
 
@@ -1197,9 +1199,15 @@ namespace Reflex
 		if (zoom != 1 && zoom > 0)
 			p->scale(zoom, zoom);
 
-		pos += offset;
+		DrawEvent e = event->dup();
+		DrawEvent_set_view(&e, view);
+		DrawEvent_set_bounds(&e, bounds);
+
 		if (!draw_view_with_cache(view, &e, redraw))
+		{
+			pos += offset;
 			draw_view(view, &e, pos, clip2);
+		}
 
 		p->pop_matrix();
 	}
@@ -1246,14 +1254,14 @@ namespace Reflex
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		KeyEvent e = event;
+		KeyEvent e = event.dup();
 		view->on_key(&e);
 
-		switch (e.type)
+		switch (e.action())
 		{
 			case KeyEvent::DOWN: view->on_key_down(&e); break;
 			case KeyEvent::UP:   view->on_key_up(&e);   break;
-			case KeyEvent::NONE: break;
+			default: break;
 		}
 	}
 
@@ -1282,7 +1290,7 @@ namespace Reflex
 	call_pointer_event_for_each_child (View* parent, const PointerEvent& event)
 	{
 		call_children(parent, event, [](View* child, const PointerEvent& e) {
-			PointerEvent e2 = e;
+			PointerEvent e2 = e.dup();
 			PointerEvent_update_for_child_view(&e2, child);
 			View_call_pointer_event(child, e2);
 		});
@@ -1297,7 +1305,7 @@ namespace Reflex
 		if (event.empty())
 			return;
 
-		PointerEvent e = event;
+		PointerEvent e = event.dup();
 		view->on_pointer(&e);
 
 		switch (e[0].action())
@@ -1323,11 +1331,11 @@ namespace Reflex
 
 		const Bounds& frame = view->frame();
 
-		if (!frame.is_include(event.x, event.y, event.z))
+		if (!frame.is_include(event.position()))
 			return;
 
-		WheelEvent e = event;
-		e.position() -= frame.position();
+		WheelEvent e = event.dup();
+		WheelEvent_set_position(&e, e.position() - frame.position());
 
 		view->on_wheel(&e);
 
@@ -1340,14 +1348,14 @@ namespace Reflex
 		if (!view)
 			argument_error(__FILE__, __LINE__);
 
-		ContactEvent e = event;
+		ContactEvent e = event.dup();
 		view->on_contact(&e);
 
-		switch (e.type)
+		switch (e.action())
 		{
 			case ContactEvent::BEGIN: view->on_contact_begin(&e); break;
 			case ContactEvent::END:   view->on_contact_end(&e);   break;
-			case ContactEvent::NONE: break;
+			default: break;
 		}
 	}
 

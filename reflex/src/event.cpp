@@ -12,93 +12,351 @@ namespace Reflex
 {
 
 
+	struct Event::Data
+	{
+
+		bool blocked;
+
+		double time;
+
+		Data (bool blocked = false, double time = Xot::time())
+		:	blocked(blocked), time(time)
+		{
+		}
+
+	};// Event::Data
+
+
 	Event::Event ()
-	:	blocked(false), time_(Xot::time())
+	{
+	}
+
+	Event::Event (const Event* src)
+	:	self(new Data(*src->self))
+	{
+	}
+
+	Event::~Event ()
 	{
 	}
 
 	void
 	Event::block ()
 	{
-		blocked = true;
+		self->blocked = true;
 	}
 
 	bool
 	Event::is_blocked () const
 	{
-		return blocked;
+		return self->blocked;
 	}
 
 	double
 	Event::time () const
 	{
-		return time_;
+		return self->time;
 	}
 
+
+	struct UpdateEvent::Data
+	{
+
+		double now;
+
+		float dt;
+
+		Data (double now = 0, float dt = 0)
+		:	now(now), dt(dt)
+		{
+		}
+
+	};// UpdateEvent::Data
+
+
+	UpdateEvent::UpdateEvent ()
+	{
+	}
 
 	UpdateEvent::UpdateEvent (double now, float dt)
-	:	now(now), dt(dt)
+	:	self(new Data(now, dt))
 	{
 	}
 
+	UpdateEvent::UpdateEvent (const UpdateEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	UpdateEvent
+	UpdateEvent::dup () const
+	{
+		return UpdateEvent(this);
+	}
+
+	double
+	UpdateEvent::now () const
+	{
+		return self->now;
+	}
+
+	float
+	UpdateEvent::dt () const
+	{
+		return self->dt;
+	}
+
+
+	struct DrawEvent::Data
+	{
+
+		View* view;
+
+		Painter* painter;
+
+		Bounds bounds;
+
+		float dt, fps;
+
+		Data (float dt = 0, float fps = 0)
+		:	view(NULL), painter(NULL), dt(dt), fps(fps)
+		{
+		}
+
+	};// DrawEvent::Data
+
+
+	void
+	DrawEvent_set_view (DrawEvent* pthis, View* view)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		pthis->self->view = view;
+	}
+
+	void
+	DrawEvent_set_painter (DrawEvent* pthis, Painter* painter)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		pthis->self->painter = painter;
+	}
+
+	void
+	DrawEvent_set_bounds (DrawEvent* pthis, const Bounds& bounds)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		pthis->self->bounds = bounds;
+	}
+
+
+	DrawEvent::DrawEvent ()
+	{
+	}
 
 	DrawEvent::DrawEvent (float dt, float fps)
-	:	view(NULL), painter(NULL), dt(dt), fps(fps)
+	:	self(new Data(dt, fps))
 	{
 	}
 
+	DrawEvent::DrawEvent (const DrawEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	DrawEvent
+	DrawEvent::dup () const
+	{
+		return DrawEvent(this);
+	}
+
+	Painter*
+	DrawEvent::painter ()
+	{
+		return self->painter;
+	}
+
+	const Painter*
+	DrawEvent::painter () const
+	{
+		return const_cast<DrawEvent*>(this)->painter();
+	}
+
+	const Bounds&
+	DrawEvent::bounds () const
+	{
+		return self->bounds;
+	}
+
+	float
+	DrawEvent::dt () const
+	{
+		return self->dt;
+	}
+
+	float
+	DrawEvent::fps () const
+	{
+		return self->fps;
+	}
+
+
+	struct FrameEvent::Data
+	{
+
+		Bounds frame;
+
+		coord dx, dy, dw, dh;
+
+		float angle, dangle;
+
+		Data (
+			const Bounds& frame = 0,
+			coord dx = 0, coord dy = 0, coord dw = 0, coord dh = 0,
+			float angle = 0, float dangle = 0)
+		:	frame(frame), dx(dx), dy(dy), dw(dw), dh(dh), angle(angle), dangle(dangle)
+		{
+		}
+
+	};// FrameEvent::Data
+
+
+	FrameEvent::FrameEvent ()
+	{
+	}
 
 	FrameEvent::FrameEvent (
 		const Bounds& frame, coord dx, coord dy, coord dwidth, coord dheight,
 		float angle, float dangle)
-	:	frame(frame), dx(dx), dy(dy), dwidth(dwidth), dheight(dheight),
-		angle(angle), dangle(dangle)
+	:	self(new Data(frame, dx, dy, dwidth, dheight, angle, dangle))
 	{
 	}
 
 	FrameEvent::FrameEvent (
 		const Bounds& frame, const Bounds& prev_frame,
 		float angle, float prev_angle)
-	:	frame(frame),
-		dx(    frame.x - prev_frame.x), dy(     frame.y - prev_frame.y),
-		dwidth(frame.w - prev_frame.w), dheight(frame.h - prev_frame.h),
-		angle(angle), dangle(angle - prev_angle)
+	:	self(new Data(
+			frame,
+			frame.x - prev_frame.x, frame.y - prev_frame.y,
+			frame.w - prev_frame.w, frame.h - prev_frame.h,
+			angle, angle - prev_angle))
 	{
+	}
+
+	FrameEvent::FrameEvent (const FrameEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	FrameEvent
+	FrameEvent::dup () const
+	{
+		return FrameEvent(this);
+	}
+
+	const Bounds&
+	FrameEvent::frame () const
+	{
+		return self->frame;
+	}
+
+	coord
+	FrameEvent::dx () const
+	{
+		return self->dx;
+	}
+
+	coord
+	FrameEvent::dy () const
+	{
+		return self->dy;
+	}
+
+	coord
+	FrameEvent::dwidth () const
+	{
+		return self->dw;
+	}
+
+	coord
+	FrameEvent::dheight () const
+	{
+		return self->dh;
+	}
+
+	float
+	FrameEvent::angle () const
+	{
+		return self->angle;
+	}
+
+	float
+	FrameEvent::dangle () const
+	{
+		return self->dangle;
 	}
 
 	bool
 	FrameEvent::is_move () const
 	{
-		return dx != 0 || dy != 0;
+		return self->dx != 0 || self->dy != 0;
 	}
 
 	bool
 	FrameEvent::is_resize () const
 	{
-		return dwidth != 0 || dheight != 0;
+		return self->dw != 0 || self->dh != 0;
 	}
 
 	bool
 	FrameEvent::is_rotate () const
 	{
-		return dangle != 0;
+		return self->dangle != 0;
 	}
 
 
+	struct ScrollEvent::Data
+	{
+
+		Point scroll, dscroll;
+
+		Data (const Point& scroll, const Point& dscroll)
+		:	scroll(scroll), dscroll(dscroll)
+		{
+		}
+
+	};// ScrollEvent::Data
+
+
 	ScrollEvent::ScrollEvent ()
-	:	x(0), y(0), z(0), dx(0), dy(0), dz(0)
+	:	self(new Data(0, 0))
 	{
 	}
 
 	ScrollEvent::ScrollEvent (coord x, coord y, coord z, coord dx, coord dy, coord dz)
-	:	x(x), y(y), z(z), dx(dx), dy(dy), dz(dz)
+	:	self(new Data(Point(x, y, z), Point(dx, dy, dz)))
 	{
+	}
+
+	ScrollEvent::ScrollEvent (const ScrollEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	ScrollEvent
+	ScrollEvent::dup () const
+	{
+		return ScrollEvent(this);
 	}
 
 	Point&
 	ScrollEvent::scroll ()
 	{
-		return *(Point*) &scroll_;
+		return self->scroll;
 	}
 
 	const Point&
@@ -108,38 +366,163 @@ namespace Reflex
 	}
 
 	Point&
-	ScrollEvent::delta ()
+	ScrollEvent::dscroll ()
 	{
-		return *(Point*) &delta_;
+		return self->dscroll;
 	}
 
 	const Point&
-	ScrollEvent::delta () const
+	ScrollEvent::dscroll () const
 	{
-		return const_cast<ScrollEvent*>(this)->delta();
+		return const_cast<ScrollEvent*>(this)->dscroll();
 	}
+
+
+	struct FocusEvent::Data
+	{
+
+		Action action;
+
+		View *current, *last;
+
+		Data (Action action = ACTION_NONE, View* current = NULL, View* last = NULL)
+		:	action(action), current(current), last(last)
+		{
+		}
+
+	};// FocusEvent::Data
 
 
 	FocusEvent::FocusEvent ()
 	{
 	}
 
-	FocusEvent::FocusEvent (Type type, View* current, View* last)
-	:	type(type), current(current), last(last)
+	FocusEvent::FocusEvent (Action action, View* current, View* last)
+	:	self(new Data(action, current, last))
 	{
+	}
+
+	FocusEvent::FocusEvent (const FocusEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	FocusEvent
+	FocusEvent::dup () const
+	{
+		return FocusEvent(this);
+	}
+
+	FocusEvent::Action
+	FocusEvent::action () const
+	{
+		return self->action;
+	}
+
+	View*
+	FocusEvent::current () const
+	{
+		return self->current;
+	}
+
+	View*
+	FocusEvent::last () const
+	{
+		return self->last;
+	}
+
+
+	struct KeyEvent::Data
+	{
+
+		Action action;
+
+		String chars;
+
+		int code;
+
+		uint modifiers;
+
+		int repeat;
+
+		bool captured;
+
+		Data (
+			Action action = ACTION_NONE, const char* chars = NULL, int code = KEY_NONE,
+			uint modifiers = MOD_NONE, int repeat = 0, bool captured = false)
+		:	action(action), chars(chars ? chars : ""), code(code),
+			modifiers(modifiers), repeat(repeat), captured(captured)
+		{
+		}
+
+	};// KeyEvent::Data
+
+
+	void
+	KeyEvent_set_captured (KeyEvent* pthis, bool captured)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		pthis->self->captured = captured;
 	}
 
 
 	KeyEvent::KeyEvent ()
-	:	type(NONE), code(KEY_NONE), modifiers(MOD_NONE), repeat(0), captured(false)
 	{
 	}
 
 	KeyEvent::KeyEvent (
-		Type type, const char* chars, int code, uint modifiers, int repeat)
-	:	type(type), chars(chars ? chars : ""), code(code), modifiers(modifiers),
-		repeat(repeat), captured(false)
+		Action action, const char* chars, int code, uint modifiers, int repeat)
+	:	self(new Data(action, chars, code, modifiers, repeat))
 	{
+	}
+
+	KeyEvent::KeyEvent (const KeyEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	KeyEvent
+	KeyEvent::dup () const
+	{
+		return KeyEvent(this);
+	}
+
+	KeyEvent::Action
+	KeyEvent::action () const
+	{
+		return self->action;
+	}
+
+	const char*
+	KeyEvent::chars () const
+	{
+		return self->chars;
+	}
+
+	int
+	KeyEvent::code () const
+	{
+		return self->code;
+	}
+
+	uint
+	KeyEvent::modifiers () const
+	{
+		return self->modifiers;
+	}
+
+	int
+	KeyEvent::repeat () const
+	{
+		return self->repeat;
+	}
+
+	bool
+	KeyEvent::is_captured () const
+	{
+		return self->captured;
 	}
 
 
@@ -208,6 +591,15 @@ namespace Reflex
 
 		for (const auto& pointer : pthis->self->pointers)
 			fun(pointer);
+	}
+
+	void
+	PointerEvent_set_captured (PointerEvent* pthis, bool captured)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		pthis->self->captured = captured;
 	}
 
 	static void
@@ -283,41 +675,25 @@ namespace Reflex
 	}
 
 
-	PointerEvent::PointerEvent (bool captured)
-	:	self(new Data(captured))
+	PointerEvent::PointerEvent ()
 	{
 	}
 
-	PointerEvent::PointerEvent (const Pointer& pointer, bool captured)
-	:	self(new Data(captured))
-	{
-		self->pointers.emplace_back(pointer);
-	}
-
-	PointerEvent::PointerEvent (const Pointer* pointers, size_t size, bool captured)
-	:	self(new Data(captured))
+	PointerEvent::PointerEvent (const Pointer* pointers, size_t size)
 	{
 		for (size_t i = 0; i < size; ++i)
 			self->pointers.emplace_back(pointers[i]);
 	}
 
-	PointerEvent::PointerEvent (const This& obj)
-	:	self(new Data(*obj.self))
+	PointerEvent::PointerEvent (const PointerEvent* src)
+	:	Event(src), self(new Data(*src->self))
 	{
 	}
 
-	PointerEvent&
-	PointerEvent::operator = (const This& obj)
+	PointerEvent
+	PointerEvent::dup () const
 	{
-		if (&obj == this) return *this;
-
-		Event::operator=(obj);
-		*self = *obj.self;
-		return *this;
-	}
-
-	PointerEvent::~PointerEvent ()
-	{
+		return PointerEvent(this);
 	}
 
 	size_t
@@ -348,21 +724,58 @@ namespace Reflex
 	}
 
 
+	struct WheelEvent::Data
+	{
+
+		Point position, dposition;
+
+		uint modifiers;
+
+		Data (
+			const Point& position = 0, const Point& dposition = 0,
+			uint modifiers = 0)
+		:	position(position), dposition(dposition), modifiers(modifiers)
+		{
+		}
+
+	};// WheelEvent::Data
+
+
+	void
+	WheelEvent_set_position (WheelEvent* pthis, const Point& position)
+	{
+		if (!pthis)
+			argument_error(__FILE__, __LINE__);
+
+		pthis->self->position = position;
+	}
+
+
 	WheelEvent::WheelEvent ()
-	:	dx(0), dy(0), dz(0), x(0), y(0), z(0), modifiers(0)
 	{
 	}
 
 	WheelEvent::WheelEvent (
-		coord dx, coord dy, coord dz, coord x, coord y, coord z, uint modifiers)
-	:	dx(dx), dy(dy), dz(dz), x(x), y(y), z(z), modifiers(modifiers)
+		coord x, coord y, coord z, coord dx, coord dy, coord dz, uint modifiers)
+	:	self(new Data(Point(x, y, z), Point(dx, dy, dz), modifiers))
 	{
+	}
+
+	WheelEvent::WheelEvent (const WheelEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	WheelEvent
+	WheelEvent::dup () const
+	{
+		return WheelEvent(this);
 	}
 
 	Point&
 	WheelEvent::position ()
 	{
-		return *(Point*) &position_;
+		return self->position;
 	}
 
 	const Point&
@@ -372,79 +785,211 @@ namespace Reflex
 	}
 
 	Point&
-	WheelEvent::delta ()
+	WheelEvent::dposition ()
 	{
-		return *(Point*) &delta_;
+		return self->dposition;
 	}
 
 	const Point&
-	WheelEvent::delta () const
+	WheelEvent::dposition () const
 	{
-		return const_cast<WheelEvent*>(this)->delta();
+		return const_cast<WheelEvent*>(this)->dposition();
+	}
+
+	uint
+	WheelEvent::modifiers () const
+	{
+		return self->modifiers;
 	}
 
 
+	struct CaptureEvent::Data
+	{
+
+		uint begin, end;
+
+		Data (uint begin = 0, uint end = 0)
+		:	begin(begin), end(end)
+		{
+		}
+
+	};// CaptureEvent::Data
+
+
 	CaptureEvent::CaptureEvent ()
-	:	begin(0), end(0)
 	{
 	}
 
 	CaptureEvent::CaptureEvent (uint begin, uint end)
-	:	begin(begin), end(end)
+	:	self(new Data(begin, end))
 	{
 	}
 
+	CaptureEvent::CaptureEvent (const CaptureEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	CaptureEvent
+	CaptureEvent::dup () const
+	{
+		return CaptureEvent(this);
+	}
+
+	uint
+	CaptureEvent::begin () const
+	{
+		return self->begin;
+	}
+
+	uint
+	CaptureEvent::end () const
+	{
+		return self->end;
+	}
+
+
+	struct TimerEvent::Data
+	{
+
+		Timer::Ref timer;
+
+		Data (Timer* timer = NULL)
+		:	timer(timer)
+		{
+		}
+
+	};// TimerEvent::Data
+
+
+	TimerEvent::TimerEvent ()
+	{
+	}
 
 	TimerEvent::TimerEvent (Timer* timer)
-	:	timer(timer)
+	:	self(new Data(timer))
 	{
+	}
+
+	TimerEvent::TimerEvent (const TimerEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	TimerEvent
+	TimerEvent::dup () const
+	{
+		return TimerEvent(this);
+	}
+
+	Timer*
+	TimerEvent::timer ()
+	{
+		return self->timer;
+	}
+
+	const Timer*
+	TimerEvent::timer () const
+	{
+		return const_cast<TimerEvent*>(this)->timer();
 	}
 
 	View*
 	TimerEvent::owner () const
 	{
-		return timer ? timer->owner() : NULL;
+		return self->timer ? self->timer->owner() : NULL;
 	}
 
 	int
 	TimerEvent::id () const
 	{
-		return timer ? timer->id() : Timer::ID_INVALID;
+		return self->timer ? self->timer->id() : Timer::ID_INVALID;
 	}
 
 	float
 	TimerEvent::interval () const
 	{
-		return timer ? timer->interval() : -1;
-	}
-
-	void
-	TimerEvent::set_count (int count)
-	{
-		if (timer) timer->set_count(count);
+		return self->timer ? self->timer->interval() : -1;
 	}
 
 	int
 	TimerEvent::count () const
 	{
-		return timer ? timer->count() : 0;
+		return self->timer ? self->timer->count() : 0;
 	}
 
 	bool
 	TimerEvent::is_finished () const
 	{
-		return timer ? timer->is_finished() : true;
+		return self->timer ? self->timer->is_finished() : true;
 	}
+
+
+	struct ContactEvent::Data
+	{
+
+		Action action;
+
+		Shape* shape;
+
+		View* view;
+
+		Data (Action action = ACTION_NONE, Shape* shape = NULL, View* view = NULL)
+		:	action(action), shape(shape), view(view)
+		{
+		}
+
+	};// ContactEvent::Data
 
 
 	ContactEvent::ContactEvent ()
-	:	type(NONE), shape(NULL), view(NULL)
 	{
 	}
 
-	ContactEvent::ContactEvent (Type type, Shape* shape)
-	:	type(type), shape(shape), view(shape ? shape->owner() : NULL)
+	ContactEvent::ContactEvent (Action action, Shape* shape)
+	:	self(new Data(action, shape, shape ? shape->owner() : NULL))
 	{
+	}
+
+	ContactEvent::ContactEvent (const ContactEvent* src)
+	:	Event(src), self(new Data(*src->self))
+	{
+	}
+
+	ContactEvent
+	ContactEvent::dup () const
+	{
+		return ContactEvent(this);
+	}
+
+	ContactEvent::Action
+	ContactEvent::action () const
+	{
+		return self->action;
+	}
+
+	Shape*
+	ContactEvent::shape ()
+	{
+		return self->shape;
+	}
+
+	const Shape*
+	ContactEvent::shape () const
+	{
+		return const_cast<ContactEvent*>(this)->shape();
+	}
+
+	View*
+	ContactEvent::view ()
+	{
+		return self->view;
+	}
+
+	const View*
+	ContactEvent::view () const
+	{
+		return const_cast<ContactEvent*>(this)->view();
 	}
 
 

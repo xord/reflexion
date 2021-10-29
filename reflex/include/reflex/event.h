@@ -28,78 +28,129 @@ namespace Reflex
 
 			Event ();
 
+			~Event ();
+
 			void block ();
 
 			bool is_blocked () const;
 
 			double time () const;
 
-		private:
+			struct Data;
 
-			bool blocked;
+			Xot::PSharedImpl<Data> self;
 
-			double time_;
+		protected:
+
+			Event (const Event* src);
 
 	};// Event
 
 
-	struct UpdateEvent : public Event
+	class UpdateEvent : public Event
 	{
 
-		double now;
+		public:
 
-		float dt;
+			UpdateEvent ();
 
-		UpdateEvent (double now = 0, float dt = 0);
+			UpdateEvent (double now, float dt);
+
+			UpdateEvent dup () const;
+
+			double now () const;
+
+			float dt () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			UpdateEvent (const UpdateEvent* src);
 
 	};// UpdateEvent
 
 
-	struct DrawEvent : public Event
+	class DrawEvent : public Event
 	{
 
-		View* view;
+		public:
 
-		Painter* painter;
+			DrawEvent ();
 
-		Bounds bounds;
+			DrawEvent (float dt, float fps);
 
-		float dt, fps;
+			DrawEvent dup () const;
 
-		DrawEvent (float dt = 0, float fps = 0);
+			      Painter* painter ();
+
+			const Painter* painter () const;
+
+			const Bounds& bounds () const;
+
+			float dt () const;
+
+			float fps () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			DrawEvent (const DrawEvent* src);
 
 	};// DrawEvent
 
 
-	struct FrameEvent : public Event
+	class FrameEvent : public Event
 	{
 
-		Bounds frame;
+		public:
 
-		coord dx, dy;
+			FrameEvent ();
 
-		union
-		{
-			struct {coord dwidth, dheight;};
+			FrameEvent (
+				const Bounds& frame,
+				coord dx,     coord dy,
+				coord dwidth, coord dheight,
+				float angle,  float dangle);
 
-			struct {coord dw,     dh;};
-		};
+			FrameEvent (
+				const Bounds& frame, const Bounds& prev_frame,
+				float angle, float prev_angle);
 
-		float angle, dangle;
+			FrameEvent dup () const;
 
-		FrameEvent (
-			const Bounds& frame = 0, coord dx = 0, coord dy = 0, coord dwidth = 0, coord dheight = 0,
-			float angle = 0, float dangle = 0);
+			const Bounds& frame () const;
 
-		FrameEvent (
-			const Bounds& frame, const Bounds& prev_frame,
-			float angle = 0, float prev_angle = 0);
+			coord dx () const;
 
-		bool is_move () const;
+			coord dy () const;
 
-		bool is_resize () const;
+			coord dwidth () const;
 
-		bool is_rotate () const;
+			coord dheight () const;
+
+			float angle () const;
+
+			float dangle () const;
+
+			bool is_move () const;
+
+			bool is_resize () const;
+
+			bool is_rotate () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			FrameEvent (const FrameEvent* src);
 
 	};// FrameEvent
 
@@ -107,31 +158,29 @@ namespace Reflex
 	struct ScrollEvent : public Event
 	{
 
-		union
-		{
-			struct {coord x, y, z;};
+		public:
 
-			Coord3 scroll_;
-		};
+			ScrollEvent ();
 
-		union
-		{
-			struct {coord dx, dy, dz;};
+			ScrollEvent (coord x, coord y, coord z, coord dx, coord dy, coord dz);
 
-			Coord3 delta_;
-		};
+			ScrollEvent dup () const;
 
-		ScrollEvent ();
+			      Point& scroll ();
 
-		ScrollEvent (coord x, coord y, coord z, coord dx, coord dy, coord dz);
+			const Point& scroll () const;
 
-		      Point& scroll ();
+			      Point& dscroll ();
 
-		const Point& scroll () const;
+			const Point& dscroll () const;
 
-		      Point& delta ();
+			struct Data;
 
-		const Point& delta () const;
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			ScrollEvent (const ScrollEvent* src);
 
 	};// ScrollEvent
 
@@ -139,15 +188,29 @@ namespace Reflex
 	struct FocusEvent : public Event
 	{
 
-		enum Type {NONE = 0, FOCUS, BLUR};
+		public:
 
-		Type type;
+			enum Action {ACTION_NONE = 0, FOCUS, BLUR};
 
-		View *current, *last;
+			FocusEvent ();
 
-		FocusEvent ();
+			FocusEvent (Action action, View* current, View* last);
 
-		FocusEvent (Type type, View* current, View* last);
+			FocusEvent dup () const;
+
+			Action action () const;
+
+			View* current () const;
+
+			View* last () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			FocusEvent (const FocusEvent* src);
 
 	};// FocusEvent
 
@@ -155,25 +218,37 @@ namespace Reflex
 	struct KeyEvent : public Event
 	{
 
-		enum Type {NONE = 0, DOWN, UP};
+		public:
 
-		Type type;
+			enum Action {ACTION_NONE = 0, DOWN, UP};
 
-		String chars;
+			KeyEvent ();
 
-		int code;
+			KeyEvent (
+				Action action, const char* chars, int code,
+				uint modifiers = 0, int repeat = 0);
 
-		uint modifiers;
+			KeyEvent dup () const;
 
-		int repeat;
+			Action action () const;
 
-		bool captured;
+			const char* chars () const;
 
-		KeyEvent ();
+			int code () const;
 
-		KeyEvent (
-			Type type, const char* chars, int code,
-			uint modifiers = 0, int repeat = 0);
+			uint modifiers () const;
+
+			int repeat () const;
+
+			bool is_captured () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			KeyEvent (const KeyEvent* src);
 
 	};// KeyEvent
 
@@ -181,25 +256,13 @@ namespace Reflex
 	class PointerEvent : public Event
 	{
 
-		typedef PointerEvent This;
-
 		public:
 
-			PointerEvent (bool captured = false);
+			PointerEvent ();
 
-			PointerEvent (
-				const Pointer& pointer,
-				bool captured = false);
+			PointerEvent (const Pointer* pointers, size_t size);
 
-			PointerEvent (
-				const Pointer* pointers, size_t size,
-				bool captured = false);
-
-			PointerEvent (const This& obj);
-
-			PointerEvent& operator = (const This& obj);
-
-			~PointerEvent ();
+			PointerEvent dup () const;
 
 			size_t size () const;
 
@@ -211,7 +274,11 @@ namespace Reflex
 
 			struct Data;
 
-			Xot::PImpl<Data> self;
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			PointerEvent (const PointerEvent* src);
 
 	};// PointerEvent
 
@@ -219,35 +286,33 @@ namespace Reflex
 	struct WheelEvent : public Event
 	{
 
-		union
-		{
-			struct {coord dx, dy, dz;};
+		public:
 
-			Coord3 delta_;
-		};
+			WheelEvent ();
 
-		union
-		{
-			struct {coord x, y, z;};
+			WheelEvent (
+				coord x, coord y, coord z, coord dx, coord dy, coord dz,
+				uint modifiers = 0);
 
-			Coord3 position_;
-		};
+			WheelEvent dup () const;
 
-		uint modifiers;
+			      Point& position ();
 
-		WheelEvent ();
+			const Point& position () const;
 
-		WheelEvent (
-			coord dx, coord dy, coord dz, coord x = 0, coord y = 0, coord z = 0,
-			uint modifiers = 0);
+			      Point& dposition ();
 
-		      Point& position ();
+			const Point& dposition () const;
 
-		const Point& position () const;
+			uint modifiers () const;
 
-		      Point& delta ();
+			struct Data;
 
-		const Point& delta () const;
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			WheelEvent (const WheelEvent* src);
 
 	};// WheelEvent
 
@@ -255,11 +320,25 @@ namespace Reflex
 	struct CaptureEvent : public Event
 	{
 
-		uint begin, end;
+		public:
 
-		CaptureEvent ();
+			CaptureEvent ();
 
-		CaptureEvent (uint begin, uint end);
+			CaptureEvent (uint begin, uint end);
+
+			CaptureEvent dup () const;
+
+			uint begin () const;
+
+			uint end () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			CaptureEvent (const CaptureEvent* src);
 
 	};// CaptureEvent
 
@@ -267,21 +346,35 @@ namespace Reflex
 	struct TimerEvent : public Event
 	{
 
-		Timer::Ref timer;
+		public:
 
-		TimerEvent (Timer* timer = NULL);
+			TimerEvent ();
 
-		View* owner () const;
+			TimerEvent (Timer* timer);
 
-		int id () const;
+			TimerEvent dup () const;
 
-		float interval () const;
+			      Timer* timer ();
 
-		void set_count (int count);
+			const Timer* timer () const;
 
-		int      count () const;
+			View* owner () const;
 
-		bool is_finished () const;
+			int id () const;
+
+			float interval () const;
+
+			int count () const;
+
+			bool is_finished () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			TimerEvent (const TimerEvent* src);
 
 	};// TimerEvent
 
@@ -289,17 +382,33 @@ namespace Reflex
 	struct ContactEvent : public Event
 	{
 
-		enum Type {NONE = 0, BEGIN, END};
+		public:
 
-		Type type;
+			enum Action {ACTION_NONE = 0, BEGIN, END};
 
-		Shape* shape;
+			ContactEvent ();
 
-		View* view;
+			ContactEvent (Action action, Shape* shape);
 
-		ContactEvent ();
+			ContactEvent dup () const;
 
-		ContactEvent (Type type, Shape* shape);
+			Action action () const;
+
+			      Shape* shape ();
+
+			const Shape* shape () const;
+
+			      View* view ();
+
+			const View* view () const;
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+		private:
+
+			ContactEvent (const ContactEvent* src);
 
 	};// ContactEvent
 

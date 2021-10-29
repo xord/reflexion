@@ -269,7 +269,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 
 		if (dpos != 0 || dsize != 0)
 		{
-			Reflex::FrameEvent e(b, dpos.x, dpos.y, dsize.x, dsize.y);
+			Reflex::FrameEvent e(b, dpos.x, dpos.y, dsize.x, dsize.y, 0, 0);
 			if (dpos  != 0) win->on_move(&e);
 			if (dsize != 0)
 			{

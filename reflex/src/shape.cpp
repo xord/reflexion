@@ -437,14 +437,14 @@ namespace Reflex
 		if (!shape)
 			argument_error(__FILE__, __LINE__);
 
-		ContactEvent e = event;
+		ContactEvent e = event.dup();
 		shape->on_contact(&e);
 
-		switch (e.type)
+		switch (e.action())
 		{
 			case ContactEvent::BEGIN: shape->on_contact_begin(&e); break;
 			case ContactEvent::END:   shape->on_contact_end(&e);   break;
-			case ContactEvent::NONE: break;
+			default: break;
 		}
 
 		if (e.is_blocked())
@@ -587,9 +587,9 @@ namespace Reflex
 	void
 	Shape::on_draw (DrawEvent* e)
 	{
-		assert(e && e->painter);
+		assert(e && e->painter());
 
-		e->painter->polygon(self->polygon);
+		e->painter()->polygon(self->polygon);
 	}
 
 	void

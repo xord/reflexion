@@ -19,15 +19,16 @@ RUCY_DEF_ALLOC(alloc, klass)
 RUCY_END
 
 static
-RUCY_DEF5(initialize, type, chars, code, repeat, modifiers)
+RUCY_DEF5(initialize, action, chars, code, modifiers, repeat)
 {
 	CHECK;
 
-	THIS->type      = (Reflex::KeyEvent::Type) to<int>(type);
-	THIS->chars     = chars.c_str();
-	THIS->code      = to<int>(code);
-	THIS->repeat    = to<int>(repeat);
-	THIS->modifiers = to<uint>(modifiers);
+	*THIS = Reflex::KeyEvent(
+		(Reflex::KeyEvent::Action) to<uint>(action),
+		chars.c_str(),
+		to<int>(code),
+		to<uint>(modifiers),
+		to<int>(repeat));
 
 	return rb_call_super(0, NULL);
 }
@@ -37,16 +38,16 @@ static
 RUCY_DEF1(initialize_copy, obj)
 {
 	CHECK;
-	*THIS = to<Reflex::KeyEvent&>(obj);
+	*THIS = to<Reflex::KeyEvent&>(obj).dup();
 	return self;
 }
 RUCY_END
 
 static
-RUCY_DEF0(get_type)
+RUCY_DEF0(get_action)
 {
 	CHECK;
-	return value(THIS->type);
+	return value(THIS->action());
 }
 RUCY_END
 
@@ -54,7 +55,7 @@ static
 RUCY_DEF0(get_key)
 {
 	CHECK;
-	switch (THIS->code)
+	switch (THIS->code())
 	{
 		#define CASE(key)         case Reflex::KEY_##key
 		#define SYMBOL1(name)     SYMBOL2(_##name, #name)
@@ -252,7 +253,7 @@ static
 RUCY_DEF0(get_chars)
 {
 	CHECK;
-	return value(THIS->chars.c_str());
+	return value(THIS->chars());
 }
 RUCY_END
 
@@ -260,7 +261,7 @@ static
 RUCY_DEF0(get_code)
 {
 	CHECK;
-	return value(THIS->code);
+	return value(THIS->code());
 }
 RUCY_END
 
@@ -268,7 +269,7 @@ static
 RUCY_DEF0(get_modifiers)
 {
 	CHECK;
-	return value(THIS->modifiers);
+	return value(THIS->modifiers());
 }
 RUCY_END
 
@@ -276,7 +277,7 @@ static
 RUCY_DEF0(get_repeat)
 {
 	CHECK;
-	return value(THIS->repeat);
+	return value(THIS->repeat());
 }
 RUCY_END
 
@@ -284,7 +285,7 @@ static
 RUCY_DEF0(is_captured)
 {
 	CHECK;
-	return value(THIS->captured);
+	return value(THIS->is_captured());
 }
 RUCY_END
 
@@ -300,16 +301,16 @@ Init_key_event ()
 	cKeyEvent.define_alloc_func(alloc);
 	cKeyEvent.define_private_method("initialize",      initialize);
 	cKeyEvent.define_private_method("initialize_copy", initialize_copy);
-	cKeyEvent.define_method("type",      get_type);
+	cKeyEvent.define_method("action",    get_action);
 	cKeyEvent.define_method("key",       get_key);
 	cKeyEvent.define_method("chars",     get_chars);
 	cKeyEvent.define_method("code",      get_code);
 	cKeyEvent.define_method("modifiers", get_modifiers);
 	cKeyEvent.define_method("repeat",    get_repeat);
 	cKeyEvent.define_method("captured?", is_captured);
-	cKeyEvent.define_const("TYPE_NONE", Reflex::KeyEvent::NONE);
-	cKeyEvent.define_const("TYPE_DOWN", Reflex::KeyEvent::DOWN);
-	cKeyEvent.define_const("TYPE_UP",   Reflex::KeyEvent::UP);
+	cKeyEvent.define_const("ACTION_NONE", Reflex::KeyEvent::ACTION_NONE);
+	cKeyEvent.define_const("DOWN",        Reflex::KeyEvent::DOWN);
+	cKeyEvent.define_const("UP",          Reflex::KeyEvent::UP);
 }
 
 

@@ -1,6 +1,7 @@
 #include "reflex/ruby/event.h"
 
 
+#include "reflex/exception.h"
 #include "defs.h"
 
 
@@ -14,16 +15,7 @@ RUCY_DEFINE_VALUE_FROM_TO(Reflex::Event)
 static
 RUCY_DEF_ALLOC(alloc, klass)
 {
-	return new_type<Reflex::Event>(klass);
-}
-RUCY_END
-
-static
-RUCY_DEF1(initialize_copy, obj)
-{
-	CHECK;
-	*THIS = to<Reflex::Event&>(obj);
-	return self;
+	Reflex::reflex_error(__FILE__, __LINE__, "can not instantiate Event class.");
 }
 RUCY_END
 
@@ -61,7 +53,6 @@ Init_event ()
 
 	cEvent = mReflex.define_class("Event");
 	cEvent.define_alloc_func(alloc);
-	cEvent.define_private_method("initialize_copy", initialize_copy);
 	cEvent.define_method("block",    block);
 	cEvent.define_method("blocked?", is_blocked);
 	cEvent.define_method("time",     get_time);
