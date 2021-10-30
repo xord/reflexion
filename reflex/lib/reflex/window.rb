@@ -24,7 +24,7 @@ module Reflex
       :timeout, :delay, :interval,
       :add_child,     :add,
       :remove_child,  :remove,
-      :find_child,    :find, :find_children,
+      :children, :find_child, :find, :find_children,
       :style, :styles, :scroll_to, :scroll_by, :scroll,
       :meter2pixel, :meter, :wall,
       :zoom=,              :zoom,
