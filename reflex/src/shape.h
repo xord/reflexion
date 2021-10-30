@@ -52,7 +52,7 @@ namespace Reflex
 
 	void Shape_update (Shape* shape, bool force = false);
 
-	void Shape_call_contact_event (Shape* shape, const ContactEvent& event);
+	void Shape_call_contact_event (Shape* shape, ContactEvent* event);
 
 
 }// Reflex

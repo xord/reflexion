@@ -432,25 +432,23 @@ namespace Reflex
 	}
 
 	void
-	Shape_call_contact_event (Shape* shape, const ContactEvent& event)
+	Shape_call_contact_event (Shape* shape, ContactEvent* event)
 	{
-		if (!shape)
+		if (!shape || !event)
 			argument_error(__FILE__, __LINE__);
 
-		ContactEvent e = event.dup();
-		shape->on_contact(&e);
+		shape->on_contact(event);
 
-		switch (e.action())
+		switch (event->action())
 		{
-			case ContactEvent::BEGIN: shape->on_contact_begin(&e); break;
-			case ContactEvent::END:   shape->on_contact_end(&e);   break;
+			case ContactEvent::BEGIN: shape->on_contact_begin(event); break;
+			case ContactEvent::END:   shape->on_contact_end(event);   break;
 			default: break;
 		}
 
-		if (e.is_blocked())
-			return;
+		if (event->is_blocked()) return;
 
-		View_call_contact_event(shape->owner(), e);
+		View_call_contact_event(shape->owner(), event);
 	}
 
 

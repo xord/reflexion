@@ -251,8 +251,9 @@ namespace Reflex
 		if (!View_is_active(*s1->owner()) || !View_is_active(*s2->owner()))
 			return;
 
-		Shape_call_contact_event(s1, ContactEvent(ContactEvent::BEGIN, s2));
-		Shape_call_contact_event(s2, ContactEvent(ContactEvent::BEGIN, s1));
+		ContactEvent e1(ContactEvent::BEGIN, s2), e2(ContactEvent::BEGIN, s1);
+		Shape_call_contact_event(s1, &e1);
+		Shape_call_contact_event(s2, &e2);
 	}
 
 	void
@@ -267,8 +268,9 @@ namespace Reflex
 		if (!View_is_active(*s1->owner()) || !View_is_active(*s2->owner()))
 			return;
 
-		Shape_call_contact_event(s1, ContactEvent(ContactEvent::END, s2));
-		Shape_call_contact_event(s2, ContactEvent(ContactEvent::END, s1));
+		ContactEvent e1(ContactEvent::END, s2), e2(ContactEvent::END, s1);
+		Shape_call_contact_event(s1, &e1);
+		Shape_call_contact_event(s2, &e2);
 	}
 
 

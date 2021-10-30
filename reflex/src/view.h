@@ -36,13 +36,13 @@ namespace Reflex
 
 	void View_update_shapes (View* view);
 
-	void View_call_key_event     (View* view, const KeyEvent& event);
+	void View_call_key_event     (View* view, KeyEvent* event);
 
-	void View_call_pointer_event (View* view, const PointerEvent& event);
+	void View_call_pointer_event (View* view, PointerEvent* event);
 
-	void View_call_wheel_event   (View* view, const WheelEvent& event);
+	void View_call_wheel_event   (View* view, WheelEvent* event);
 
-	void View_call_contact_event (View* view, const ContactEvent& event);
+	void View_call_contact_event (View* view, ContactEvent* event);
 
 
 }// Reflex
