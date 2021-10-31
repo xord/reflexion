@@ -1253,15 +1253,19 @@ namespace Reflex
 	}
 
 	static void
-	call_children (View* parent, std::function<void(View*)> fun)
+	call_children (View* parent, std::function<bool(View*)> fun)
 	{
 		assert(parent);
 
 		auto* pchildren = parent->self->pchildren.get();
 		if (!pchildren) return;
 
-		for (auto& pchild : *pchildren)
-			fun(pchild.get());
+		auto end = pchildren->rend();
+		for (auto it = pchildren->rbegin(); it != end; ++it)
+		{
+			if (!fun(it->get()))
+				break;
+		}
 	}
 
 	static void
@@ -1273,6 +1277,7 @@ namespace Reflex
 			PointerEvent e = event->dup();
 			PointerEvent_update_for_child_view(&e, child);
 			View_call_pointer_event(child, &e);
+			return !e.is_blocked();
 		});
 	}
 
@@ -1365,6 +1370,7 @@ namespace Reflex
 
 		call_children(view, [&](View* child) {
 			View_call_wheel_event(child, &e);
+			return !e.is_blocked();
 		});
 
 		if (e.is_blocked()) return;
