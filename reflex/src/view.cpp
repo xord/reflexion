@@ -1170,7 +1170,7 @@ namespace Reflex
 
 		bool redraw = self->check_and_remove_flag(View::Data::REDRAW);
 
-		if (event->is_blocked() || view->hidden())
+		if (view->hidden() || event->is_blocked())
 			return;
 
 		if (self->frame.width <= 0 || self->frame.height <= 0)
@@ -1240,6 +1240,8 @@ namespace Reflex
 	{
 		if (!view || !event)
 			argument_error(__FILE__, __LINE__);
+
+		if (view->hidden()) return;
 
 		KeyEvent e = event->dup();
 		view->on_key(&e);
@@ -1337,7 +1339,7 @@ namespace Reflex
 		if (!view || !event)
 			argument_error(__FILE__, __LINE__);
 
-		if (event->empty())
+		if (view->hidden() || event->empty())
 			return;
 
 		PointerEvent e = event->dup();
@@ -1359,6 +1361,8 @@ namespace Reflex
 	{
 		if (!view || !event)
 			argument_error(__FILE__, __LINE__);
+
+		if (view->hidden()) return;
 
 		const Bounds& frame = view->frame();
 
