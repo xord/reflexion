@@ -48,7 +48,7 @@ class TestPointerEvent < Test::Unit::TestCase
     assert_equal false,    e.captured?
 
     assert_equal 1,        p1.id
-    assert_equal [:touch], p1.type
+    assert_equal [:touch], p1.types
     assert_equal :down,    p1.action
     assert_equal [2, 3],   p1.position.to_a
     assert_equal [2, 3],   p1.pos     .to_a

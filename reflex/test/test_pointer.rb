@@ -42,7 +42,7 @@ class TestPointer < Test::Unit::TestCase
       time: 6)
 
     assert_equal    1,             p.id
-    assert_equal    [:touch],      p.type
+    assert_equal    [:touch],      p.types
     assert_equal    :down,         p.action
     assert_equal    [2, 3],        p.position.to_a
     assert_equal    4,             p.modifiers
@@ -52,45 +52,45 @@ class TestPointer < Test::Unit::TestCase
     assert_nil                     p.prev
   end
 
-  def test_type()
-    def type(t)
+  def test_types()
+    def create(t)
       pointer(type: t).tap do |o|
         def o.test()
-          [type, mouse?, left?, right?, middle?, touch?, pen?]
+          [types, mouse?, left?, right?, middle?, touch?, pen?]
         end
       end
     end
 
-    o = type TYPE_NONE
+    o = create TYPE_NONE
     assert_equal [[],              F, F, F, F, F, F], o.test
 
-    o = type MOUSE
+    o = create MOUSE
     assert_equal [[:mouse],        T, F, F, F, F, F], o.test
 
-    o = type LEFT
+    o = create LEFT
     assert_equal [[:mouse_left],   F, T, F, F, F, F], o.test
 
-    o = type RIGHT
+    o = create RIGHT
     assert_equal [[:mouse_right],  F, F, T, F, F, F], o.test
 
-    o = type MIDDLE
+    o = create MIDDLE
     assert_equal [[:mouse_middle], F, F, F, T, F, F], o.test
 
-    o = type TOUCH
+    o = create TOUCH
     assert_equal [[:touch],        F, F, F, F, T, F], o.test
 
-    o = type PEN
+    o = create PEN
     assert_equal [[:pen],          F, F, F, F, F, T], o.test
 
-    o = type LEFT | RIGHT
+    o = create LEFT | RIGHT
     types = [:mouse_left, :mouse_right]
     assert_equal [types, F, T, T, F, F, F], o.test
 
-    o = type LEFT | RIGHT | MIDDLE
+    o = create LEFT | RIGHT | MIDDLE
     types = [:mouse_left, :mouse_right, :mouse_middle]
     assert_equal [types, F, T, T, T, F, F], o.test
 
-    o = type MOUSE | LEFT | RIGHT | MIDDLE | TOUCH | PEN
+    o = create MOUSE | LEFT | RIGHT | MIDDLE | TOUCH | PEN
     types = [:mouse, :mouse_left, :mouse_right, :mouse_middle, :touch, :pen]
     assert_equal [types, T, T, T, T, T, T], o.test
   end

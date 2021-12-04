@@ -13,10 +13,10 @@ module Reflex
 
     include Comparable
 
-    alias type   get_type
+    alias types  get_type
     alias action get_action
 
-    bit_flag_reader :type, **{
+    bit_flag_reader :types, **{
       none:         TYPE_NONE,
       mouse:        MOUSE,
       mouse_left:   MOUSE_LEFT,
@@ -98,7 +98,7 @@ module Reflex
     end
 
     def inspect()
-      "#<Reflex::Pointer id:#{id} #{type} #{action} (#{x.round 2}, #{y.round 2}) mod:#{modifiers} click:#{click_count} drag:#{drag?} time:#{time.round 2}>"
+      "#<Reflex::Pointer id:#{id} #{types} #{action} (#{x.round 2}, #{y.round 2}) mod:#{modifiers} click:#{click_count} drag:#{drag?} time:#{time.round 2}>"
     end
 
   end# Pointer
