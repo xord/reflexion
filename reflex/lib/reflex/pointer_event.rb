@@ -14,7 +14,7 @@ module Reflex
 
     def_delegators :first,
       :id,
-      :type, :mouse?, :touch?, :pen?,
+      :types, :mouse?, :touch?, :pen?,
       :mouse_left?, :left?, :mouse_right?, :right?, :mouse_middle?, :middle?,
       :action, :down?, :up?, :move?, :cancel?, :stay?,
       :position, :pos, :x, :y, :modifiers, :click_count, :drag?,
