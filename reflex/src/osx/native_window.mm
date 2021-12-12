@@ -43,7 +43,7 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		int update_count;
 		int clicking_count;
 		Reflex::Pointer::ID pointer_id;
-		Reflex::Pointer prevPointer;
+		Reflex::Pointer prev_pointer;
 	}
 
 	- (id) init
@@ -381,9 +381,11 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 		assert(e->size() == 1);
 
 		Reflex::Pointer& pointer = Reflex::PointerEvent_pointer_at(e, 0);
-		if (prevPointer)
-			Reflex::Pointer_set_prev(&pointer, &prevPointer);
-		prevPointer = pointer;
+		if (prev_pointer)
+			Reflex::Pointer_set_prev(&pointer, &prev_pointer);
+
+		prev_pointer = pointer;
+		Reflex::Pointer_set_prev(&prev_pointer, NULL);
 	}
 
 	- (void) scrollWheel: (NSEvent*) event
