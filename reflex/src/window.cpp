@@ -165,6 +165,15 @@ namespace Reflex
 		if (!event)
 			argument_error(__FILE__, __LINE__);
 
+		window->on_key(event);
+
+		switch (event->action())
+		{
+			case KeyEvent::DOWN: window->on_key_down(event); break;
+			case KeyEvent::UP:   window->on_key_up(event);   break;
+			default: break;
+		}
+
 		for (auto& [view, targets] : window->self->captures)
 		{
 			if (!is_capturing(view.get(), targets, View::CAPTURE_KEY))
@@ -179,17 +188,6 @@ namespace Reflex
 			View_call_key_event(window->self->focus.get(), event);
 
 		cleanup_captures(window);
-
-		if (event->is_blocked()) return;
-
-		window->on_key(event);
-
-		switch (event->action())
-		{
-			case KeyEvent::DOWN: window->on_key_down(event); break;
-			case KeyEvent::UP:   window->on_key_up(event);   break;
-			default: break;
-		}
 	}
 
 	static void
@@ -362,19 +360,6 @@ namespace Reflex
 		if (!event)
 			argument_error(__FILE__, __LINE__);
 
-		call_captured_pointer_events(window, event);
-
-		if (!event->empty())
-		{
-			PointerEvent_update_for_child_view(event, window->root());
-			View_call_pointer_event(window->root(), event);
-		}
-
-		cleanup_captures(window);
-
-		if (event->empty() || event->is_blocked())
-			return;
-
 		window->on_pointer(event);
 
 		switch ((*event)[0].action())
@@ -385,6 +370,16 @@ namespace Reflex
 			case Pointer::CANCEL: window->on_pointer_cancel(event); break;
 			default: break;
 		}
+
+		call_captured_pointer_events(window, event);
+
+		if (!event->empty())
+		{
+			PointerEvent_update_for_child_view(event, window->root());
+			View_call_pointer_event(window->root(), event);
+		}
+
+		cleanup_captures(window);
 	}
 
 	void
