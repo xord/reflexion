@@ -25,7 +25,7 @@ module Reflex
     end
 
     def inspect()
-      "#<Reflex::PointerEvent id:#{id} #{type} #{action} (#{x.round 2}, #{y.round 2}) mod:#{modifiers} click:#{click_count} drag:#{drag?} time:#{time.round 2}>"
+      "#<Reflex::PointerEvent id:#{id} #{types} #{action} (#{x.round 2}, #{y.round 2}) mod:#{modifiers} click:#{click_count} drag:#{drag?} time:#{time.round 2}>"
     end
 
     private
