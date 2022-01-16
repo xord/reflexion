@@ -3,7 +3,7 @@
 
 Pod::Spec.new do |s|
   s.name        = "Reflexion"
-  s.version     = "0.1.0"
+  s.version     = File.readlines(File.expand_path 'VERSION', __dir__)[0].chomp
   s.summary     = "Processing like framework for Ruby language."
   s.description = "Processing like framework for Ruby language embedded to OSX/iOS App."
   s.license     = "MIT"
@@ -12,12 +12,12 @@ Pod::Spec.new do |s|
   s.homepage    = "https://github.com/xord/reflexion"
 
   s.osx.deployment_target = "10.10"
-  s.ios.deployment_target = "8.0"
+  s.ios.deployment_target = "10.0"
 
   root    = "${PODS_ROOT}/#{s.name}"
   mods    = %w[xot rucy beeps rays reflex]
   incdirs = mods.map {|m| "#{root}/#{m}/include"}.concat %W[
-    #{root}
+    #{root}/src
     #{root}/beeps/vendor/stk/include
     #{root}/rays/vendor/glm
     #{root}/rays/vendor/clipper/cpp
@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   ]
 
   s.prepare_command    = "rake vendor erb"
-  s.preserve_paths     = mods
+  s.preserve_paths     = mods + %w[src]
   s.requires_arc       = false
   s.osx.compiler_flags = "-DOSX"
   s.ios.compiler_flags = "-DIOS"
@@ -115,6 +115,6 @@ Pod::Spec.new do |s|
   end
 
   s.subspec "Reflexion" do |spec|
-    spec.source_files = "*.m"
+    spec.source_files = "src/*.m"
   end
 end
