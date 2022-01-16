@@ -9,7 +9,7 @@ void Init_reflex_native ();
 
 @implementation Reflexion
 
-+ (void)initialize
++ (void)setup
 {
 	static BOOL done = NO;
 	if (done) return;
