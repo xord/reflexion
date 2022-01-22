@@ -33,8 +33,10 @@ Pod::Spec.new do |s|
   s.osx.compiler_flags = "-DOSX"
   s.ios.compiler_flags = "-DIOS"
   s.library            = %w[c++]
-  s.resource_bundles   = mods.inject({}) {|h, m| h[m.capitalize] = "#{m}/lib"; h}
   s.xcconfig           = {"HEADER_SEARCH_PATHS" => incdirs.join(' ')}
+  s.resource_bundles   = mods.each_with_object({}) do |mod, hash|
+    hash[mod.capitalize] = %W[#{mod}/lib VERSION]
+  end
 
   #s.dependency = 'CRuby', git: 'https://github.com/xord/cruby'
 
