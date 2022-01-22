@@ -6,6 +6,7 @@
 #import  <CoreMotion/CoreMotion.h>
 #include "reflex/event.h"
 #include "reflex/exception.h"
+#include "application.h"
 
 
 @implementation ReflexAppDelegate

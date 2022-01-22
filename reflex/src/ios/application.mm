@@ -13,6 +13,12 @@ extern "C" {
 }
 
 
+@interface ReflexAppDelegate (Bind)
+	- (void) bind: (Reflex::Application*) application;
+	- (BOOL) callOnStart;
+@end
+
+
 namespace Reflex
 {
 
