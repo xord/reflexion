@@ -102,7 +102,7 @@ ReflexViewController_get_show_fun ()
 
 @interface ReflexView ()
 
-	@property(nonatomic, strong) ReflexViewController* reflexViewController;
+	@property(nonatomic, unsafe_unretained) ReflexViewController* reflexViewController;
 
 @end
 
@@ -112,7 +112,9 @@ ReflexViewController_get_show_fun ()
 	- (void) layoutSubviews
 	{
 		[super layoutSubviews];
-		[self.reflexViewController viewDidResize];
+
+		if (self.reflexViewController)
+			[self.reflexViewController viewDidResize];
 	}
 
 @end
@@ -227,6 +229,11 @@ ReflexViewController_get_show_fun ()
 		[self setupReflexView];
 	}
 
+	- (ReflexView*) createReflexView
+	{
+		return [[[ReflexView alloc] initWithFrame: self.view.bounds] autorelease];
+	}
+
 	- (void) setupReflexView
 	{
 		ReflexView* view = [self createReflexView];
@@ -256,11 +263,6 @@ ReflexViewController_get_show_fun ()
 		self.reflexView = view;
 	}
 
-	- (ReflexView*) createReflexView
-	{
-		return [[[ReflexView alloc] initWithFrame: self.view.bounds] autorelease];
-	}
-
 	- (void) cleanupReflexView
 	{
 		ReflexView* view = self.reflexView;
@@ -271,6 +273,7 @@ ReflexViewController_get_show_fun ()
 			[EAGLContext setCurrentContext: (EAGLContext*) Rays::get_offscreen_context()];
 
 		[view removeFromSuperview];
+		view.reflexViewController = nil;
 
 		self.reflexView = nil;
 	}
