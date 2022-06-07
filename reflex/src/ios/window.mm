@@ -103,7 +103,7 @@ namespace Reflex
 		if (!title)
 			argument_error(__FILE__, __LINE__);
 
-		get_vc(window).title = [[NSString alloc] initWithUTF8String: title];
+		get_vc(window).title = [NSString stringWithUTF8String: title];
 	}
 
 	const char*
