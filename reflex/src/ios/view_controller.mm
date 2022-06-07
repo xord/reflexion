@@ -16,7 +16,7 @@
 static ReflexViewController*
 create_reflex_view_controller ()
 {
-	return [[ReflexViewController alloc] init];
+	return [[[ReflexViewController alloc] init] autorelease];
 }
 
 static UIViewController*
