@@ -155,6 +155,9 @@ ReflexViewController_get_show_fun ()
 
 	- (void) dealloc
 	{
+		Reflex::Window* win = self.window;
+		if (win) win->close(true);
+
 		[self cleanup];
 		[super dealloc];
 	}
@@ -272,8 +275,8 @@ ReflexViewController_get_show_fun ()
 		if (context && context == [EAGLContext currentContext])
 			[EAGLContext setCurrentContext: (EAGLContext*) Rays::get_offscreen_context()];
 
-		[view removeFromSuperview];
 		view.reflexViewController = nil;
+		[view removeFromSuperview];
 
 		self.reflexView = nil;
 	}

@@ -410,9 +410,7 @@ namespace Reflex
 
 	Window::~Window ()
 	{
-		//close();
-
-		View_set_window(self->root.get(), NULL);
+		//close(true);
 	}
 
 	void
@@ -448,11 +446,14 @@ namespace Reflex
 	}
 
 	void
-	Window::close ()
+	Window::close (bool force)
 	{
 		Event e;
 		on_close(&e);
-		if (e.is_blocked()) return;
+		if (!force && e.is_blocked()) return;
+
+		View_set_window(self->root.get(), NULL);
+		self->root.reset();
 
 		Window_close(this);
 	}

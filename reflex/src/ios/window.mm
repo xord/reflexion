@@ -95,7 +95,6 @@ namespace Reflex
 	void
 	Window_close (Window* window)
 	{
-		not_implemented_error(__FILE__, __LINE__);
 	}
 
 	void

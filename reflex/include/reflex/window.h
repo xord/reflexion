@@ -35,7 +35,7 @@ namespace Reflex
 
 			virtual void hide ();
 
-			virtual void close ();
+			virtual void close (bool force = false);
 
 			virtual void redraw ();
 
