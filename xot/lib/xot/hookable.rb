@@ -7,8 +7,7 @@ module Xot
   module Hookable
 
     def hook(name, &block)
-      c = class << self; self; end
-      c.__send__ :define_method, name, &block
+      singleton_class.__send__ :define_method, name, &block
       self
     end
 
