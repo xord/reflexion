@@ -34,6 +34,20 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 	return nbuttons;
 }
 
+static void
+update_pixel_density (Reflex::Window* window)
+{
+	assert(window);
+
+	Rays::Painter* painter = window->painter();
+	if (!painter) return;
+
+	float pd = Window_get_pixel_density(*window);
+	if (painter->pixel_density() != pd)
+		painter->canvas(window->frame().dup().move_to(0, 0), pd);
+}
+
+
 @implementation NativeWindow
 
 	{
@@ -195,6 +209,8 @@ count_mouse_buttons (const Reflex::PointerEvent& e)
 	{
 		Reflex::Window* win = self.window;
 		if (!win) return;
+
+		update_pixel_density(win);
 
 		if (update_count == 0)
 			[self update];
