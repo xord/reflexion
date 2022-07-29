@@ -21,4 +21,4 @@ test_ruby_extension
 generate_documents
 build_ruby_gem
 
-task :default => :test
+task :default => :ext

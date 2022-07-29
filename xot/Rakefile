@@ -18,4 +18,4 @@ build_ruby_extension dlname: DLNAME
 test_ruby_extension
 build_ruby_gem
 
-task :default => :test
+task :default => :ext
