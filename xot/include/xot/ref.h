@@ -185,6 +185,12 @@ namespace Xot
 
 			bool operator != (const This& obj) const {return !operator==(obj);}
 
+			template <typename X>
+			bool operator == (const Ref<X>& obj) const {return ptr == obj.get();}
+
+			template <typename X>
+			bool operator != (const Ref<X>& obj) const {return !operator==(obj);}
+
 			bool operator <  (const This& obj) const {return ptr < obj.ptr;}
 
 			operator bool () const {return ptr != NULL;}
@@ -271,6 +277,12 @@ namespace Xot
 			bool operator == (const This& obj) const {return ptr == obj.ptr;}
 
 			bool operator != (const This& obj) const {return !operator==(obj);}
+
+			template <typename X>
+			bool operator == (const Ref<X>& obj) const {return ptr == obj.get();}
+
+			template <typename X>
+			bool operator != (const Ref<X>& obj) const {return !operator==(obj);}
 
 			bool operator <  (const This& obj) const {return ptr < obj.ptr;}
 
