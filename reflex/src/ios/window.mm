@@ -102,7 +102,14 @@ namespace Reflex
 		if (!title)
 			argument_error(__FILE__, __LINE__);
 
-		get_vc(window).title = [NSString stringWithUTF8String: title];
+		ReflexViewController* vc = get_vc(window);
+		NSString* titleStr       = [NSString stringWithUTF8String: title];
+
+		if ([titleStr isEqualToString: vc.title])
+			return;
+
+		vc.title = titleStr;
+		[vc titleDidChange];
 	}
 
 	const char*

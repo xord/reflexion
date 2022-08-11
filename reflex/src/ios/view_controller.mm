@@ -400,6 +400,10 @@ ReflexViewController_get_show_fun ()
 		}
 	}
 
+	- (void) titleDidChange
+	{
+	}
+
 	- (void) touchesBegan: (NSSet*) touches withEvent: (UIEvent*) event
 	{
 		Reflex::Window* win = self.window;

@@ -19,6 +19,8 @@
 
 	- (void) viewDidResize;
 
+	- (void) titleDidChange;
+
 @end// ReflexViewController
 
 
