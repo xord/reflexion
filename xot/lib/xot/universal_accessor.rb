@@ -20,8 +20,8 @@ module Xot
           alias_method :#{set}, options[:writer] || :#{name}=
           alias_method :#{get}, options[:reader] || :#{name}
           private :#{set}, :#{get}
-          def #{name}(*args)
-            #{set}(*args) unless args.empty?
+          def #{name}(*args, **kwargs)
+            #{set}(*args, **kwargs) unless args.empty? && args.empty?
             #{get}
           end
         END
