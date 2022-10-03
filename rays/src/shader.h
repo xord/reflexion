@@ -11,25 +11,60 @@ namespace Rays
 {
 
 
-	#define  ATTRIB_POSITION        "a_Position"
-	#define VARYING_POSITION        "v_Position"
-	#define UNIFORM_POSITION_MATRIX "u_PositionMatrix"
-	#define  ATTRIB_TEXCOORD        "a_TexCoord"
-	#define VARYING_TEXCOORD        "v_TexCoord"
-	#define UNIFORM_TEXCOORD_MIN    "u_TexCoordMin"
-	#define UNIFORM_TEXCOORD_MAX    "u_TexCoordMax"
-	#define UNIFORM_TEXCOORD_MATRIX "u_TexCoordMatrix"
-	#define  ATTRIB_COLOR           "a_Color"
-	#define VARYING_COLOR           "v_Color"
-	//#define UNIFORM_COLOR_MATRIX    "u_ColorMatrix"
-	#define UNIFORM_TEXTURE         "u_Texture"
-	#define UNIFORM_TEXTURE_SIZE    "u_TextureSize"
-
-
+	class ShaderSource;
 	class ShaderProgram;
 
 
+	struct ShaderBuiltinVariableNames
+	{
+
+		ShaderEnv::NameList attribute_position_names;
+		ShaderEnv::NameList attribute_texcoord_names;
+		ShaderEnv::NameList attribute_color_names;
+
+		ShaderEnv::NameList varying_position_names;
+		ShaderEnv::NameList varying_texcoord_names;
+		ShaderEnv::NameList varying_color_names;
+
+		ShaderEnv::NameList uniform_texture_names;
+		ShaderEnv::NameList uniform_position_matrix_names;
+		ShaderEnv::NameList uniform_texcoord_matrix_names;
+		ShaderEnv::NameList uniform_texcoord_min_names;
+		ShaderEnv::NameList uniform_texcoord_max_names;
+		ShaderEnv::NameList uniform_texcoord_offset_names;
+
+		ShaderBuiltinVariableNames (
+			const ShaderEnv::NameList& attribute_position_names,
+			const ShaderEnv::NameList& attribute_texcoord_names,
+			const ShaderEnv::NameList& attribute_color_names,
+			const ShaderEnv::NameList& varying_position_names,
+			const ShaderEnv::NameList& varying_texcoord_names,
+			const ShaderEnv::NameList& varying_color_names,
+			const ShaderEnv::NameList& uniform_texture_names,
+			const ShaderEnv::NameList& uniform_position_matrix_names,
+			const ShaderEnv::NameList& uniform_texcoord_matrix_names,
+			const ShaderEnv::NameList& uniform_texcoord_min_names,
+			const ShaderEnv::NameList& uniform_texcoord_max_names,
+			const ShaderEnv::NameList& uniform_texcoord_offset_names);
+
+	};// ShaderBuiltinVariableNames
+
+
 	const ShaderProgram* Shader_get_program (const Shader& shader);
+
+	const ShaderBuiltinVariableNames& Shader_get_builtin_variable_names (
+		const Shader& shader);
+
+	const Shader& Shader_get_default_shader_for_shape ();
+
+	const Shader& Shader_get_default_shader_for_texture ();
+
+
+	const ShaderBuiltinVariableNames& ShaderEnv_get_builtin_variable_names (
+		const ShaderEnv& env);
+
+	const ShaderSource& ShaderEnv_get_default_vertex_shader_source (
+		ShaderEnv* env);
 
 
 }// Rays

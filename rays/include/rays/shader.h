@@ -4,6 +4,7 @@
 #define __RAYS_SHADER_H__
 
 
+#include <vector>
 #include <xot/pimpl.h>
 #include <rays/defs.h>
 #include <rays/coord.h>
@@ -14,6 +15,7 @@ namespace Rays
 
 
 	class Image;
+	class ShaderEnv;
 
 
 	class Shader
@@ -23,7 +25,14 @@ namespace Rays
 
 		public:
 
-			Shader (const char* source = NULL);
+			Shader (
+				const char* fragment_shader_source = NULL,
+				const char*   vertex_shader_source = NULL);
+
+			Shader (
+				const char* fragment_shader_source,
+				const char*   vertex_shader_source,
+				ShaderEnv env);
 
 			~Shader ();
 
@@ -55,6 +64,10 @@ namespace Rays
 
 			void set_uniform (const char* name, const Image& texture);
 
+			const char*   vertex_shader_source () const;
+
+			const char* fragment_shader_source () const;
+
 			operator bool () const;
 
 			bool operator ! () const;
@@ -68,6 +81,34 @@ namespace Rays
 			Xot::PSharedImpl<Data> self;
 
 	};// Shader
+
+
+	class ShaderEnv
+	{
+
+		public:
+
+			typedef std::vector<String> NameList;
+
+			ShaderEnv (
+				const NameList& attribute_position_names      = {},
+				const NameList& attribute_texcoord_names      = {},
+				const NameList& attribute_color_names         = {},
+				const NameList& varying_position_names        = {},
+				const NameList& varying_texcoord_names        = {},
+				const NameList& varying_color_names           = {},
+				const NameList& uniform_texture_names         = {},
+				const NameList& uniform_position_matrix_names = {},
+				const NameList& uniform_texcoord_matrix_names = {},
+				const NameList& uniform_texcoord_min_names    = {},
+				const NameList& uniform_texcoord_max_names    = {},
+				const NameList& uniform_texcoord_offset_names = {});
+
+			struct Data;
+
+			Xot::PSharedImpl<Data> self;
+
+	};// ShaderEnv
 
 
 }// Rays

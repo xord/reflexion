@@ -18,12 +18,53 @@ RUCY_DEF_ALLOC(alloc, klass)
 }
 RUCY_END
 
+static Rays::ShaderEnv::NameList
+to_name_list (const auto& name_or_array)
+{
+	if (name_or_array.is_array())
+	{
+		Rays::ShaderEnv::NameList list;
+		for (size_t i = 0; i < name_or_array.size(); ++i)
+			list.emplace_back(name_or_array[i].c_str());
+		return list;
+	}
+	else if (name_or_array.is_s() || name_or_array.is_sym())
+		return {Xot::String(name_or_array.c_str())};
+	else
+		return {};
+}
+
 static
-RUCY_DEF1(setup, source)
+RUCY_DEF3(setup,
+	fragment_shader_source, vertex_shader_source,
+	builtin_variable_names)
 {
 	RUCY_CHECK_OBJ(Rays::Shader, self);
 
-	*THIS = to<Rays::Shader>(source);
+	if (fragment_shader_source.is_nil())
+		argument_error(__FILE__, __LINE__);
+
+	const char* fs = fragment_shader_source.c_str();
+	const char* vs = vertex_shader_source ? vertex_shader_source.c_str() : NULL;
+
+	if (builtin_variable_names)
+	{
+		*THIS = Rays::Shader(fs, vs, Rays::ShaderEnv(
+			to_name_list(builtin_variable_names[0]),
+			to_name_list(builtin_variable_names[1]),
+			to_name_list(builtin_variable_names[2]),
+			to_name_list(builtin_variable_names[3]),
+			to_name_list(builtin_variable_names[4]),
+			to_name_list(builtin_variable_names[5]),
+			to_name_list(builtin_variable_names[6]),
+			to_name_list(builtin_variable_names[7]),
+			to_name_list(builtin_variable_names[8]),
+			to_name_list(builtin_variable_names[9]),
+			to_name_list(builtin_variable_names[10]),
+			to_name_list(builtin_variable_names[11])));
+	}
+	else
+		*THIS = Rays::Shader(fs, vs);
 }
 RUCY_END
 
@@ -78,6 +119,26 @@ RUCY_DEFN(set_uniform)
 }
 RUCY_END
 
+static
+RUCY_DEF0(get_vertex_shader_source)
+{
+	CHECK;
+
+	const char* source = THIS->vertex_shader_source();
+	return source ? value(source) : nil();
+}
+RUCY_END
+
+static
+RUCY_DEF0(get_fragment_shader_source)
+{
+	CHECK;
+
+	const char* source = THIS->fragment_shader_source();
+	return source ? value(source) : nil();
+}
+RUCY_END
+
 
 static Class cShader;
 
@@ -90,6 +151,8 @@ Init_shader ()
 	cShader.define_alloc_func(alloc);
 	cShader.define_private_method("setup", setup);
 	cShader.define_private_method("set_uniform", set_uniform);
+	cShader.define_method(  "vertex_shader_source",   get_vertex_shader_source);
+	cShader.define_method("fragment_shader_source", get_fragment_shader_source);
 }
 
 
