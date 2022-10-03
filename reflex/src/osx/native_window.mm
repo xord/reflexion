@@ -44,7 +44,10 @@ update_pixel_density (Reflex::Window* window)
 
 	float pd = Window_get_pixel_density(*window);
 	if (painter->pixel_density() != pd)
+	{
 		painter->canvas(window->frame().dup().move_to(0, 0), pd);
+		window->redraw();
+	}
 }
 
 
