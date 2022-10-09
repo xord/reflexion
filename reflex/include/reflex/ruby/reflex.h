@@ -5,6 +5,7 @@
 
 
 #include <rucy/module.h>
+#include <rucy/extension.h>
 #include <reflex/reflex.h>
 
 

@@ -2,6 +2,7 @@
 
 
 void Init_reflex ();
+void Init_exception ();
 
 void Init_selector ();
 void Init_style ();
@@ -49,6 +50,7 @@ extern "C" void
 	Rucy::init();
 
 	Init_reflex();
+	Init_exception();
 
 	Init_selector();
 	Init_style();

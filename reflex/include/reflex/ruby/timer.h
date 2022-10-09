@@ -4,7 +4,6 @@
 #define __REFLEX_RUBY_TIMER_H__
 
 
-#include <rucy/rucy.h>
 #include <rucy/class.h>
 #include <rucy/extension.h>
 #include <reflex/timer.h>

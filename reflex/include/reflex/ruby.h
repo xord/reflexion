@@ -5,6 +5,8 @@
 
 
 #include <reflex/ruby/reflex.h>
+#include <reflex/ruby/defs.h>
+#include <reflex/ruby/exception.h>
 
 #include <reflex/ruby/selector.h>
 #include <reflex/ruby/event.h>

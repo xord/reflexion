@@ -6,6 +6,7 @@
 
 #include <rucy.h>
 #include <reflex/defs.h>
+#include <reflex/ruby/defs.h>
 
 
 using namespace Rucy;
