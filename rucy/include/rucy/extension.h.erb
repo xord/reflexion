@@ -197,7 +197,7 @@
 	 \
 	RUCY__ruby_jump_tag__: \
 	if (RUCY__rubyjumptag__) rb_jump_tag(RUCY__rubyjumptag__); \
-	RUCY_THROW(rb_exc_new2(Rucy::native_error_class(), "Bad jump tag.")); \
+	RUCY_GOTO_RAISE(rb_exc_new2(Rucy::native_error_class(), "Bad jump tag.")); \
 	 \
 	RUCY__ruby_raise_exception__: \
 	rb_exc_raise(RUCY__rubyexception__); \
@@ -215,11 +215,11 @@
 	} \
 	catch (const Rucy::RubyException& e) \
 	{ \
-		RUCY_THROW(e.value()); \
+		RUCY_GOTO_RAISE(e.value()); \
 	} \
 	catch (const std::invalid_argument& e) \
 	{ \
-		RUCY_THROW(rb_exc_new2(rb_eArgError, e.what())); \
+		RUCY_GOTO_RAISE(rb_exc_new2(rb_eArgError, e.what())); \
 	} \
 	catch (const std::exception& e) \
 	{ \
@@ -229,25 +229,28 @@
 			if (!text.empty()) text += " "; \
 			text += "[" + type + "]"; \
 		} \
-		RUCY_THROW(rb_exc_new2(Rucy::native_error_class(), text.c_str())); \
+		RUCY_GOTO_RAISE(rb_exc_new2(Rucy::native_error_class(), text.c_str())); \
 	} \
 	catch (const std::string& s) \
 	{ \
-		RUCY_THROW(rb_exc_new2(Rucy::native_error_class(), s.c_str())); \
+		RUCY_GOTO_RAISE(rb_exc_new2(Rucy::native_error_class(), s.c_str())); \
 	} \
 	catch (const char* s) \
 	{ \
-		RUCY_THROW(rb_exc_new2(Rucy::native_error_class(), s)); \
+		RUCY_GOTO_RAISE(rb_exc_new2(Rucy::native_error_class(), s)); \
 	} \
 	catch (...) \
 	{ \
-		RUCY_THROW(rb_exc_new2( \
+		RUCY_GOTO_RAISE(rb_exc_new2( \
 			Rucy::native_error_class(), "Unknown C++ exception was thrown.")); \
 	}
 
-#define RUCY_THROW(exception) \
+#define RUCY_GOTO_RAISE(exception) \
 	RUCY__rubyexception__ = (exception); \
 	goto RUCY__ruby_raise_exception__
+
+#define RUCY_RAISE(ruby_error_class, message) \
+	rb_exc_raise(rb_exc_new2(ruby_error_class, message))
 
 
 #define RUCY_DEF_ALLOC(name, klass) \
@@ -267,7 +270,7 @@
 		RUCY_TRY
 %	end
 
-#define RUCY_END \
+#define RUCY_DEF_END \
 		RUCY_CATCH \
 		return Rucy::nil(); \
 	}

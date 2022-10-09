@@ -7,6 +7,9 @@
 #include "rucy/extension.h"
 
 
+#define RUCY_END RUCY_DEF_END
+
+
 namespace Rucy
 {
 
