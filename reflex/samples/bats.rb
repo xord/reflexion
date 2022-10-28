@@ -62,7 +62,7 @@ win = Reflex::Window.new do
   end
 
   on :pointer do |e|
-    case e.type
+    case e.action
     when :down
       spawn e.x, e.y
       @spawning = true

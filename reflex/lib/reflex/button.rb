@@ -44,7 +44,7 @@ module Reflex
     end
 
     def on_pointer(e)
-      case e.type
+      case e.action
       when :down
         self.capture += [:pointer]
         redraw

@@ -22,7 +22,7 @@ class SliderView < View
 
     start = nil
     @knob.on :pointer do |e|
-      case e.type
+      case e.action
       when :down
         start = e.position
         @knob.capture :pointer
