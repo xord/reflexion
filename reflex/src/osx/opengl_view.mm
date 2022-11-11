@@ -25,16 +25,15 @@ make_pixelformat (int antialias_nsample = 0)
 
 	static const NSOpenGLPixelFormatAttribute DEFAULT[] =
 	{
-		NSOpenGLPFAWindow,
-		//NSOpenGLPFAAccelerated,
+		//NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core,
+		NSOpenGLPFAAccelerated, NSOpenGLPFANoRecovery,
 		NSOpenGLPFADoubleBuffer,
-		//NSOpenGLPFAColorSize, 24,
-		//NSOpenGLPFAAlphaSize, 8,
-		NSOpenGLPFADepthSize, 24,
-		//NSOpenGLPFANoRecovery,
+		NSOpenGLPFAColorSize, 32,
+		NSOpenGLPFADepthSize, 32,
 	};
 	static const NSOpenGLPixelFormatAttribute ANTIALIAS[] =
 	{
+		NSOpenGLPFAMultisample,
 		NSOpenGLPFASampleBuffers, 1,
 		NSOpenGLPFASamples, (NSOpenGLPixelFormatAttribute) antialias_nsample,
 	};
