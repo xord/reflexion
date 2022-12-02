@@ -51,7 +51,7 @@ RUCY_END
 static Class cMotionEvent;
 
 void
-Init_motion_event ()
+Init_reflex_motion_event ()
 {
 	Module mReflex = define_module("Reflex");
 

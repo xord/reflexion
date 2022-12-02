@@ -118,7 +118,7 @@ RUCY_END
 static Class cSelector;
 
 void
-Init_selector ()
+Init_reflex_selector ()
 {
 	Module mReflex = define_module("Reflex");
 

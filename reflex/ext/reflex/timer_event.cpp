@@ -92,7 +92,7 @@ RUCY_END
 static Class cTimerEvent;
 
 void
-Init_timer_event ()
+Init_reflex_timer_event ()
 {
 	Module mReflex = define_module("Reflex");
 

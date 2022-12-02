@@ -140,7 +140,7 @@ RUCY_END
 static Class cRectShape;
 
 void
-Init_rect_shape ()
+Init_reflex_rect_shape ()
 {
 	Module mReflex = define_module("Reflex");
 

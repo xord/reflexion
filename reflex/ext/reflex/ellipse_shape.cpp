@@ -94,7 +94,7 @@ RUCY_END
 static Class cEllipseShape;
 
 void
-Init_ellipse_shape ()
+Init_reflex_ellipse_shape ()
 {
 	Module mReflex = define_module("Reflex");
 

@@ -43,7 +43,7 @@ RUCY_END
 static Class cPolygonShape;
 
 void
-Init_polygon_shape ()
+Init_reflex_polygon_shape ()
 {
 	Module mReflex = define_module("Reflex");
 

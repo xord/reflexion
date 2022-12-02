@@ -195,7 +195,7 @@ RUCY_END
 static Class cStyleLength;
 
 void
-Init_style_length ()
+Init_reflex_style_length ()
 {
 	Module mReflex = define_module("Reflex");
 

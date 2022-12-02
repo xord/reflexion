@@ -9,7 +9,7 @@ static Class cLayoutError;
 static Class cPhysicsError;
 
 void
-Init_exception ()
+Init_reflex_exception ()
 {
 	Module mReflex = define_module("Reflex");
 

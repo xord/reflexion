@@ -1142,7 +1142,7 @@ RUCY_END
 static Class cView;
 
 void
-Init_view ()
+Init_reflex_view ()
 {
 	Module mReflex = define_module("Reflex");
 

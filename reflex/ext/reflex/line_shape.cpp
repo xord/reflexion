@@ -77,7 +77,7 @@ RUCY_END
 static Class cLineShape;
 
 void
-Init_line_shape ()
+Init_reflex_line_shape ()
 {
 	Module mReflex = define_module("Reflex");
 

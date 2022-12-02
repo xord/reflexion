@@ -111,7 +111,7 @@ RUCY_END
 static Class cApplication;
 
 void
-Init_application ()
+Init_reflex_application ()
 {
 	Module mReflex = define_module("Reflex");
 

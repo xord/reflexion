@@ -109,7 +109,7 @@ RUCY_END
 static Class cScrollEvent;
 
 void
-Init_scroll_event ()
+Init_reflex_scroll_event ()
 {
 	Module mReflex = define_module("Reflex");
 

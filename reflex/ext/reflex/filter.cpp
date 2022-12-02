@@ -59,7 +59,7 @@ RUCY_END
 static Class cFilter;
 
 void
-Init_filter ()
+Init_reflex_filter ()
 {
 	Module mReflex = define_module("Reflex");
 

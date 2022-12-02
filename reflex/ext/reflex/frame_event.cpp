@@ -144,7 +144,7 @@ RUCY_END
 static Class cFrameEvent;
 
 void
-Init_frame_event ()
+Init_reflex_frame_event ()
 {
 	Module mReflex = define_module("Reflex");
 

@@ -85,7 +85,7 @@ RUCY_END
 static Class cTimer;
 
 void
-Init_timer ()
+Init_reflex_timer ()
 {
 	Module mReflex = define_module("Reflex");
 

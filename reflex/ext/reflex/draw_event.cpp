@@ -78,7 +78,7 @@ RUCY_END
 static Class cDrawEvent;
 
 void
-Init_draw_event ()
+Init_reflex_draw_event ()
 {
 	Module mReflex = define_module("Reflex");
 

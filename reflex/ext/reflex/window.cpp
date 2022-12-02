@@ -294,7 +294,7 @@ RUCY_END
 static Class cWindow;
 
 void
-Init_window ()
+Init_reflex_window ()
 {
 	Module mReflex = define_module("Reflex");
 

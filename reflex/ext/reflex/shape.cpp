@@ -187,7 +187,7 @@ RUCY_END
 static Class cShape;
 
 void
-Init_shape ()
+Init_reflex_shape ()
 {
 	Module mReflex = define_module("Reflex");
 

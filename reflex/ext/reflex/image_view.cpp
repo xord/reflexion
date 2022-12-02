@@ -44,7 +44,7 @@ RUCY_END
 static Class cImageView;
 
 void
-Init_image_view ()
+Init_reflex_image_view ()
 {
 	Module mReflex = define_module("Reflex");
 

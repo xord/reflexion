@@ -60,7 +60,7 @@ RUCY_END
 static Class cUpdateEvent;
 
 void
-Init_update_event ()
+Init_reflex_update_event ()
 {
 	Module mReflex = define_module("Reflex");
 

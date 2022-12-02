@@ -123,7 +123,7 @@ RUCY_END
 static Class cPointer;
 
 void
-Init_pointer ()
+Init_reflex_pointer ()
 {
 	Module mReflex = define_module("Reflex");
 

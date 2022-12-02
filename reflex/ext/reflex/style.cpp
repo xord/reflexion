@@ -748,7 +748,7 @@ RUCY_END
 static Class cStyle;
 
 void
-Init_style ()
+Init_reflex_style ()
 {
 	Module mReflex = define_module("Reflex");
 

@@ -71,7 +71,7 @@ RUCY_END
 static Class cContactEvent;
 
 void
-Init_contact_event ()
+Init_reflex_contact_event ()
 {
 	Module mReflex = define_module("Reflex");
 

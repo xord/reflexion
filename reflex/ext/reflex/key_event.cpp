@@ -293,7 +293,7 @@ RUCY_END
 static Class cKeyEvent;
 
 void
-Init_key_event ()
+Init_reflex_key_event ()
 {
 	Module mReflex = define_module("Reflex");
 

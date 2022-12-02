@@ -70,7 +70,7 @@ RUCY_END
 static Class cFocusEvent;
 
 void
-Init_focus_event ()
+Init_reflex_focus_event ()
 {
 	Module mReflex = define_module("Reflex");
 

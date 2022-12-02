@@ -61,7 +61,7 @@ RUCY_END
 static Class cCaptureEvent;
 
 void
-Init_capture_event ()
+Init_reflex_capture_event ()
 {
 	Module mReflex = define_module("Reflex");
 

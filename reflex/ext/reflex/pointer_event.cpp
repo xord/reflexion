@@ -102,7 +102,7 @@ RUCY_END
 static Class cPointerEvent;
 
 void
-Init_pointer_event ()
+Init_reflex_pointer_event ()
 {
 	Module mReflex = define_module("Reflex");
 
