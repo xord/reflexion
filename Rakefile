@@ -127,7 +127,7 @@ namespace :subtree do
   end
 
   task :pull do
-    target.each do |t|
+    targets.each do |t|
       sh %( git subtree pull --prefix=#{t} #{github}/#{t} master )
     end
   end
