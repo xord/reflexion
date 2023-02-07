@@ -1,7 +1,7 @@
 # -*- mode: ruby; coding: utf-8 -*-
 
 
-File.expand_path('../../bin', __FILE__).tap do |path|
+File.expand_path('../bin', __dir__).tap do |path|
   ENV['PATH'] += ":#{path}" unless ENV['PATH'].split(':').include?(path)
 end
 
