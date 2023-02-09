@@ -112,7 +112,7 @@ module Xot
       nums        << 0 until nums.size > index
       nums[index] += 1
       nums.map!.with_index {|num, i| i > index ? 0 : num}
-      nums.pop while nums.last == 0 && nums.size >= 3
+      nums.pop while nums.last == 0 && nums.size > 3
       nums.join '.'
     end
 
