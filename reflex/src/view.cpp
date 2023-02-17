@@ -1086,6 +1086,8 @@ namespace Reflex
 
 		p->pop_state();
 
+		if (event->is_blocked()) return;
+
 		View::ChildList* pchildren = view->self->pchildren.get();
 		if (pchildren)
 		{
