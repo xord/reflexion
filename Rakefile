@@ -42,7 +42,7 @@ task :run do
 end
 
 TASKS.each do |name|
-  task name do
+  task name => 'hooks:all' do
     sh_each_targets "rake #{name}"
   end
 end
@@ -59,6 +59,20 @@ EXTENSIONS.each do |ext|
   task ext do
     TARGETS << ext
   end
+end
+
+
+namespace :hooks do
+  hooks = Dir.glob('.githooks/*')
+    .map {|path| [path, ".git/hooks/#{File.basename path}"]}.to_h
+
+  hooks.each do |from, to|
+    file to => from do
+      sh %( cp #{from} #{to} )
+    end
+  end
+
+  task :all => hooks.values
 end
 
 
