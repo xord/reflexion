@@ -7,10 +7,10 @@
 
 require 'mkmf'
 require 'xot/extconf'
-require 'xot/module'
-require 'rucy/module'
-require 'rays/module'
-require 'reflex/module'
+require 'xot/extension'
+require 'rucy/extension'
+require 'rays/extension'
+require 'reflex/extension'
 
 
 Xot::ExtConf.new Xot, Rucy, Rays, Reflex do
@@ -22,7 +22,7 @@ Xot::ExtConf.new Xot, Rucy, Rays, Reflex do
     $LDFLAGS   << ' -Wl,--out-implib=native.dll.a' if cygwin?
 
     unless osx?
-      lib_dirs << Rays::Module.lib_dir
+      lib_dirs << Rays::Extension.lib_dir
       libs     << 'rays/native'
     end
   end

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-require 'xot/module'
+require 'xot/extension'
 require 'xot/bit_flag'
 require 'xot/bit_flag_accessor'
 require 'xot/bit_util'

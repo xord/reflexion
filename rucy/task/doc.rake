@@ -16,8 +16,8 @@ end
 namespace :doc do
 
 
-  mod       = MODULE
-  name      = env :NAME, MODULE.name.downcase
+  ext       = EXTENSIONS.last
+  name      = env :NAME,      ext.name.downcase
   extdir    = env :EXTDIR,    'ext'
   docdir    = env :DOCDIR,    'doc'
   rdoc      = env :RDOC,      'rdoc'# 'yardoc'

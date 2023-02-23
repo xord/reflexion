@@ -7,11 +7,11 @@
 
 require 'rucy/rake'
 
-require 'xot/module'
-require 'rucy/module'
+require 'xot/extension'
+require 'rucy/extension'
 
 
-MODULES    = [Xot, Rucy]
+EXTENSIONS = [Xot, Rucy]
 NPARAM_MAX = 8
 NTIMES     = (0..NPARAM_MAX)
 

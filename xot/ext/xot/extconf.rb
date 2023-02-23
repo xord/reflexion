@@ -7,7 +7,7 @@
 
 require 'mkmf'
 require 'xot/extconf'
-require 'xot/module'
+require 'xot/extension'
 
 
 Xot::ExtConf.new Xot do

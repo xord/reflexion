@@ -7,8 +7,8 @@
 
 require 'mkmf'
 require 'xot/extconf'
-require 'xot/module'
-require 'rucy/module'
+require 'xot/extension'
+require 'rucy/extension'
 
 
 Xot::ExtConf.new Xot, Rucy do

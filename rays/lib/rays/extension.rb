@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-module Rucy
+module Rays
 
 
-  module Module
+  module Extension
 
     module_function
 
@@ -13,7 +13,7 @@ module Rucy
     end
 
     def version()
-      open(root_dir 'VERSION') {|f| f.readline.chomp}
+      File.open(root_dir 'VERSION') {|f| f.readline chomp: true}
     end
 
     def root_dir(path = '')
@@ -28,7 +28,7 @@ module Rucy
       root_dir 'lib'
     end
 
-  end# Module
+  end# Extension
 
 
-end# Rucy
+end# Rays

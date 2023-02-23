@@ -4,7 +4,7 @@
 File.expand_path('lib', __dir__)
   .tap {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 
-require 'rucy/module'
+require 'rucy/extension'
 
 
 Gem::Specification.new do |s|
@@ -12,14 +12,14 @@ Gem::Specification.new do |s|
     patterns.map {|pat| Dir.glob(pat).to_a}.flatten
   end
 
-  mod   = Rucy::Module
-  name  = mod.name.downcase
+  ext   = Rucy::Extension
+  name  = ext.name.downcase
   rdocs = glob.call *%w[README .doc/ext/**/*.cpp]
 
   s.name        = name
   s.summary     = 'A Ruby C++ Extension Helper Library.'
   s.description = 'This library helps you to develop Ruby Extension by C++.'
-  s.version     = mod.version
+  s.version     = ext.version
 
   s.authors  = %w[xordog]
   s.email    = 'xordog@gmail.com'

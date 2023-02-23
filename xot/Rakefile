@@ -7,11 +7,11 @@
 
 require 'xot/rake'
 
-require 'xot/module'
+require 'xot/extension'
 
 
-MODULES = [Xot]
-DLNAME  = 'tester'
+EXTENSIONS = [Xot]
+DLNAME     = 'tester'
 
 build_native_library
 build_ruby_extension dlname: DLNAME, liboutput: false

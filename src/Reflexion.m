@@ -19,8 +19,8 @@ void Init_reflex_native ();
 		[CRuby addExtension:@"rays/native"   init:^{Init_rays_native();}];
 		[CRuby addExtension:@"reflex/native" init:^{Init_reflex_native();}];
 
-		for (NSString *mod in @[@"Xot", @"Rucy", @"Beeps", @"Rays", @"Reflex"])
-			[CRuby addLibrary:mod bundle:[NSBundle bundleForClass:Reflexion.class]];
+		for (NSString *ext in @[@"Xot", @"Rucy", @"Beeps", @"Rays", @"Reflex"])
+			[CRuby addLibrary:ext bundle:[NSBundle bundleForClass:Reflexion.class]];
 	}
 
 	+ (BOOL) start

@@ -12,10 +12,10 @@ module Xot
 
     include Xot::Rake
 
-    attr_reader :modules, :defs, :inc_dirs, :lib_dirs, :headers, :libs, :local_libs, :frameworks
+    attr_reader :extensions, :defs, :inc_dirs, :lib_dirs, :headers, :libs, :local_libs, :frameworks
 
-    def initialize(*modules, &block)
-      @modules = modules.map {|m| m.const_get :Module}
+    def initialize(*extensions, &block)
+      @extensions = extensions.map {|x| x.const_get :Extension}
       @defs, @inc_dirs, @lib_dirs, @headers, @libs, @local_libs, @frameworks =
         ([[]] * 7).map(&:dup)
       Xot::BlockUtil.instance_eval_or_block_call self, &block if block
@@ -28,8 +28,8 @@ module Xot
     def setup()
       yield if block_given?
 
-      modules.each do |m|
-        name = m.name.downcase
+      extensions.each do |x|
+        name = x.name.downcase
         headers << "#{name}.h"
         libs << name
       end
@@ -44,8 +44,8 @@ module Xot
     end
 
     def create_makefile(*args)
-      modules.each do |m|
-        dir_config m.name.downcase, m.inc_dir, m.lib_dir
+      extensions.each do |x|
+        dir_config x.name.downcase, x.inc_dir, x.lib_dir
       end
 
       exit 1 unless headers.all? {|s| have_header s}

@@ -7,13 +7,13 @@
 
 require 'rucy/rake'
 
-require 'xot/module'
-require 'rucy/module'
-require 'rays/module'
-require 'reflex/module'
+require 'xot/extension'
+require 'rucy/extension'
+require 'rays/extension'
+require 'reflex/extension'
 
 
-MODULES     = [Xot, Rucy, Rays, Reflex]
+EXTENSIONS  = [Xot, Rucy, Rays, Reflex]
 GEMNAME     = 'reflexion'
 TESTS_ALONE = ['test/test_reflex.rb']
 

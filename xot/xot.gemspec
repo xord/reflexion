@@ -4,7 +4,7 @@
 File.expand_path('lib', __dir__)
   .tap {|s| $:.unshift s if !$:.include?(s) && File.directory?(s)}
 
-require 'xot/module'
+require 'xot/extension'
 
 
 Gem::Specification.new do |s|
@@ -12,14 +12,14 @@ Gem::Specification.new do |s|
     patterns.map {|pat| Dir.glob(pat).to_a}.flatten
   end
 
-  mod   = Xot::Module
-  name  = mod.name.downcase
+  ext   = Xot::Extension
+  name  = xot.name.downcase
   rdocs = glob.call *%w[README]
 
   s.name        = name
   s.summary     = 'A Utility library for C++ developemt.'
   s.description = 'This library include some useful utility classes and functions for development with C++.'
-  s.version     = mod.version
+  s.version     = xot.version
 
   s.authors  = %w[xordog]
   s.email    = 'xordog@gmail.com'

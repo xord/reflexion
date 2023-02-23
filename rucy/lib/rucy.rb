@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
 
 
-require 'rucy/module'
+require 'rucy/extension'
