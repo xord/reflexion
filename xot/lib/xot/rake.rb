@@ -115,9 +115,9 @@ module Xot
       end
     end
 
-    def build_ruby_extension(dlname: 'native', dlext: 'so')
+    def build_ruby_extension(dlname: 'native', dlext: nil, liboutput: true)
       dlname = env :DLNAME, dlname
-      dlext  = env :DLEXT,  RbConfig::CONFIG['DLEXT'] || dlext
+      dlext  = env :DLEXT,  dlext || RbConfig::CONFIG['DLEXT'] || 'so'
 
       extconf  = File.join ext_dir, 'extconf.rb'
       makefile = File.join ext_dir, 'Makefile'
@@ -130,7 +130,7 @@ module Xot
       srcs = FileList["#{ext_dir}/**/*.cpp"]
       libs = modules.map {|m| "#{m.lib_dir}/lib#{m.name.downcase}.a"}
 
-      alias_task :ext     => libout
+      alias_task :ext     => (liboutput ? libout : extout)
       alias_task :clean   => 'ext:clean'
       alias_task :clobber => 'ext:clobber'
 

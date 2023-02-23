@@ -14,7 +14,7 @@ MODULES = [Xot]
 DLNAME  = 'tester'
 
 build_native_library
-build_ruby_extension dlname: DLNAME
+build_ruby_extension dlname: DLNAME, liboutput: false
 test_ruby_extension
 build_ruby_gem
 

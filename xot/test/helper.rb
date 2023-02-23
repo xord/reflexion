@@ -8,6 +8,6 @@
 require 'test/unit'
 require 'xot'
 require 'xot/test'
-require 'xot/tester'
+require_relative '../ext/xot/tester'
 
 include Xot::Test
