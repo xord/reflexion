@@ -2,7 +2,7 @@
 
 
 require 'reflex/autoinit'
-require 'reflex/module'
+require 'reflex/extension'
 
 require 'reflex/point'
 require 'reflex/bounds'

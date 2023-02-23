@@ -15,8 +15,8 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = "10.0"
 
   root    = "${PODS_ROOT}/#{s.name}"
-  mods    = %w[xot rucy beeps rays reflex]
-  incdirs = mods.map {|m| "#{root}/#{m}/include"}.concat %W[
+  exts    = %w[xot rucy beeps rays reflex]
+  incdirs = exts.map {|x| "#{root}/#{x}/include"}.concat %W[
     #{root}/src
     #{root}/beeps/vendor/stk/include
     #{root}/rays/vendor/glm
@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   ]
 
   s.prepare_command    = "rake vendor erb"
-  s.preserve_paths     = mods + %w[src]
+  s.preserve_paths     = exts + %w[src]
   s.requires_arc       = false
   s.osx.compiler_flags = "-DOSX"
   s.ios.compiler_flags = "-DIOS"
@@ -37,85 +37,75 @@ Pod::Spec.new do |s|
     "CLANG_CXX_LANGUAGE_STANDARD" => 'c++20',
     "HEADER_SEARCH_PATHS"         => incdirs.join(' ')
   }
-  s.resource_bundles   = mods.each_with_object({}) do |mod, hash|
-    hash[mod.capitalize] = %W[#{mod}/lib VERSION]
+  s.resource_bundles   = exts.each_with_object({}) do |ext, hash|
+    hash[ext.capitalize] = %W[#{ext}/lib VERSION]
   end
 
   #s.dependency = 'CRuby', git: 'https://github.com/xord/cruby'
 
   s.subspec "Xot" do |spec|
-    mod = spec.name.split('/').last.downcase
-
-    spec.source_files = "#{mod}/src/*.cpp"
+    spec.source_files = "xot/src/*.cpp"
   end
 
   s.subspec "Rucy" do |spec|
-    mod = spec.name.split('/').last.downcase
-
-    spec.source_files = "#{mod}/src/*.cpp"
+    spec.source_files = "rucy/src/*.cpp"
 
     spec.subspec "Ext" do |ext|
-      ext.source_files = "#{mod}/ext/#{mod}/*.cpp"
+      ext.source_files = "rucy/ext/rucy/*.cpp"
     end
   end
 
   s.subspec "Beeps" do |spec|
-    mod = spec.name.split('/').last.downcase
-
-    spec.source_files = "#{mod}/src/*.cpp"
+    spec.source_files = "beeps/src/*.cpp"
     spec.frameworks   = %w[OpenAL]
 
     spec.subspec "STK" do |sub|
-      sub.source_files  = "#{mod}/vendor/stk/src/*.cpp"
+      sub.source_files  = "beeps/vendor/stk/src/*.cpp"
       sub.exclude_files = %W[Tcp Udp Socket Thread Mutex InetWv Rt].map {|s|
-        "#{mod}/vendor/stk/src/#{s}*.cpp"
+        "beeps/vendor/stk/src/#{s}*.cpp"
       }
     end
 
     spec.subspec "Ext" do |ext|
-      ext.source_files = "#{mod}/ext/#{mod}/*.cpp"
+      ext.source_files = "beeps/ext/beeps/*.cpp"
     end
   end
 
   s.subspec "Rays" do |spec|
-    mod = spec.name.split('/').last.downcase
-
-    spec    .source_files = "#{mod}/src/*.cpp"
-    spec.osx.source_files = "#{mod}/src/osx/*.{cpp,mm}"
-    spec.ios.source_files = "#{mod}/src/ios/*.{cpp,mm}"
+    spec    .source_files = "rays/src/*.cpp"
+    spec.osx.source_files = "rays/src/osx/*.{cpp,mm}"
+    spec.ios.source_files = "rays/src/ios/*.{cpp,mm}"
     spec.ios.frameworks   = %w[GLKit MobileCoreServices AVFoundation]# ImageIO
 
     spec.subspec "Clipper" do |sub|
-      sub.source_files = "#{mod}/vendor/clipper/cpp/*.cpp"
+      sub.source_files = "rays/vendor/clipper/cpp/*.cpp"
     end
 
     spec.subspec "Poly2Tri" do |sub|
-      sub.source_files = "#{mod}/vendor/poly2tri/poly2tri/**/*.cc"
+      sub.source_files = "rays/vendor/poly2tri/poly2tri/**/*.cc"
     end
 
     spec.subspec "SplineLib" do |sub|
-      sub.source_files = "#{mod}/vendor/splines-lib/Splines.cpp"
+      sub.source_files = "rays/vendor/splines-lib/Splines.cpp"
     end
 
     spec.subspec "Ext" do |ext|
-      ext.source_files = "#{mod}/ext/#{mod}/*.cpp"
+      ext.source_files = "rays/ext/rays/*.cpp"
     end
   end
 
   s.subspec "Reflex" do |spec|
-    mod = spec.name.split('/').last.downcase
-
-    spec    .source_files = "#{mod}/src/*.cpp"
-    spec.osx.source_files = "#{mod}/src/osx/*.{cpp,mm}"
-    spec.ios.source_files = "#{mod}/src/ios/*.{cpp,mm}"
+    spec    .source_files = "reflex/src/*.cpp"
+    spec.osx.source_files = "reflex/src/osx/*.{cpp,mm}"
+    spec.ios.source_files = "reflex/src/ios/*.{cpp,mm}"
     spec.ios.frameworks   = %w[CoreMotion]
 
     spec.subspec "Box2D" do |sub|
-      sub.source_files = "#{mod}/vendor/Box2D/Box2D/Box2D/**/*.cpp"
+      sub.source_files = "reflex/vendor/Box2D/Box2D/Box2D/**/*.cpp"
     end
 
     spec.subspec "Ext" do |ext|
-      ext.source_files = "#{mod}/ext/#{mod}/*.cpp"
+      ext.source_files = "reflex/ext/reflex/*.cpp"
     end
   end
 

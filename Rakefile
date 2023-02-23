@@ -11,20 +11,20 @@ require 'xot/rake/util'
 include Xot::Rake
 
 
-MODULES = %i[xot rucy beeps rays reflex]
-TASKS   = %i[vendor erb lib ext test gem install uninstall upload clean clobber]
+EXTENSIONS = %i[xot rucy beeps rays reflex]
+TASKS      = %i[vendor erb lib ext test gem install uninstall upload clean clobber]
 
 TARGETS = []
 
 
-def module_versions ()
-  MODULES.each_with_object({}) do |mod, hash|
-    hash[mod] = get_version(mod).split('.').map(&:to_i)
+def extension_versions ()
+  EXTENSIONS.each_with_object({}) do |ext, hash|
+    hash[ext] = get_version(ext).split('.').map(&:to_i)
   end
 end
 
 def targets ()
-  TARGETS.empty? ? MODULES : TARGETS
+  TARGETS.empty? ? EXTENSIONS : TARGETS
 end
 
 def sh_each_targets (cmd)
@@ -48,16 +48,16 @@ TASKS.each do |name|
 end
 
 task :all do
-  TARGETS.concat MODULES
+  TARGETS.concat EXTENSIONS
 end
 
 task :debug do
   debug true
 end
 
-MODULES.each do |mod|
-  task mod do
-    TARGETS << mod
+EXTENSIONS.each do |ext|
+  task ext do
+    TARGETS << ext
   end
 end
 
@@ -66,16 +66,16 @@ namespace :version do
 
   namespace :bump do
 
-    def update_module_versions ()
+    def update_extension_versions ()
       targets.each do |t|
         sh %( cp #{VERSION_NAME} #{t}/ )
       end
     end
 
     def update_dependencies ()
-      update_module_versions
+      update_extension_versions
 
-      vers = module_versions
+      vers = extension_versions
       targets.each do |t|
         ver = vers[t][0..2].join '.'
         re  = /add_runtime_dependency\s*['"]#{t}['"]\s*,\s*['"]~>\s*[\d\.]+['"]\s*$/

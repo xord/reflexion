@@ -12,16 +12,16 @@ module Xot
 
     VERSION_NAME = 'VERSION'
 
-    def modules()
-      env(:MODULES, []).map {|m| m::Module}
+    def extensions()
+      env(:EXTENSIONS, []).map {|m| m::Extension}
     end
 
     def target()
-      modules.last
+      extensions.last
     end
 
     def target_name()
-      env :MODNAME, target.name.downcase
+      env :EXTNAME, target.name.downcase
     end
 
     def inc_dir()
@@ -57,7 +57,7 @@ module Xot
     end
 
     def inc_dirs()
-      env_array(:INCDIRS, []) + modules.reverse.map {|m| m.inc_dir}.flatten
+      env_array(:INCDIRS, []) + extensions.reverse.map {|m| m.inc_dir}.flatten
     end
 
     def src_dirs()
