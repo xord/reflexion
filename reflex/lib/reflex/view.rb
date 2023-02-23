@@ -155,7 +155,7 @@ module Reflex
     alias velocity=     linear_velocity=
     alias velocity      linear_velocity
 
-    alias meter  meter2pixel
+    alias meter meter2pixel
 
     def self.has_model()
       include ModelView
