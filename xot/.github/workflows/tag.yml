@@ -19,6 +19,9 @@ jobs:
       - name: install xot gem
         run: gem install xot
 
+      - name: fetch all tags and histories
+        run: git fetch --unshallow --tags
+
       - name: tag versions
         run: rake tag:versions
 
