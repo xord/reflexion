@@ -209,9 +209,9 @@ module Xot
             .transform_values(&:strip!)
 
           vers.to_a.reverse.each do |ver, hash|
-            break if tags.include?("v#{ver}")
-            message = changes[ver]&.gsub '"', '\\"'
-            puts "git tag -a -m \"#{message}\" v#{ver} #{hash}"
+            tag = "v#{ver}"
+            break if tags.include?(tag)
+            sh %( git tag -a -m \"#{changes[ver]&.gsub '"', '\\"'}\" #{tag} #{hash} )
           end
         end
       end
