@@ -19,6 +19,7 @@ build_native_library
 build_ruby_extension dlname: :tester, liboutput: false
 test_ruby_extension
 generate_documents
+tag_versions
 build_ruby_gem
 
 task :default => :ext

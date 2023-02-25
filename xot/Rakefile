@@ -16,6 +16,7 @@ DLNAME     = 'tester'
 build_native_library
 build_ruby_extension dlname: DLNAME, liboutput: false
 test_ruby_extension
+tag_versions
 build_ruby_gem
 
 task :default => :ext

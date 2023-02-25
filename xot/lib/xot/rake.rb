@@ -189,6 +189,33 @@ module Xot
       end
     end
 
+    def tag_versions()
+      namespace :tag do
+        task :versions do
+          tags = `git tag`.lines chomp: true
+          vers = `git log --oneline ./VERSION`
+            .lines(chomp: true)
+            .map {|line| line.split.first[/^\w+$/]}
+            .map {|hash| p [`git cat-file -p #{hash}:./VERSION 2>/dev/null`[/[\d\.]+/], hash]}
+            .select {|ver, hash| ver && hash}
+            .reverse
+            .to_h
+
+          changes = File.read('ChangeLog.md')
+            .split(/^\s*##\s*\[\s*v([\d\.]+)\s*\].*$/)
+            .slice(1..-1)
+            .each_slice(2)
+            .to_h
+            .transform_values(&:strip!)
+
+          vers.to_a.reverse.each do |ver, hash|
+            break if tags.include?("v#{ver}")
+            puts "git tag -a -m \"#{changes[ver].gsub '"', '\\"'}\" v#{ver} #{hash}"
+          end
+        end
+      end
+    end
+
     def build_ruby_gem()
       gemspec = "#{target_name}.gemspec"
       gemname = env :GEMNAME,    target_name
