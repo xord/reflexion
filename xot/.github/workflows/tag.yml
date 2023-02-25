@@ -22,7 +22,7 @@ jobs:
       - name: fetch all tags and histories
         run: git fetch --unshallow --tags
 
-      - name: push tags
+      - name: setup user name and email
         run: |
           git config --global user.email "xordog@gmail.com"
           git config --global user.name "xord"
