@@ -196,7 +196,7 @@ module Xot
           vers = `git log --oneline ./VERSION`
             .lines(chomp: true)
             .map {|line| line.split.first[/^\w+$/]}
-            .map {|hash| p [`git cat-file -p #{hash}:./VERSION 2>/dev/null`[/[\d\.]+/], hash]}
+            .map {|hash| [`git cat-file -p #{hash}:./VERSION 2>/dev/null`[/[\d\.]+/], hash]}
             .select {|ver, hash| ver && hash}
             .reverse
             .to_h
@@ -210,7 +210,8 @@ module Xot
 
           vers.to_a.reverse.each do |ver, hash|
             break if tags.include?("v#{ver}")
-            puts "git tag -a -m \"#{changes[ver].gsub '"', '\\"'}\" v#{ver} #{hash}"
+            message = changes[ver]&.gsub '"', '\\"'
+            puts "git tag -a -m \"#{message}\" v#{ver} #{hash}"
           end
         end
       end
