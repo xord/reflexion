@@ -56,20 +56,6 @@ EXTENSIONS.each do |ext|
 end
 
 
-namespace :hooks do
-  hooks = Dir.glob('.githooks/*')
-    .map {|path| [path, ".git/hooks/#{File.basename path}"]}.to_h
-
-  hooks.each do |from, to|
-    file to => from do
-      sh %( cp #{from} #{to} )
-    end
-  end
-
-  task :all => hooks.values
-end
-
-
 namespace :subtree do
   github = 'git@github.com:xord'
 
@@ -84,4 +70,18 @@ namespace :subtree do
       sh %( git subtree pull --prefix=#{t} #{github}/#{t} master )
     end
   end
+end
+
+
+namespace :hooks do
+  hooks = Dir.glob('.githooks/*')
+    .map {|path| [path, ".git/hooks/#{File.basename path}"]}.to_h
+
+  hooks.each do |from, to|
+    file to => from do
+      sh %( cp #{from} #{to} )
+    end
+  end
+
+  task :all => hooks.values
 end
