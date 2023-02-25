@@ -65,7 +65,7 @@ module Xot
 
         task :dependencies do
           exts.each do |ext|
-            sh %( git clone https://github.com/xord/#{ext}.git ../#{ext} )
+            sh %( git clone --depth 1 https://github.com/xord/#{ext}.git ../#{ext} )
             sh %( cd ../#{ext} && rake ext )
           end
         end
