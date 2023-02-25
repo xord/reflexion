@@ -55,6 +55,23 @@ module Xot
       env :TESTS_EXCLUDE, []
     end
 
+    def setup_rakefile()
+      namespace :setup do
+        gemspec = `git ls-files`.lines(chomp: true).find {|l| l =~ /\.gemspec$/}
+        myself  = File.basename gemspec, '.gemspec'
+        exts    = File.readlines("Rakefile")
+          .map {|l| l[%r|^\s*require\W+(\w+)/extension\W+$|, 1]}
+          .compact - [myself]
+
+        task :dependencies do
+          exts.each do |ext|
+            sh %( git clone https://github.com/xord/#{ext}.git ../#{ext} )
+            sh %( cd ../#{ext} && rake ext )
+          end
+        end
+      end
+    end
+
     def build_native_library()
       outname = "lib#{target_name}.a"
       out     = File.join lib_dir, outname
