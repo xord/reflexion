@@ -11,7 +11,8 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: checkout
+        uses: actions/checkout@v2
 
       - name: ruby 3.2
         uses: ruby/setup-ruby@v1
@@ -24,7 +25,7 @@ jobs:
           rake setup:dependencies
 
       - name: clean
-        run: rake clean
+        run: rake clobber
 
       - name: lib
         run: rake lib
