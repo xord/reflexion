@@ -13,13 +13,13 @@ Gem::Specification.new do |s|
   end
 
   ext   = Xot::Extension
-  name  = xot.name.downcase
+  name  = ext.name.downcase
   rdocs = glob.call *%w[README]
 
   s.name        = name
   s.summary     = 'A Utility library for C++ developemt.'
   s.description = 'This library include some useful utility classes and functions for development with C++.'
-  s.version     = xot.version
+  s.version     = ext.version
 
   s.authors  = %w[xordog]
   s.email    = 'xordog@gmail.com'
