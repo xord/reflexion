@@ -26,4 +26,7 @@ jobs:
         run: rake tag:versions
 
       - name: push tags
-        run: git push origin --tags
+        run: |
+          git config --global user.email "xordog@gmail.com"
+          git config --global user.name "xord"
+          git push origin --tags
