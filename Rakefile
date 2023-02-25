@@ -17,12 +17,6 @@ TASKS      = %i[vendor erb lib ext test gem install uninstall upload clean clobb
 TARGETS = []
 
 
-def extension_versions ()
-  EXTENSIONS.each_with_object({}) do |ext, hash|
-    hash[ext] = get_version(ext).split('.').map(&:to_i)
-  end
-end
-
 def targets ()
   TARGETS.empty? ? EXTENSIONS : TARGETS
 end
@@ -76,62 +70,7 @@ namespace :hooks do
 end
 
 
-namespace :version do
-
-  namespace :bump do
-
-    def update_extension_versions ()
-      targets.each do |t|
-        sh %( cp #{VERSION_NAME} #{t}/ )
-      end
-    end
-
-    def update_dependencies ()
-      update_extension_versions
-
-      vers = extension_versions
-      targets.each do |t|
-        ver = vers[t][0..2].join '.'
-        re  = /add_runtime_dependency\s*['"]#{t}['"]\s*,\s*['"]~>\s*[\d\.]+['"]\s*$/
-        Dir.glob('*/*.gemspec').each do |path|
-          filter_file path do |gemspec|
-            gemspec.sub(re) {|s| s.sub /[\d\.]+/, ver}
-          end
-        end
-      end
-    end
-
-    task :major do
-      update_and_tag_version 0 do
-        update_dependencies
-      end
-    end
-
-    task :minor do
-      update_and_tag_version 1 do
-        update_dependencies
-      end
-    end
-
-    task :patch do
-      update_and_tag_version 2 do
-        update_dependencies
-      end
-    end
-
-    task :build do
-      update_and_tag_version 3 do
-        update_dependencies
-      end
-    end
-
-  end# bump
-
-end# version
-
-
 namespace :subtree do
-
   github = 'git@github.com:xord'
 
   task :push do
@@ -145,5 +84,4 @@ namespace :subtree do
       sh %( git subtree pull --prefix=#{t} #{github}/#{t} master )
     end
   end
-
-end# subtree
+end
