@@ -15,12 +15,10 @@ EXTENSIONS = [Xot, Rucy]
 NPARAM_MAX = 8
 NTIMES     = (0..NPARAM_MAX)
 
-setup_rakefile
 build_native_library
 build_ruby_extension dlname: :tester, liboutput: false
 test_ruby_extension
 generate_documents
-tag_versions
 build_ruby_gem
 
 task :default => :ext
