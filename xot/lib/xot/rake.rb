@@ -55,23 +55,6 @@ module Xot
       env :TESTS_EXCLUDE, []
     end
 
-    def setup_rakefile()
-      namespace :setup do
-        gemspec = `git ls-files`.lines(chomp: true).find {|l| l =~ /\.gemspec$/}
-        myself  = File.basename gemspec, '.gemspec'
-        exts    = File.readlines("Rakefile")
-          .map {|l| l[%r|^\s*require\W+(\w+)/extension\W+$|, 1]}
-          .compact - [myself]
-
-        task :dependencies do
-          exts.each do |ext|
-            sh %( git clone --depth 1 https://github.com/xord/#{ext}.git ../#{ext} )
-            sh %( cd ../#{ext} && rake ext )
-          end
-        end
-      end
-    end
-
     def build_native_library()
       outname = "lib#{target_name}.a"
       out     = File.join lib_dir, outname
@@ -201,34 +184,6 @@ module Xot
           test_alones.each do |rb|
             next if test_excludes.include? rb
             sh %( ruby #{rb} )
-          end
-        end
-      end
-    end
-
-    def tag_versions()
-      namespace :tag do
-        task :versions do
-          tags = `git tag`.lines chomp: true
-          vers = `git log --oneline ./VERSION`
-            .lines(chomp: true)
-            .map {|line| line.split.first[/^\w+$/]}
-            .map {|hash| [`git cat-file -p #{hash}:./VERSION 2>/dev/null`[/[\d\.]+/], hash]}
-            .select {|ver, hash| ver && hash}
-            .reverse
-            .to_h
-
-          changes = File.read('ChangeLog.md')
-            .split(/^\s*##\s*\[\s*v([\d\.]+)\s*\].*$/)
-            .slice(1..-1)
-            .each_slice(2)
-            .to_h
-            .transform_values(&:strip!)
-
-          vers.to_a.reverse.each do |ver, hash|
-            tag = "v#{ver}"
-            break if tags.include?(tag)
-            sh %( git tag -a -m \"#{changes[ver]&.gsub '"', '\\"'}\" #{tag} #{hash} )
           end
         end
       end

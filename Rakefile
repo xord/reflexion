@@ -21,7 +21,7 @@ def targets ()
   TARGETS.empty? ? EXTENSIONS : TARGETS
 end
 
-def sh_each_targets (cmd)
+def sh_each_target (cmd)
   targets.each do |t|
     cd_sh File.expand_path(t.to_s, __dir__), cmd
   end
@@ -35,9 +35,9 @@ task :run do
   sh %{ ruby reflex/samples/#{name}.rb }
 end
 
-TASKS.each do |name|
-  task name => 'hooks:all' do
-    sh_each_targets "rake #{name}"
+TASKS.each do |task_|
+  task task_ => :scripts do
+    sh_each_target "rake #{task_}"
   end
 end
 
@@ -54,6 +54,8 @@ EXTENSIONS.each do |ext|
     TARGETS << ext
   end
 end
+
+task :scripts => 'scripts:build'
 
 
 namespace :subtree do
@@ -73,15 +75,38 @@ namespace :subtree do
 end
 
 
-namespace :hooks do
-  hooks = Dir.glob('.githooks/*')
-    .map {|path| [path, ".git/hooks/#{File.basename path}"]}.to_h
+namespace :scripts do
+  task :build => ['githooks:build', 'workflows:build']
 
-  hooks.each do |from, to|
-    file to => from do
-      sh %( cp #{from} #{to} )
+  namespace :githooks do
+    hooks = Dir.glob('.githooks/*')
+      .map {|path| [path, ".git/hooks/#{File.basename path}"]}
+      .to_h
+
+    task :build => hooks.values
+
+    hooks.each do |from, to|
+      file to => from do
+        sh %( cp #{from} #{to} )
+      end
     end
   end
 
-  task :all => hooks.values
+  namespace :workflows do
+    yamls = Dir.glob('.workflows/*.{yaml,yml,rb}')
+      .map {|path| [path, ".github/workflows/#{File.basename path}"]}
+      .to_h
+
+    EXTENSIONS.each do |ext|
+      yamls.each do |from, to|
+        path = "#{ext}/#{to}"
+
+        task :build => path
+
+        file path => from do
+          sh %( cp #{from} #{path} )
+        end
+      end
+    end
+  end
 end
