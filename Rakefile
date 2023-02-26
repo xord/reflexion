@@ -30,23 +30,12 @@ end
 
 task :default
 
-task :run do
-  raise unless name = env(:sample)
-  sh %{ ruby reflex/samples/#{name}.rb }
-end
-
-TASKS.each do |task_|
-  task task_ => :scripts do
-    sh_each_target "rake #{task_}"
-  end
+task :debug do
+  debug true
 end
 
 task :all do
   TARGETS.concat EXTENSIONS
-end
-
-task :debug do
-  debug true
 end
 
 EXTENSIONS.each do |ext|
@@ -55,11 +44,27 @@ EXTENSIONS.each do |ext|
   end
 end
 
+TASKS.each do |task_|
+  task task_ => :scripts do
+    sh_each_target "rake #{task_}"
+  end
+end
+
+task :run do
+  raise unless name = env(:sample)
+  sh %{ ruby reflex/samples/#{name}.rb }
+end
+
 task :scripts => 'scripts:build'
 
 
 namespace :subtree do
   github = 'git@github.com:xord'
+
+  task :import do
+    name = ENV['name'] or raise
+    sh %( git subtree add --prefix=#{name} #{github}/#{name} master )
+  end
 
   task :push do
     targets.each do |t|
