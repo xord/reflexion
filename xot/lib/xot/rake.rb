@@ -220,7 +220,7 @@ module Xot
         end
 
         desc "upload gem"
-        task :upload => :install do
+        task :upload => gemfile do
           sh %( gem push #{gemfile} )
         end
 
