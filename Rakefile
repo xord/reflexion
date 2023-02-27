@@ -59,7 +59,7 @@ task :scripts => 'scripts:build'
 
 
 namespace :subtree do
-  github = 'git@github.com:xord'
+  github = 'https://github.com/xord'
 
   task :import do
     name = ENV['name'] or raise
