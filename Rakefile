@@ -64,21 +64,22 @@ task :scripts => 'scripts:build'
 
 namespace :subtree do
   github = 'https://github.com/xord'
+  opts   = actions? ? '-q' : ''
 
   task :import do
     name = ENV['name'] or raise
-    sh %( git subtree add --prefix=#{name} #{github}/#{name} master )
+    sh %( git subtree add #{opts} --prefix=#{name} #{github}/#{name} master )
   end
 
   task :push do
     targets.each do |t|
-      sh %( git subtree push --prefix=#{t} #{github}/#{t} master )
+      sh %( git subtree push #{opts} --prefix=#{t} #{github}/#{t} master )
     end
   end
 
   task :pull do
     targets.each do |t|
-      sh %( git subtree pull --prefix=#{t} #{github}/#{t} master )
+      sh %( git subtree pull #{opts} --prefix=#{t} #{github}/#{t} master )
     end
   end
 end

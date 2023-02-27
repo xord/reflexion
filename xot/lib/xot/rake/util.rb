@@ -250,6 +250,10 @@ module Xot
       env :DEBUG, false
     end
 
+    def actions?()
+      env :GITHUB_ACTIONS, false
+    end
+
     def win32?()
       RUBY_PLATFORM =~ /mswin|ming|cygwin/
     end
