@@ -102,9 +102,9 @@ module Xot
         erbs.each do |erb, to|
           desc "compile #{erb}"
           file to => erb do
-            print "#{erb}: compiling to #{to} ..."
+            $stderr.print "#{erb}: compiling to #{to} ..."
             compile_erb erb, to
-            puts "ok"
+            $stderr.puts "ok"
           end
         end
 
