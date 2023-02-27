@@ -30,6 +30,10 @@ end
 
 task :default
 
+task :quiet do
+  ENV['RAKEOPT'] = '--quiet'
+end
+
 task :debug do
   debug true
 end
