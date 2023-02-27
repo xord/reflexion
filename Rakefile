@@ -81,10 +81,10 @@ end
 
 
 namespace :scripts do
-  task :build => ['githooks:build', 'workflows:build']
+  task :build => ['hooks:build', 'workflows:build']
 
-  namespace :githooks do
-    hooks = Dir.glob('.githooks/*')
+  namespace :hooks do
+    hooks = Dir.glob('.hooks/*')
       .map {|path| [path, ".git/hooks/#{File.basename path}"]}
       .to_h
 
