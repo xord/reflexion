@@ -77,6 +77,7 @@ module Xot
         file out => srcs.values do
           next if srcs.values.empty?
           objs = srcs.values + vendor_srcs_map.values
+          noverbose_puts "linking #{out}"
           sh %( rm -f #{out} )
           sh %( #{ar} #{arflags} #{out} #{objs.join " "} )
         end
@@ -95,6 +96,7 @@ module Xot
         srcs.each do |src, obj|
           desc "compile #{src}"
           file obj => [:vendor, depend, src] + erbs.values do
+            noverbose_puts "compiling #{src}"
             sh %( #{cxx} -c #{cppflags} #{cxxflags} -o #{obj} #{src} )
           end
         end
@@ -102,9 +104,8 @@ module Xot
         erbs.each do |erb, to|
           desc "compile #{erb}"
           file to => erb do
-            $stderr.print "#{erb}: compiling to #{to} ..."
+            rake_puts "compiling #{erb} to #{to}"
             compile_erb erb, to
-            $stderr.puts "ok"
           end
         end
 
@@ -177,7 +178,7 @@ module Xot
         ::Rake::TestTask.new :full do |t|
           t.libs << lib_dir
           t.test_files = FileList["#{test_dir}/**/test_*.rb"] - test_alones - test_excludes
-          t.verbose = true
+          t.verbose = ::Rake.verbose
         end
 
         task :alones do

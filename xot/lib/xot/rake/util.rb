@@ -84,13 +84,25 @@ module Xot
       paths
     end
 
+    def rake_puts(*args)
+      $stderr.puts(*args)
+    end
+
+    def verbose_puts(*args)
+      rake_puts(*args) if ::Rake.verbose
+    end
+
+    def noverbose_puts(*args)
+      rake_puts(*args) unless ::Rake.verbose
+    end
+
     def filter_file(path, &block)
       File.write path, block.call(File.read path)
     end
 
     def cd_sh(dir, cmd)
       Dir.chdir dir do
-        $stderr.puts "(in #{Dir.pwd})"
+        rake_puts "(in #{Dir.pwd})"
         sh cmd
       end
     end
